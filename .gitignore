@@ -1,0 +1,7 @@
+evopt.egg-info/
+build/
+dist/
+evopt/__pycache__/
+__pycache__/
+.pytest_cache/
+tests/__pycache__/
