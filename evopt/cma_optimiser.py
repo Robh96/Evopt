@@ -34,7 +34,25 @@ class CmaesOptimiser(BaseOptimiser):
 		self.es = es
 		self.current_epoch = self.es.countiter
 		
+	def check_termination(self):
+		"""
+		Check if the termination criteria are met.
+		The standard deviation of the parameter values
+		is a proxy for the convergence of the optimisation.
 
+		Returns:
+			bool: True if all sigmas are below the threshold,
+			or if the maximum number of epochs has been reached,
+			False otherwise.
+		"""
+		#sigmas = np.array([v[-1] for p, v in self.norm_sigmas.items() if v])
+		sigmas = self.es.sigma * np.sqrt(np.diag(self.es.C))
+		if len(sigmas) == 0:
+			return False
+		
+		sigma_check = np.all(sigmas < self.sigma_threshold)
+		epoch_check = self.n_epochs is not None and self.current_epoch >= self.n_epochs
+		return sigma_check or epoch_check
 	
 
 	def optimise(self):

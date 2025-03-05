@@ -15,6 +15,7 @@ def optimise(
     start_epoch: int = None,
     verbose: bool = True,
     n_epochs: int = None,
+    target_dict: dict = None
 ):
     """
     Top-level function to run the optimization.
@@ -33,6 +34,7 @@ def optimise(
         start_epoch (int, optional): Epoch to start from (for resuming). Defaults to None.
         verbose (bool, optional): Whether to print detailed information during optimisation. Defaults to False.
         n_epochs (int, optional): The number of epochs to run the optimisation for. If None, the optimisation runs until the termination criteria is met. Defaults to None.
+        if target_dict provided, then the optimisation will be done to minimize the error between the target_dict and the output of the evaluator function. Defaults to None.
     """
 
     directory_manager = DirectoryManager(
@@ -53,6 +55,7 @@ def optimise(
         sigma_threshold=sigma_threshold,
         rand_seed=dir_id,
         start_epoch=start_epoch,
+        target_dict=target_dict,
         verbose=verbose,
     )
 

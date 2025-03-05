@@ -55,6 +55,26 @@ def write_to_csv(data, csv_path):
     else:
         df_row.to_csv(csv_path, mode='w', header=True, index=False)
 
+def extend_dict(master_dict, slave_dict):
+    """
+    Extends the observed_dict with values from loss_observed_dict.
+    If a key exists in both dictionaries, the values from loss_observed_dict
+    are appended to the list of values in observed_dict. If a key only
+    exists in loss_observed_dict, it is added to observed_dict.
+
+    Args:
+        observed_dict (dict): The dictionary to extend.
+        loss_observed_dict (dict): The dictionary containing new values.
+    """
+    for key, value in slave_dict.items():
+        if key in master_dict:
+            if isinstance(master_dict[key], list):
+                master_dict[key].extend(value if isinstance(value, list) else [value])
+            else:
+                master_dict[key] = [master_dict[key]] + (value if isinstance(value, list) else [value])
+        else:
+            master_dict[key] = value if isinstance(value, list) else [value]
+
 
 class Logger:
     """
