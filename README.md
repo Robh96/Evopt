@@ -6,6 +6,9 @@
 
 The `evopt` package provides a simple and efficient way to perform parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It's designed to be a user-friendly tool for finding the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
 
+<img src="images/cover_img.png" alt="Optimisation of the two parameter Ackley function" width="400">
+
+
 ## Scope
 
 *   **Focus**: The primary focus is on providing a CMA-ES-based optimization routine that is easy to set up and use.
@@ -69,7 +72,7 @@ def evaluator(param_dict):
     # Your evaluation logic here, in this case the Rosenbrock function
     p1 = param_dict['param1']
     p2 = param_dict['param2']
-    error = (1-p1)**2 + 100*(p2-p1**2)**2
+    error = (1 - p1) ** 2 + 100*(p2 - p1 ** 2) ** 2
     return error
 
 # Run the optimisation using .optimise method
@@ -79,7 +82,7 @@ optimised_params = evopt.optimise(params, evaluator)
 Here is the corresponding output:
 
 ```terminal
-Starting new CMAES run in directory path\to\base\dir\evolve_1
+Starting new CMAES run in directory path\to\base\dir\evolve_0
 Epoch 0 | (1/16) | Params: [1.477, -2.369] | Error: 2069.985
 Epoch 0 | (2/16) | Params: [-2.644, -1.651] | Error: 7481.172
 Epoch 0 | (3/16) | Params: [0.763, -4.475] | Error: 2557.411
@@ -112,6 +115,65 @@ print(optimised_params)
 ```terminal
 {param1: -0.391, param2: 0.192}
 ```
+
+
+## Optimising for targets
+Sometimes when using black-box functions like simulations, your result may be a specific variable such as mean pressure, temperature, or velocity. With `evopt` it is possible to specify a target value for the optimiser to reach, and in cases where targets are in conflict, you can specify `hard` or `soft` target preference such that the optimiser can weigh target priority.
+
+For example:
+```python
+import evopt
+
+# example black-box function
+def example_eval(param_dict):
+    x1 = param_dict['x1']
+    x2 = param_dict['x2']
+    target1 = (1 - 2 * (x1 - 3))
+    target2 = x1 ** 2 + 1 + x2
+    return {'target1': target1, 'target2': target2}
+
+# define objectives
+target_dict={
+            "target1": {"value": (2.8), "hard": True},
+            "target2": {"value": (2.9), "hard": False},
+}
+
+# define free parameters (evaluated by black-box function)
+params = {
+    "x1": (-5, 5),
+    "x2": (-5, 5),
+}
+
+optimised_params = evopt.optimise(params, example_eval, batch_size = 64,            
+...                     target_dict=target_dict)
+```
+
+and corresponding output:
+```terminal
+Starting new CMAES run in directory path\to\base\dir\evolve_0
+target1: 100% of values outside [2.66e+00, 2.94e+00]
+target1: 16.10 | loss: 4.47e-01 | Hard: True | Constraint met: False
+target2: 100% of values outside [2.75e+00, 3.04e+00]
+target2: 23.90 | loss: 5.71e-01 | Hard: False | Constraint met: False
+Epoch 0 | (1/64) | Params: [-4.551, 2.191] | Error: 0.472
+target1: 100% of values outside [2.66e+00, 2.94e+00]
+target1: 15.94 | loss: 4.43e-01 | Hard: True | Constraint met: False
+target2: 100% of values outside [2.75e+00, 3.04e+00]
+target2: 23.39 | loss: 5.64e-01 | Hard: False | Constraint met: False
+Epoch 0 | (2/64) | Params: [-4.468, 2.431] | Error: 0.467
+target1: 100% of values outside [2.66e+00, 2.94e+00]
+target1: 15.39 | loss: 4.30e-01 | Hard: True | Constraint met: False
+target2: 100% of values outside [2.75e+00, 3.04e+00]
+target2: 21.51 | loss: 5.36e-01 | Hard: False | Constraint met: False
+Epoch 0 | (3/64) | Params: [-4.196, 2.901] | Error: 0.452
+...
+Epoch 11 | Mean Error: 0.000 | Sigma Error: 0.000
+Epoch 11 | Mean Parameters: [2.105, -2.501] | Sigma parameters: [0.039, 0.202]
+Epoch 11 | Normalised Sigma parameters: [0.015, 0.081]
+Terminating after meeting termination criteria at epoch 12.
+```
+Note that verbosity can be controlled with verbose: bool option in evopt.optimise().
+
 
 ## Directory Structure
 
@@ -175,6 +237,59 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 *   `start_epoch (int, optional)`: The epoch number to start from. This is useful for resuming an interrupted optimization run from a checkpoint. Defaults to `None`.
 *   `verbose (bool, optional)`: Whether to print detailed information about the optimization process to the console. If `True`, the optimization will print information about each epoch and solution. Defaults to `True`.
 *   `n_epochs (int, optional)`: The maximum number of epochs to run the optimization for. If specified, the optimization will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimization will run until the convergence criteria is met. Defaults to `None`.
+
+## Plotting
+
+`Evopt` provides an overview of the convergence for each parameter over the epochs, through the `evopt.Plotting.plot_epochs()` method.
+
+```python
+# path to your evolve folder that contains epochs.csv and results.csv
+evolve_dir = r"path\to\base\dir\evolve_0" 
+evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
+```
+Output:
+<img src="images/mean_error_vs_epoch.png" alt="Error convergence" width="200">
+<img src="images/mean_x1_vs_epoch.png" alt="Parameter convergence" width="200">
+<img src="images/mean_target1_vs_epoch.png" alt="Target convergence" width="200">
+<img src="images/convergence_plot.png" alt="Step size convergence" width="200">
+
+Note that while this produces a convergence plot for each parameter and target, for simplicity only one of each type was shown here.
+
+`Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the variable from the results.csv file that you wish to plot.
+
+1-D example (simple xy plot):
+```python
+evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
+```
+Output:
+<img src="images/x1_vs_error.png" alt="parameter versus error" width="200">
+
+
+2-D example (Voronoi plot):
+```python
+evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", cval="error")
+```
+Output:
+<img src="images/x1_vs_x2_vs_error.png" alt="parameter versus error Voronoi plot" width="200">
+
+
+3-D example (Interactive html surface plot):
+```python
+evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2")
+```
+Output:
+<img src="images/x1_vs_x2_vs_target2_surface.png" alt="parameters versus target" width="200">
+
+
+4-D example (interactive html surface plot)
+```python
+evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", cval="epoch")
+```
+Output:
+<img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="parameters versus error coloured by epoch" width="200">
+
+All you need to do is specify the evolve file directory and the columns of the results file you want to plot.
+
 
 ## Citing
 If you publish research making use of this library, we encourage you to cite this repository:

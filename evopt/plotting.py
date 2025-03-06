@@ -8,7 +8,7 @@ import os
 
 class Plotting:
     @staticmethod
-    def plot_epochs(evolve_dir_path, show=True, save_dir=None, save_ext=".png"):
+    def plot_epochs(evolve_dir_path, show=True, save_dir=None, save_ext=".png", cmap="Dark2"):
 
         epochs_csv_path = os.path.join(evolve_dir_path, "epochs.csv")
         results_csv_path = os.path.join(evolve_dir_path, "results.csv")
@@ -27,34 +27,37 @@ class Plotting:
         results_data = pd.read_csv(results_csv_path)
         mean_cols = [col for col in epochs_data.columns if col.lower().startswith("mean")]
         sigma_cols = [col for col in epochs_data.columns if col.lower().startswith("sigma")]
+        norm_sigma_cols = [col for col in epochs_data.columns if col.lower().startswith("norm sigma")]
         epoch_col = [col for col in epochs_data.columns if col.lower().startswith("epoch")][0]
         results_cols = [col for col in results_data.columns if any(col.lower() in epoch_col.lower().split("mean ") for epoch_col in mean_cols)]
         results_epoch_col = [col for col in results_data.columns if col.lower().startswith("epoch")][0]
 
-        for mean_col, sigma_col, results_col in zip(mean_cols, sigma_cols, results_cols):
+        # assign a colour to each column
+        colours = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(mean_cols)))
+        for mean_col, sigma_col, results_col, colour in zip(mean_cols, sigma_cols, results_cols, colours):
             plt.plot(
                 epochs_data[epoch_col],
                 epochs_data[mean_col],
                 label=mean_col,
-                color="black"
+                color=colour
             )
             plt.scatter(
                 results_data[results_epoch_col],
                 results_data[results_col],
                 label=results_col,
                 marker="o",
-                alpha=0.5,
-                c="black",
+                alpha=0.75,
+                color=colour,
                 s=8,
-                edgecolors="black",
+                edgecolors=colour,
                 facecolor="none"
             )
             plt.fill_between(
                 epochs_data[epoch_col],
                 epochs_data[mean_col] - epochs_data[sigma_col],
                 epochs_data[mean_col] + epochs_data[sigma_col],
-                alpha=0.2,
-                color = "black"
+                alpha=0.4,
+                color = colour
             )
             plt.xlabel(epoch_col)
             plt.ylabel(mean_col)
@@ -67,8 +70,28 @@ class Plotting:
                 plt.show()
             plt.close()
     
+        # Plot each normalized sigma column with its corresponding color
+        for i, norm_sigma_col in enumerate(norm_sigma_cols):
+            color = colours[i]  # Get the color for this line
+            plt.plot(
+                epochs_data[epoch_col],
+                epochs_data[norm_sigma_col],
+                label=norm_sigma_col,
+                color=color,
+            )
+        plt.xlabel(epoch_col)
+        plt.ylabel("Normalised Sigma")
+        plt.title(f"Convergence Plot")
+        plt.legend()
+
+        file_name = f"convergence_plot.{save_ext}"
+        plt.savefig(os.path.join(save_dir, file_name))
+        if show:
+            plt.show()
+        plt.close()
+
     @staticmethod
-    def plot_vars(evolve_dir_path, x:str, y:str, z: str=None, cval: str=None, show=True, save_dir=None, save_ext=".png", cmap="viridis"):
+    def plot_vars(evolve_dir_path, x:str, y:str, z: str=None, cval: str=None, show=True, save_dir=None, save_ext=".png", cmap="viridis", point_colour="black"):
         """
         Plots the given variables against each other.
         if only x and y are provided, plots x vs y.
@@ -95,7 +118,7 @@ class Plotting:
                 data[x],
                 data[y],
                 marker="o",
-                c="black",
+                c=point_colour,
                 s=8,
                 alpha=0.5
             )
@@ -111,11 +134,17 @@ class Plotting:
         elif cval is not None and z is None:
             # Voronoi plot with cval as color
             fig, ax = plt.subplots()
-            ax = Plotting._plot_voronoi(data, x, y, cval, cmap=cmap, ax=ax) 
+            ax = Plotting._plot_voronoi(
+                data, x, y, cval,
+                cmap=cmap,
+                ax=ax,
+                clip_infinite=True,
+                point_colour=point_colour
+            ) 
             ax.set_xlabel(x)
             ax.set_ylabel(y)
             ax.set_title(f"Voronoi Plot of {x} vs {y} colored by {cval}")
-            file_name = f"{x}_vs_{y}_voronoi_{cval}.{save_ext}"
+            file_name = f"{x}_vs_{y}_vs_{cval}_Voronoi.{save_ext}"
             plt.savefig(os.path.join(save_dir, file_name))
             if show:
                 plt.show()
@@ -134,6 +163,7 @@ class Plotting:
                 z=zi,
                 x=xi,
                 y=yi,
+                opacity=0.75,
                 colorscale=cmap,
                 colorbar=dict(title=z),
                 hoverinfo='all'
@@ -145,11 +175,12 @@ class Plotting:
                     xaxis_title=x,
                     yaxis_title=y,
                     zaxis_title=z,
+                    aspectratio=dict(x=1, y=1, z=1),  # Adjust aspect ratio
                 ),
                 margin=dict(l=20, r=20, b=20, t=50)  # Adjust margins
             )
             # Save and show the plot
-            file_name = f"{x}_vs_{y}_vs_{z}.html"
+            file_name = f"{x}_vs_{y}_vs_{z}_surface.html"
             fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
 
             if show:
@@ -163,8 +194,8 @@ class Plotting:
             z_values = data[z].values
             c_values = data[cval].values  # Color values
 
-            xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 50),
-                                 np.linspace(y_values.min(), y_values.max(), 50))
+            xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 100),
+                                 np.linspace(y_values.min(), y_values.max(), 100))
             zi = griddata((x_values, y_values), z_values, (xi, yi), method='linear')
             ci = griddata((x_values, y_values), c_values, (xi, yi), method='linear')
             
@@ -173,6 +204,7 @@ class Plotting:
                 x=xi,
                 y=yi,
                 surfacecolor=ci,
+                opacity=0.75,
                 colorscale=cmap,
                 colorbar=dict(title=cval),  # Add colorbar title
                 )])
@@ -182,12 +214,13 @@ class Plotting:
                     xaxis_title=x,
                     yaxis_title=y,
                     zaxis_title=z,
+                    aspectratio=dict(x=1, y=1, z=1),
                 ),
                 margin=dict(l=20, r=20, b=20, t=50)  # Adjust margins
             )
 
             # Save and show the plot
-            file_name = f"{x}_vs_{y}_vs_{z}_color_{cval}.html"
+            file_name = f"{x}_vs_{y}_vs_{z}_vs_{cval}_surface.html"
             fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
             
             if show:
@@ -196,7 +229,7 @@ class Plotting:
             raise ValueError("Invalid input. x and y must be provided. z and cval are optional.")
     
     @staticmethod
-    def _plot_voronoi(data, x, y, cval, cmap="viridis", ax=None):
+    def _plot_voronoi(data, x, y, cval, cmap="viridis", ax=None, clip_infinite=True, point_colour="black"):
         """
         Plots a Voronoi diagram with regions colored by a given value.
 
@@ -207,7 +240,7 @@ class Plotting:
             cval (str): Column name for the value to color the regions by.
             cmap (str, optional): Colormap to use. Defaults to "viridis".
             ax (matplotlib.axes._axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created. Defaults to None.
-
+            clip_infinite (bool, optional): Whether to clip the infinite regions. Defaults to True.
         Returns:
             matplotlib.axes._axes.Axes: The Axes object with the plot.
         """
@@ -217,36 +250,43 @@ class Plotting:
         # Calculate Bounds
         x_min, x_max = data[x].min(), data[x].max()
         y_min, y_max = data[y].min(), data[y].max()
-        x_range = x_max - x_min
-        y_range = y_max - y_min
-        x_margin = x_range * 0.2
-        y_margin = y_range * 0.2
 
-        x_lower = x_min - x_margin
-        x_upper = x_max + x_margin
-        y_lower = y_min - y_margin
-        y_upper = y_max + y_margin
+        if clip_infinite:
+            x_range = x_max - x_min
+            y_range = y_max - y_min
+            x_margin = x_range * 0.5  # Adjust for desired margin
+            y_margin = y_range * 0.5  
 
-        # Create Boundary Points
-        boundary_points = [
-            [x_lower, y_lower],
-            [x_lower, y_upper],
-            [x_upper, y_lower],
-            [x_upper, y_upper],
-            [x_lower, (y_lower + y_upper) / 2],
-            [x_upper, (y_lower + y_upper) / 2],
-            [(x_lower + x_upper) / 2, y_lower],
-            [(x_lower + x_upper) / 2, y_upper],
-        ]
+            x_lower = x_min - x_margin
+            x_upper = x_max + x_margin
+            y_lower = y_min - y_margin
+            y_upper = y_max + y_margin
 
-        # Assign cval Values
-        boundary_cval = data[cval].mean()
-        boundary_cvals = [boundary_cval] * len(boundary_points)
+            # Create More Boundary Points
+            num_boundary_points = 20  # Adjust for desired density
+            x_coords_lower = np.linspace(x_lower, x_upper, num_boundary_points)
+            x_coords_upper = np.linspace(x_lower, x_upper, num_boundary_points)
+            y_coords_lower = np.linspace(y_lower, y_upper, num_boundary_points)
+            y_coords_upper = np.linspace(y_lower, y_upper, num_boundary_points)
 
-        # Append to Data
-        boundary_df = pd.DataFrame(boundary_points, columns=[x, y])
-        boundary_df[cval] = boundary_cvals
-        data = pd.concat([data, boundary_df], ignore_index=True)
+            boundary_points = []
+            for x_coord in x_coords_lower:
+                boundary_points.append([x_coord, y_lower])  # Bottom edge
+            for x_coord in x_coords_upper:
+                boundary_points.append([x_coord, y_upper])  # Top edge
+            for y_coord in y_coords_lower:
+                boundary_points.append([x_lower, y_coord])  # Left edge
+            for y_coord in y_coords_upper:
+                boundary_points.append([x_upper, y_coord])  # Right edge
+
+            # Assign cval Values
+            boundary_cval = data[cval].mean()
+            boundary_cvals = [boundary_cval] * len(boundary_points)
+
+            # Append to Data
+            boundary_df = pd.DataFrame(boundary_points, columns=[x, y])
+            boundary_df[cval] = boundary_cvals
+            data = pd.concat([data, boundary_df], ignore_index=True)
 
         points = data[[x, y]].values  # Extract x and y coordinates
         vor = Voronoi(points)
@@ -259,9 +299,8 @@ class Plotting:
             line_width=0.5,
             line_alpha=0.5,
             show_points=False,
-            point_size=2,
-            )
-
+        )
+        
         # Color the Voronoi regions based on cval
         min_cval = data[cval].min()
         max_cval = data[cval].max()
@@ -271,8 +310,16 @@ class Plotting:
             if not -1 in region:
                 polygon = [vor.vertices[i] for i in region]
                 norm_cval = (data[cval].iloc[r] - min_cval) / (max_cval - min_cval)
-                ax.fill(*zip(*polygon), color=plt.cm.get_cmap(cmap)(norm_cval), alpha=0.85)
+                ax.fill(*zip(*polygon), color=plt.cm.get_cmap(cmap)(norm_cval), alpha=1)
         
+        ax.scatter(
+            vor.points[:, 0],
+            vor.points[:, 1],
+            c=point_colour,
+            alpha=0.25,
+            s=7
+        )
+
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=data[cval].min(), vmax=data[cval].max()))
         cbar = plt.colorbar(sm, ax=ax)
         cbar.set_label(cval)
