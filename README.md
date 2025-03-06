@@ -5,9 +5,12 @@
 ## What it Does
 
 The `evopt` package provides a simple and efficient way to perform parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It's designed to be a user-friendly tool for finding the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
-
-<img src="images/cover_img.png" alt="Optimisation of the two parameter Ackley function" width="400">
-
+<div style="text-align: center;">
+    <figure>
+        <iframe src="images/cover_img.html"  width="800" height="600"></iframe>
+        <figcaption>Optimisation of the two parameter Ackley function.</figcaption>
+    </figure>
+</div>
 
 ## Scope
 
@@ -248,10 +251,22 @@ evolve_dir = r"path\to\base\dir\evolve_0"
 evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
 ```
 Output:
-<img src="images/mean_error_vs_epoch.png" alt="Error convergence" width="200">
-<img src="images/mean_x1_vs_epoch.png" alt="Parameter convergence" width="200">
-<img src="images/mean_target1_vs_epoch.png" alt="Target convergence" width="200">
-<img src="images/convergence_plot.png" alt="Step size convergence" width="200">
+<br>
+<div style="text-align: center;">
+    <img src="images/mean_error_vs_epoch.png" alt="Error convergence." width="600">
+</div>
+<br>
+<div style="text-align: center;">
+    <img src="images/mean_x1_vs_epoch.png" alt="Parameter convergence." width="600">
+</div>
+<br>
+<div style="text-align: center;">
+    <img src="images/mean_target1_vs_epoch.png" alt="Target convergence." width="600">
+</div>
+<br>
+<div style="text-align: center;">
+    <img src="images/convergence_plot.png" alt="Step size convergence." width="600">
+</div>
 
 Note that while this produces a convergence plot for each parameter and target, for simplicity only one of each type was shown here.
 
@@ -262,31 +277,50 @@ Note that while this produces a convergence plot for each parameter and target, 
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
 ```
 Output:
-<img src="images/x1_vs_error.png" alt="parameter versus error" width="200">
-
+<br>
+<div style="text-align: center;">
+    <img src="images/x1_vs_error.png" alt="Parameter versus error." width="600">
+</div>
+<br>
 
 2-D example (Voronoi plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", cval="error")
 ```
 Output:
-<img src="images/x1_vs_x2_vs_error.png" alt="parameter versus error Voronoi plot" width="200">
-
+<br>
+<div style="text-align: center;">
+    <img src="images/x1_vs_x2_vs_error.png" alt="Parameter versus error Voronoi plot." width="600">
+</div>
+<br>
 
 3-D example (Interactive html surface plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2")
 ```
 Output:
-<img src="images/x1_vs_x2_vs_target2_surface.png" alt="parameters versus target" width="200">
-
+<br>
+<div style="text-align: center;">
+    <figure>
+        <iframe src="images/x1_vs_x2_vs_target2_surface.html" width="600"></iframe>
+        <figcaption>Parameters versus target.</figcaption>
+    </figure>
+</div>
+<br>
 
 4-D example (interactive html surface plot)
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", cval="epoch")
 ```
 Output:
-<img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="parameters versus error coloured by epoch" width="200">
+<br>
+<div style="text-align: center;">
+    <figure>
+        <iframe src="images/x1_vs_x2_vs_error_vs_epoch_surface.html" width="600"></iframe>
+        <figcaption>Parameters versus error coloured by epoch.</figcaption>
+    </figure>
+</div>
+<br>
 
 All you need to do is specify the evolve file directory and the columns of the results file you want to plot.
 
