@@ -252,7 +252,7 @@ class BaseOptimiser(ABC):
 				error = self.evaluator(param_dict)
 			if self.target_dict:
 				if isinstance(error, dict):
-					loss = calc_loss(self.target_dict, error, self.verbose)
+					loss = calc_loss(self.target_dict, error, verbose=self.verbose)
 					error = loss.combined_loss
 					new_dict = loss.observed_dict
 					extend_dict(observed_dict, new_dict)
