@@ -1,9 +1,13 @@
 import numpy as np
+import cloudpickle
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 import os
+import multiprocessing as mp
+mp.set_start_method('spawn', force=True)
+import concurrent.futures
 from .directory_manager import DirectoryManager
 from .utils import write_to_csv, format_array, extend_dict
-from .loss import calc_loss
 
 class BaseOptimiser(ABC):
 	"""
@@ -21,6 +25,7 @@ class BaseOptimiser(ABC):
 		verbose: bool = True,
 		n_epochs: int = None,
 		target_dict: dict = None,
+		num_processes=None,
 	):
 		"""
 		Initialise the BaseOptimiser.
@@ -54,6 +59,14 @@ class BaseOptimiser(ABC):
 		self.init_sigmas = self.get_init_sigmas
 		self.norm_bounds = self.get_norm_bounds
 		self.init_params = self.get_init_params
+		self.num_processes = num_processes if num_processes else mp.cpu_count()
+		self._file_lock = mp.Lock()  # For CSV file access synchronization
+		
+		self._executor = None
+		if self.num_processes > 1:
+			self._executor = concurrent.futures.ProcessPoolExecutor(
+				max_workers=min(self.num_processes, mp.cpu_count())
+		)
 
 		self._mean_error_history = []
 		self._sigma_error_history = []
@@ -176,13 +189,13 @@ class BaseOptimiser(ABC):
 			**(result_dict if result_dict is not None else {}),
 			**param_dict
 			}
-		write_to_csv(result, self.dir_manager.results_csv)
+		write_to_csv(result, self.dir_manager.results_csv, sort_columns=['epoch', 'solution'])
 
 	def _write_epoch_to_csv(self, mean_error, sigma_error, mean_params, sigma_params, norm_sigmas, mean_targets=None, sigma_targets=None):
 		"""
 		Write epoch data to a CSV file.
 		The CSV file is structured as:
-		 | Epoch | Mean Error | Mean ParamN | Sigma Error | Sigma ParamN | Norm SigmaN |
+		| epoch | mean Error | mean targetN | mean ParamN | sigma Error | sigma targetN | sigma ParamN | norm SigmaN |
 
 		Args:
 			mean_error (float): The mean error for the epoch.
@@ -190,18 +203,45 @@ class BaseOptimiser(ABC):
 			mean_params (np.ndarray): The mean parameter values for the epoch.
 			sigma_params (np.ndarray): The standard deviation of the parameter values for the epoch.
 			norm_sigmas (np.ndarray): The normalised sigma values for the parameters.
+			mean_targets (list, optional): The mean target values for the epoch. Defaults to None.
+			sigma_targets (list, optional): The standard deviation of the target values for the epoch. Defaults to None.
 		"""
 		epoch_data = {
-			'Epoch': self.current_epoch,
-			'Mean error': mean_error,
-			**({f"Mean {target}": mean for target, mean in zip(self.target_dict.keys(), mean_targets)} if mean_targets else {}),
-			**{f"Mean {param}": mean for param, mean in zip(self.parameters.keys(), mean_params)},
-			'Sigma error': sigma_error,
-			**({f"Sigma {target}": sigma for target, sigma in zip(self.target_dict.keys(), sigma_targets)} if sigma_targets else {}),
-			**{f"Sigma {param}": sigma for param, sigma in zip(self.parameters.keys(), sigma_params)},
-			**{f"Norm sigma {param}": norm_sigma for param, norm_sigma in zip(self.parameters.keys(), norm_sigmas)}
+			'epoch': self.current_epoch,
+			'mean error': mean_error,
+			**({f"mean {target}": mean for target, mean in zip(self.target_dict.keys(), mean_targets)} if mean_targets else {}),
+			**{f"mean {param}": mean for param, mean in zip(self.parameters.keys(), mean_params)},
+			'sigma error': sigma_error,
+			**({f"sigma {target}": sigma for target, sigma in zip(self.target_dict.keys(), sigma_targets)} if sigma_targets else {}),
+			**{f"sigma {param}": sigma for param, sigma in zip(self.parameters.keys(), sigma_params)},
+			**{f"norm sigma {param}": norm_sigma for param, norm_sigma in zip(self.parameters.keys(), norm_sigmas)}
 		}
-		write_to_csv(epoch_data, self.dir_manager.epochs_csv)
+		write_to_csv(epoch_data, self.dir_manager.epochs_csv, sort_columns=['epoch'])
+
+	def _update_history_and_log(self, mean_error, sigma_error, mean_params, sigma_params, norm_sigmas, mean_targets=None, sigma_targets=None):
+		"""Update history arrays and write epoch data to log."""
+		# Print epoch statistics
+		self.print_epoch(mean_error, sigma_error, mean_params, sigma_params, norm_sigmas)
+		
+		# Write epoch data to CSV
+		self._write_epoch_to_csv(mean_error, sigma_error, mean_params, sigma_params, norm_sigmas,
+								mean_targets=mean_targets, sigma_targets=sigma_targets)
+		
+		# Update history
+		self._mean_error_history.append(mean_error)
+		self._sigma_error_history.append(sigma_error)
+		
+		# Update parameter history
+		for i, p in enumerate(self.parameters):
+			self._mean_params_history[p].append(mean_params[i])
+			self._sigma_params_history[p].append(sigma_params[i])
+			self._norm_sigmas_history[p].append(norm_sigmas[i])
+		
+		# Update target history if available
+		if self.target_dict and mean_targets and sigma_targets:
+			for i, t in enumerate(self.target_dict):
+				self._mean_target_history[t].append(list(mean_targets)[i])
+				self._sigma_target_history[t].append(list(sigma_targets)[i])
 
 	def print_solution(self, sol_id, params, error):
 		"""
@@ -231,91 +271,237 @@ class BaseOptimiser(ABC):
 			print(f"Epoch {self.current_epoch} | Mean Parameters: [{format_array(mean_params)}] | Sigma parameters: [{format_array(sigma_params)}]")
 			print(f"Epoch {self.current_epoch} | Normalised Sigma parameters: [{format_array(norm_sigmas)}]")
 
-	def process_batch(self, solutions):
+	@classmethod
+	def working_directory(cls, path: str):
 		"""
-		Process a batch of solutions, evaluate them, and write the results to CSV.
+		A context manager which changes the working directory to the given
+		path, and then changes it back to its previous value on exit.
 
 		Args:
-			solutions (list): A list of parameter value arrays.
+			path (str): The path to change the working directory to.
+		"""
+		@contextmanager
+		def _change_directory_context(path):
+			prev_cwd = os.getcwd()
+			os.makedirs(path, exist_ok=True)
+			os.chdir(path)
+			try:
+				yield
+			finally:
+				os.chdir(prev_cwd)
+		return _change_directory_context(path)
 
+	@classmethod
+	def _evaluate_solution_worker(cls, args):
+		"""
+		Class method for evaluating a solution that can be pickled and sent to worker processes.
+		
+		Args:
+			args (tuple): (
+				sol_id (int),
+				params (np.ndarray),
+				param_names (list),
+				current_epoch (int),
+				solution_folder (str),
+				evaluator_func (callable),
+				target_dict (dict or None),
+				dir_manager (DirectoryManager),
+				verbose (bool)
+			)
+			
+		Returns:
+			tuple: (sol_id, error, result_dict, param_dict)
+		"""
+		# Unpack arguments
+		(sol_id,
+		params,
+		param_names,
+		solution_folder,
+		pickled_evaluator,
+		target_dict,
+		verbose) = args
+		
+		# Unpickle the evaluator function
+		try:
+			evaluator_func = cloudpickle.loads(pickled_evaluator)
+		except Exception as e:
+			if verbose:
+				print(f"Error unpickling evaluator for solution {sol_id}: {e}")
+
+		# Convert parameters to dictionary
+		param_dict = dict(zip(param_names, params))
+		result_dict = None
+		try:
+			with cls.working_directory(solution_folder):
+				error = evaluator_func(param_dict)
+
+			# Process target dictionary if provided
+			if target_dict and isinstance(error, dict):
+				from .loss import calc_loss  # Import here to avoid circular imports
+				loss = calc_loss(target_dict, error, verbose=False)
+				result_dict = loss.observed_dict
+				error = loss.combined_loss
+
+			elif target_dict:
+				if verbose:
+					print(f"Error in solution {sol_id}: Expected dictionary, got {type(error)}")
+				error = None
+
+		except Exception as e:
+			error = None
+			if verbose:
+				print(f"Error evaluating solution {sol_id}: {e}")
+
+		# Clean up empty directory
+		if os.path.exists(solution_folder) and len(os.listdir(solution_folder)) == 0:
+			try:
+				os.rmdir(solution_folder)
+			except:
+				pass  # Ignore errors during cleanup
+
+		return sol_id, error, result_dict, param_dict
+
+	def process_batch(self, solutions):
+		"""
+		Process a batch of solutions using concurrent.futures for parallelization.
+		
+		Args:
+			solutions (list): A list of parameter value arrays.
+			
 		Returns:
 			list: A list of error values for each solution.
 		"""
-		# in series, future work to parallelise
+		# Rescale solutions
 		rescaled_solutions = [self.rescale_params(sol) for sol in solutions]
-		observed_dict = {}
-		errors = []
-		for sol, params in enumerate(rescaled_solutions):
-			param_dict = dict(zip(self.parameters.keys(), params))
-			solution_folder = self.dir_manager.create_solution_folder(self.current_epoch, sol)
-			with self.dir_manager.working_directory(solution_folder):
-				error = self.evaluator(param_dict)
-			if self.target_dict:
-				if isinstance(error, dict):
-					loss = calc_loss(self.target_dict, error, verbose=self.verbose)
-					error = loss.combined_loss
-					new_dict = loss.observed_dict
-					extend_dict(observed_dict, new_dict)
-				else:
-					raise ValueError("Target dict provided but evaluator output is not a dictionary.")
-			# if solution directory is empty, delete it
-			if len(os.listdir(solution_folder)) == 0:
-				os.rmdir(solution_folder)
+		
+		# Pickle the evaluator function to handle complex cases (lambdas, notebook functions, etc.)
+		pickled_evaluator = cloudpickle.dumps(self.evaluator)
 
-			self.print_solution(sol, params, error)
-			self._write_result_to_csv(sol, error, param_dict, result_dict=new_dict if self.target_dict else None)
-			errors.append(error)
+		# Create arguments list for each solution with ALL necessary parameters
+		solution_args = []
+		for i, params in enumerate(rescaled_solutions):
+			solution_folder = self.dir_manager.create_solution_folder(self.current_epoch, i)
+			args = (
+				i,                              # sol_id
+				params,                         # params
+				list(self.parameters.keys()),   # param_names
+				solution_folder,                # solution_folder
+				pickled_evaluator,              # pickled evaluator_func instead of direct reference
+				self.target_dict,               # target_dict
+				self.verbose                    # verbose
+			)
+			solution_args.append(args)
+		
+		# Process solutions in parallel or serial based on number of processes
+		errors = []
+		observed_dict = {}
+		all_results = []
+		
+		# Use serial processing if num_processes is 1
+		if self.num_processes <= 1:
+			for args in solution_args:
+				result = self._evaluate_solution_worker(args)
+				all_results.append(result)
+		else:
+			try:
+				# Submit tasks
+				future_to_sol_id = {
+					self._executor.submit(self._evaluate_solution_worker, args): args[0]
+					for args in solution_args
+				}
+				for future in concurrent.futures.as_completed(future_to_sol_id):
+					try:
+						result = future.result(timeout=300)
+						all_results.append(result)
+					except concurrent.futures.TimeoutError:
+						sol_id = future_to_sol_id[future]
+						print(f"Solution {sol_id} timed out after 5 minutes")
+					except Exception as exc:
+						sol_id = future_to_sol_id[future]
+						print(f"Solution {sol_id} generated an exception: {exc}")
+						# Continue with other solutions
+			except Exception as e:
+				# Fall back to serial processing if parallel processing fails
+				print(f"Warning: Parallel processing failed ({e}), falling back to serial processing")
+				all_results = []
+				for args in solution_args:
+					result = self._evaluate_solution_worker(args)
+					all_results.append(result)
+
+		# Process all results in the main process
+		with self._file_lock:
+			for sol_id, error, result_dict, param_dict in all_results:
+				self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
+				if error is not None:
+					errors.append(error)
+				if result_dict:
+					extend_dict(observed_dict, result_dict)
+
+		# remove solution folder dir if empty
+		if len(os.listdir(os.path.dirname(solution_folder))) == 0:
+			os.rmdir(os.path.dirname(solution_folder))
+
+		# Calculate statistics and update history
+		return self._process_batch_results(errors, rescaled_solutions, observed_dict)
+	
+
+	def _process_batch_results(self, errors, rescaled_solutions, observed_dict):
+		"""
+		Process the aggregated results from a batch of solutions.
+		
+		Args:
+			errors (list): List of error values.
+			rescaled_solutions (list): List of rescaled parameter arrays.
+			observed_dict (dict): Dictionary of observed values.
 			
+		Returns:
+			list: List of error values.
+		"""
+		# Handle case where all errors are None
 		valid_err = [err for err in errors if err is not None]
 		if not valid_err:
 			raise ValueError("All errors are None")
+		
+		# Replace None errors with mean of valid errors
 		errors = [err if err is not None else float(np.mean(valid_err)) for err in errors]
-
+		
+		# Calculate statistics
 		mean_error = np.mean(errors)
 		sigma_error = np.std(errors)
 		mean_params = np.mean(rescaled_solutions, axis=0)
 		sigma_params = np.std(rescaled_solutions, axis=0)
 		norm_sigmas = sigma_params / self.init_sigmas
-		mean_observed = {k: np.mean(v) for k, v in observed_dict.items() if self.target_dict}
-		sigma_observed = {k: np.std(v) for k, v in observed_dict.items() if self.target_dict}
 		
-		self.print_epoch(
-			mean_error,
-			sigma_error,
-			mean_params,
-			sigma_params,
-			norm_sigmas
-		)
-		self._write_epoch_to_csv(
-			mean_error,
-			sigma_error,
-			mean_params,
-			sigma_params,
-			norm_sigmas,
-			mean_targets=mean_observed.values() if self.target_dict else None,
-			sigma_targets=sigma_observed.values() if self.target_dict else None
-		)
-		
-
-
-		self._mean_error_history.append(mean_error)
-		self._sigma_error_history.append(sigma_error)
-
-		for i, p in enumerate(self.parameters):
-			self._mean_params_history[p].append(mean_params[i])
-			self._sigma_params_history[p].append(sigma_params[i])
-			self._norm_sigmas_history[p].append(norm_sigmas[i])
-
+		# Process target observations if available
 		if self.target_dict:
-			for i, t in enumerate(self.target_dict):
-				self._mean_target_history[t].append(mean_observed[t])
-				self._sigma_target_history[t].append(sigma_observed[t])
-
-		# if all solution directories are empty, remove epoch dir
-		if len(os.listdir(os.path.dirname(solution_folder))) == 0:
-			os.rmdir(os.path.dirname(solution_folder))
+			mean_observed = {k: np.mean(v) for k, v in observed_dict.items()}
+			sigma_observed = {k: np.std(v) for k, v in observed_dict.items()}
+			
+			# Update history and write to CSV
+			self._update_history_and_log(
+				mean_error, sigma_error, mean_params, sigma_params, norm_sigmas,
+				mean_targets=mean_observed.values(), 
+				sigma_targets=sigma_observed.values()
+			)
+		else:
+			# Update history and write to CSV without targets
+			self._update_history_and_log(
+				mean_error, sigma_error, mean_params, sigma_params, norm_sigmas
+			)
+		
 		return errors
 
+	def __del__(self):
+		"""Clean up resources when object is deleted."""
+		if hasattr(self, '_executor') and self._executor:
+			self._executor.shutdown(wait=False)
+			self._executor = None
+        
+	def cleanup(self):
+		"""Explicitly clean up resources."""
+		if hasattr(self, '_executor') and self._executor:
+			self._executor.shutdown(wait=False)
+			self._executor = None
 
 	def check_termination(self):
 		"""

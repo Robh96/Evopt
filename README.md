@@ -5,11 +5,10 @@
 ## What it Does
 
 The `evopt` package provides a simple and efficient way to perform parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It's designed to be a user-friendly tool for finding the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
-<div style="text-align: center;">
-    <figure>
-        <img src="images/cover_img.png" alt="Optimisation of the two parameter Ackley function." width="800" style="display: block; margin: 0 auto;">
-        <figcaption style="text-align: center;">Optimisation of the two parameter Ackley function.</figcaption>
-    </figure>
+<div align="center">
+  <img src="images/cover_img.png" alt="Optimisation of the two parameter Ackley function." width="800">
+  <br>
+  <em>Optimisation of the two parameter Ackley function.</em>
 </div>
 
 ## Scope
@@ -28,21 +27,18 @@ The `evopt` package provides a simple and efficient way to perform parameter opt
     *   **Scenario**: You have a complex simulation model (e.g., in engineering, physics, or finance) with several adjustable parameters. You want to find the parameter values that make the simulation output match real-world data as closely as possible.
     *   **`evopt` Use**: You can define the parameters and their bounds in `evopt`, write an evaluator function that compares the simulation output to the real data, and then use `evopt` to automatically find the best parameter values.
 
-2.  **Fine-Tuning Machine Learning Models**:
-    *   **Scenario**: You have a machine learning model with hyperparameters that need to be tuned for optimal performance.
-    *   **`evopt` Use**: You can define the hyperparameters and their ranges, use a validation set to evaluate the model's performance with different hyperparameter settings, and then use `evopt` to find the best hyperparameter configuration.
-
-3.  **Optimizing Engineering Designs**:
-    *   **Scenario**: You're designing an engineering component (e.g., an airfoil, a bridge, or a circuit) and want to find the dimensions or material properties that maximize performance (e.g., lift, strength, or efficiency).
-    *   **`evopt` Use**: You can create a simulation or model of the component's performance, define the design parameters and their constraints, and then use `evopt` to find the optimal design.
-
-4.  **Parameter Estimation in Scientific Models**:
+2.  **Parameter Estimation in Scientific Models**:
     *   **Scenario**: You have a scientific model (e.g., in biology, chemistry, or climate science) and want to estimate the values of certain parameters based on experimental data.
     *   **`evopt` Use**: You can define the parameters and their plausible ranges, write an evaluator function that compares the model's predictions to the experimental data, and then use `evopt` to find the parameter values that best fit the data.
 
-5.  **Automated Experiment Design**:
-    *   **Scenario**: You want to design a series of experiments to efficiently explore a parameter space and gather data for a model.
-    *   **`evopt` Use**: You can use `evopt` to suggest the next set of experiments to run, based on the results of previous experiments. The evaluator function would then be the process of running the experiment and collecting the data.
+3.  **Fine-Tuning Machine Learning Models**:
+    *   **Scenario**: You have a machine learning model with hyperparameters that need to be tuned for optimal performance.
+    *   **`evopt` Use**: You can define the hyperparameters and their ranges, use a validation set to evaluate the model's performance with different hyperparameter settings, and then use `evopt` to find the best hyperparameter configuration.
+
+4.  **Optimizing Engineering Designs**:
+    *   **Scenario**: You're designing an engineering component (e.g., an airfoil, a bridge, or a circuit) and want to find the dimensions or material properties that maximize performance (e.g., lift, strength, or efficiency).
+    *   **`evopt` Use**: You can create a simulation or model of the component's performance, define the design parameters and their constraints, and then use `evopt` to find the optimal design.
+
 
 ## Key Advantages
 
@@ -299,6 +295,9 @@ If you publish research making use of this library, we encourage you to cite thi
 This library makes fundamental use of the `pycma` implementation of the state-of-the-art CMA-ES algorithm.
 Hence we kindly ask that research using this library cites:
 > Nikolaus Hansen, Youhei Akimoto, and Petr Baudis. CMA-ES/pycma on Github. Zenodo, DOI:10.5281/zenodo.2559634, February 2019.
+
+Finally, this work was inspired by 'ACCES', a package for derivative-free numerical optimisation designed for simulations.
+> Nicusan, A., Werner, D., Sykes, J. A., Seville, J., & Windows-Yule, K. (2022). ACCES: Autonomous Characterisation and Calibration via Evolutionary Simulation (Version 0.2.0) [Computer software]
 
 
 ## License

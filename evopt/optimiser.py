@@ -1,5 +1,5 @@
-import numpy as np
 import os
+import time
 from typing import Callable
 from .cma_optimiser import CmaesOptimiser
 from .directory_manager import DirectoryManager
@@ -15,7 +15,9 @@ def optimise(
     start_epoch: int = None,
     verbose: bool = True,
     n_epochs: int = None,
-    target_dict: dict = None
+    target_dict: dict = None,
+    num_processes: int = 1,
+    rand_seed: int = None
 ):
     """
     Top-level function to run the optimization.
@@ -53,12 +55,16 @@ def optimise(
         batch_size=batch_size,
         directory_manager=directory_manager,
         sigma_threshold=sigma_threshold,
-        rand_seed=dir_id,
+        rand_seed=rand_seed if rand_seed is not None else dir_id,
         start_epoch=start_epoch,
         target_dict=target_dict,
         verbose=verbose,
+        num_processes=int(num_processes)
     )
-
-    with directory_manager.logger:
-        params = optimizer.optimise()
-    return params
+    try:
+        with directory_manager.logger:
+            params = optimizer.optimise()
+        return params
+    finally:
+        if hasattr(optimizer, 'cleanup'):
+            optimizer.cleanup() # closes process workers

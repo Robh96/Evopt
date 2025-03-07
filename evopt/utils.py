@@ -39,20 +39,33 @@ def format_array(arr, precision=3):
     """
     return ", ".join(f"{x:.{precision}f}" for x in arr)
 
-def write_to_csv(data, csv_path):
+def write_to_csv(data, csv_path, sort_columns=None):
     """
-    Write a dictionary of data to a CSV file.
+    Write a dictionary of data to a CSV file with optional sorting.
 
     Args:
         data (dict): The data to write.
         csv_path (str): The path to the CSV file.
+        sort_columns (list, optional): Columns to sort by. Defaults to None.
     """
     data = {k: convert_to_native(v) for k, v in data.items()}
     df_row = pd.DataFrame([data])
     
     if os.path.isfile(csv_path):
-        df_row.to_csv(csv_path, mode='a', header=False, index=False)
+        # Read existing CSV, append new data, sort, and rewrite
+        try:
+            df_existing = pd.read_csv(csv_path)
+            df_combined = pd.concat([df_existing, df_row], ignore_index=True)
+            
+            if sort_columns:
+                df_combined = df_combined.sort_values(by=sort_columns)
+                
+            df_combined.to_csv(csv_path, mode='w', header=True, index=False)
+        except pd.errors.EmptyDataError:
+            # File exists but is empty
+            df_row.to_csv(csv_path, mode='w', header=True, index=False)
     else:
+        # Creating new file
         df_row.to_csv(csv_path, mode='w', header=True, index=False)
 
 def extend_dict(master_dict, slave_dict):

@@ -1,6 +1,5 @@
 import os
 import pickle
-from contextlib import contextmanager
 from .utils import Logger
 
 class DirectoryManager:
@@ -57,25 +56,6 @@ class DirectoryManager:
 		if not existing_ids:
 			return 0
 		return next((i for i in range(max(existing_ids) + 2) if i not in existing_ids), 0)
-
-
-
-	@contextmanager
-	def working_directory(self, path: str):
-		"""
-		A context manager which changes the working directory to the given
-		path, and then changes it back to its previous value on exit.
-
-		Args:
-			path (str): The path to change the working directory to.
-		"""
-		prev_cwd = os.getcwd()
-		os.makedirs(path, exist_ok=True) # Ensure the directory exists
-		os.chdir(path)
-		try:
-			yield
-		finally:
-			os.chdir(prev_cwd)
 
 	def setup_directory(self):
 		"""

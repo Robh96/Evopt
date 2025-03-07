@@ -156,8 +156,8 @@ class Plotting:
             y_values = data[y].values
             z_values = data[z].values
 
-            xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 50),
-                                 np.linspace(y_values.min(), y_values.max(), 50))
+            xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 100),
+                                 np.linspace(y_values.min(), y_values.max(), 100))
             zi = griddata((x_values, y_values), z_values, (xi, yi), method='linear')
             fig = go.Figure(data=[go.Surface(
                 z=zi,
