@@ -8,7 +8,29 @@ import os
 
 class Plotting:
     @staticmethod
-    def plot_epochs(evolve_dir_path, show=True, save_dir=None, save_ext=".png", cmap="Dark2"):
+    def plot_epochs(
+        evolve_dir_path: str,
+        show: bool = True,
+        save_dir: str = None,
+        save_ext: str = ".png",
+        cmap: str = "Dark2",
+        point_alpha: float|int = 0.75,
+        shade_alpha: float|int = 0.4,
+        save_figures: bool = True
+    ):
+        """
+        Plots the mean and sigma values for each parameter across epochs.
+        Also plots the results for each epoch.
+        Args:
+            evolve_dir_path (str): Path to the directory containing the evolution data.
+            show (bool, optional): Whether to display the plots. Defaults to True.
+            save_dir (str, optional): Directory to save the plots. Defaults to None.
+            save_ext (str, optional): File extension for saving the plots. Defaults to ".png".
+            cmap (str, optional): Colormap to use. Defaults to "Dark2".
+            point_alpha (float, optional): Alpha value for the points. Defaults to 0.75.
+            shade_alpha (float, optional): Alpha value for the shaded regions. Defaults to 0.4.
+            save_figures (bool, optional): Whether to save the figures. Defaults to True.
+        """
 
         epochs_csv_path = os.path.join(evolve_dir_path, "epochs.csv")
         results_csv_path = os.path.join(evolve_dir_path, "results.csv")
@@ -46,7 +68,7 @@ class Plotting:
                 results_data[results_col],
                 label=results_col,
                 marker="o",
-                alpha=0.75,
+                alpha=point_alpha,
                 color=colour,
                 s=8,
                 edgecolors=colour,
@@ -56,7 +78,7 @@ class Plotting:
                 epochs_data[epoch_col],
                 epochs_data[mean_col] - epochs_data[sigma_col],
                 epochs_data[mean_col] + epochs_data[sigma_col],
-                alpha=0.4,
+                alpha=shade_alpha,
                 color = colour
             )
             plt.xlabel(epoch_col)
@@ -65,7 +87,8 @@ class Plotting:
             plt.legend()
             
             file_name = f"{mean_col}_vs_{epoch_col}.{save_ext}"
-            plt.savefig(os.path.join(save_dir, file_name))
+            if save_figures:
+                plt.savefig(os.path.join(save_dir, file_name))
             if show:
                 plt.show()
             plt.close()
@@ -85,25 +108,54 @@ class Plotting:
         plt.legend()
 
         file_name = f"convergence_plot.{save_ext}"
-        plt.savefig(os.path.join(save_dir, file_name))
+        if save_figures:
+            plt.savefig(os.path.join(save_dir, file_name))
         if show:
             plt.show()
         plt.close()
 
     @staticmethod
-    def plot_vars(evolve_dir_path, x:str, y:str, z: str=None, cval: str=None, show=True, save_dir=None, save_ext=".png", cmap="viridis", point_colour="black"):
+    def plot_vars(
+        evolve_dir_path: str,
+        x: str,
+        y: str,
+        z: str = None,
+        cval: str = None,
+        show: bool = True,
+        save_dir: str = None,
+        save_ext: str = ".png",
+        cmap: str = "viridis",
+        point_colour: str = "black",
+        alpha: float|int = 1,
+        save_figures: bool = True
+    ):
         """
         Plots the given variables against each other.
         if only x and y are provided, plots x vs y.
         if x, y, and cval are provided but not z, plots 2-d histogram x vs y vs cval.
         if x, y, and z are provided but not cval, plots 3-d surface of x vs y vs z.
         if x, y, z, and cval are provided, plots 3-d surface of x vs y vs z with cval as color.
+
+        Args:
+            evolve_dir_path (str): Path to the directory containing the evolution data.
+            x (str): Column name for x-coordinates.
+            y (str): Column name for y-coordinates.
+            z (str, optional): Column name for z-coordinates. Defaults to None.
+            cval (str, optional): Column name for the value to color the regions by. Defaults to None.
+            show (bool, optional): Whether to display the plots. Defaults to True.
+            save_dir (str, optional): Directory to save the plots. Defaults to None.
+            save_ext (str, optional): File extension for saving the plots. Defaults to ".png".
+            cmap (str, optional): Colormap to use. Defaults to "viridis".
+            point_colour (str, optional): Colour of the points. Defaults to "black".
+            alpha (float, optional): Alpha value for the points. Defaults to 1.
+            save_figures (bool, optional): Whether to save the figures. Defaults to True.
         """
 
         results_csv_path = os.path.join(evolve_dir_path, "results.csv")
         save_dir = save_dir if save_dir else os.path.join(evolve_dir_path, "figures")
         save_ext = save_ext.strip(".") if save_ext else "png"
-        os.makedirs(save_dir, exist_ok=True)
+        if save_figures:
+            os.makedirs(save_dir, exist_ok=True)
 
         if save_ext not in ["png", "jpg", "jpeg", "pdf", "svg"]:
             raise ValueError("Invalid save_ext. Must be one of 'png', 'jpg', 'jpeg', 'pdf', or 'svg'.")
@@ -114,22 +166,26 @@ class Plotting:
         data = pd.read_csv(results_csv_path)
 
         if z is None and cval is None:
-            plt.scatter(
+            fig, ax = plt.subplots()
+            ax.scatter(
                 data[x],
                 data[y],
                 marker="o",
                 c=point_colour,
                 s=8,
-                alpha=0.5
+                alpha=alpha
             )
-            plt.xlabel(x)
-            plt.ylabel(y)
-            plt.title(f"{x} vs {y}")
+            ax.set_xlabel(x)
+            ax.set_ylabel(y)
+            ax.set_title(f"{x} vs {y}")
             file_name = f"{x}_vs_{y}.{save_ext}"
-            plt.savefig(os.path.join(save_dir, file_name))
+            if save_figures:
+                plt.savefig(os.path.join(save_dir, file_name))
             if show:
                 plt.show()
             plt.close()
+            return ax
+
             
         elif cval is not None and z is None:
             # Voronoi plot with cval as color
@@ -139,16 +195,19 @@ class Plotting:
                 cmap=cmap,
                 ax=ax,
                 clip_infinite=True,
-                point_colour=point_colour
+                point_colour=point_colour,
+                alpha=alpha
             ) 
             ax.set_xlabel(x)
             ax.set_ylabel(y)
             ax.set_title(f"Voronoi Plot of {x} vs {y} colored by {cval}")
             file_name = f"{x}_vs_{y}_vs_{cval}_Voronoi.{save_ext}"
-            plt.savefig(os.path.join(save_dir, file_name))
+            if save_figures:
+                plt.savefig(os.path.join(save_dir, file_name))
             if show:
                 plt.show()
             plt.close()
+            return ax
 
         elif z is not None and cval is None:
             # 3-D surface plot using Plotly
@@ -163,7 +222,7 @@ class Plotting:
                 z=zi,
                 x=xi,
                 y=yi,
-                opacity=0.75,
+                opacity=alpha,
                 colorscale=cmap,
                 colorbar=dict(title=z),
                 hoverinfo='all'
@@ -181,10 +240,12 @@ class Plotting:
             )
             # Save and show the plot
             file_name = f"{x}_vs_{y}_vs_{z}_surface.html"
-            fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
+            if save_figures:
+                fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
 
             if show:
                 fig.show()
+            return fig
 
 
         elif z is not None and cval is not None:
@@ -204,12 +265,12 @@ class Plotting:
                 x=xi,
                 y=yi,
                 surfacecolor=ci,
-                opacity=0.75,
+                opacity=alpha,
                 colorscale=cmap,
                 colorbar=dict(title=cval),  # Add colorbar title
                 )])
             fig.update_layout(
-                title=f"{x} vs {y} vs {z} vs {cval})",
+                title=f"{x} vs {y} vs {z} vs {cval}",
                 scene=dict(
                     xaxis_title=x,
                     yaxis_title=y,
@@ -221,15 +282,16 @@ class Plotting:
 
             # Save and show the plot
             file_name = f"{x}_vs_{y}_vs_{z}_vs_{cval}_surface.html"
-            fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
-            
+            if save_figures:
+                fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
             if show:
                 fig.show()
+            return fig
         else:
             raise ValueError("Invalid input. x and y must be provided. z and cval are optional.")
     
     @staticmethod
-    def _plot_voronoi(data, x, y, cval, cmap="viridis", ax=None, clip_infinite=True, point_colour="black"):
+    def _plot_voronoi(data, x, y, cval, cmap="viridis", ax=None, clip_infinite=True, point_colour="black", alpha=0.25):
         """
         Plots a Voronoi diagram with regions colored by a given value.
 
@@ -316,7 +378,7 @@ class Plotting:
             vor.points[:, 0],
             vor.points[:, 1],
             c=point_colour,
-            alpha=0.25,
+            alpha=alpha,
             s=7
         )
 
