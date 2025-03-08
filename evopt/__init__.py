@@ -4,3 +4,4 @@ from .directory_manager import *
 from .optimiser import *
 from .utils import *
 from .plotting import *
+from .slurm_executor import *

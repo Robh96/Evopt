@@ -79,7 +79,7 @@ class SlurmJobManager:
     
     @staticmethod
     def submit_job(script_content, job_name, cpus_per_task, output_dir, 
-                  memory_mb=None, time_minutes=60):
+                  memory_gb=None, wall_time="01:00:00", qos=None):
         """Submit a job to SLURM scheduler"""
         # Create a temporary script file
         fd, path = tempfile.mkstemp(suffix='.sh')
@@ -88,9 +88,11 @@ class SlurmJobManager:
                 f.write("#!/bin/bash\n")
                 f.write(f"#SBATCH --job-name={job_name}\n")
                 f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
-                if memory_mb:
-                    f.write(f"#SBATCH --mem={memory_mb}M\n")
-                f.write(f"#SBATCH --time={time_minutes}\n")
+                if memory_gb:
+                    f.write(f"#SBATCH --mem={memory_gb}G\n")
+                f.write(f"#SBATCH --time={wall_time}\n")
+                if qos:
+                    f.write(f"#SBATCH --qos={qos}\n")
                 f.write(f"#SBATCH --output={output_dir}/slurm_%j.out\n")
                 f.write(f"#SBATCH --error={output_dir}/slurm_%j.err\n")
                 f.write(f"\n")
@@ -125,17 +127,21 @@ class SlurmJobManager:
 class ProcessPoolManager:
     """Manages process pools across different execution environments"""
     
-    def __init__(self, max_workers=None, cores_per_worker=1, memory_mb_per_worker=None):
+    def __init__(
+            self,
+            max_workers=1,
+            cores_per_worker=1,
+            memory_gb_per_worker=4,
+            wall_time: str="01:00:00", # Default walltime (hh:mm:ss) for SLURM jobs
+            qos=None,  # Quality of Service for SLURM jobs
+            ):
+        
         self.env = detect_environment()
         self.cores_per_worker = cores_per_worker
-        self.memory_mb_per_worker = memory_mb_per_worker
-        
-        # Determine max workers based on available CPUs and cores per worker
-        available_cpus = get_available_cpus()
-        if max_workers is None:
-            max_workers = max(1, available_cpus // cores_per_worker)
-        self.max_workers = min(max_workers, available_cpus // cores_per_worker)
-        
+        self.memory_gb_per_worker = memory_gb_per_worker
+        self.wall_time = wall_time
+        self.qos = qos
+        self.max_workers = max_workers 
         self._executor = None
         self._file_lock = mp.Lock()  # For synchronizing file access
         self._job_ids = []  # For tracking submitted HPC jobs
@@ -145,17 +151,31 @@ class ProcessPoolManager:
         if self._executor is not None:
             return self._executor
         
-        # If only one worker or single core per worker, use standard ProcessPoolExecutor
-        if self.max_workers <= 1 or (self.cores_per_worker == 1 and self.env == ExecutionEnvironment.LOCAL):
+        if self.max_workers <= 1:
+            return None  # No need for executor if only one worker
+        
+        # SLURM-specific environment variables
+        if self.env == ExecutionEnvironment.SLURM:
+            try:
+                from .slurm_executor import SlurmExecutor
+                self._executor = SlurmExecutor(
+                    max_workers=self.max_workers,
+                    cores_per_worker=self.cores_per_worker,
+                    memory_gb_per_worker=self.memory_gb_per_worker,
+                    wall_time=self.wall_time,
+                    qos=self.qos
+                )
+                return self._executor
+            except ImportError:
+                print("Warning: SLURM environment detected but SLURM executor not available.")
+                print("Falling back to local processing pool.")
+        if self.env == ExecutionEnvironment.LOCAL:
             self._executor = concurrent.futures.ProcessPoolExecutor(
                 max_workers=self.max_workers,
                 mp_context=mp.get_context("spawn")
             )
             return self._executor
-        
-        # For SLURM with multiple cores per worker, we'll implement custom job submission
-        # This would need a custom executor implementation
-        return None  # For now, no executor means fall back to serial processing
+        return None  # No executor means fall back to serial processing
     
     def cleanup(self):
         """Clean up resources"""

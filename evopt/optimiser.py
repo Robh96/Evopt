@@ -16,7 +16,13 @@ def optimise(
     num_epochs: int = None,
     target_dict: dict = None,
     max_workers: int = 1,
-    rand_seed: int = None
+    rand_seed: int = None,
+
+    # HPC-specific parameters
+    hpc_cores_per_worker: int = 1, 
+    hpc_memory_gb_per_worker: int = 4,
+    hpc_wall_time: str = "1:00:00",
+    hpc_qos: str = None
 ):
     """
     Top-level function to run the optimization.
@@ -36,6 +42,12 @@ def optimise(
         verbose (bool, optional): Whether to print detailed information during optimisation. Defaults to False.
         n_epochs (int, optional): The number of epochs to run the optimisation for. If None, the optimisation runs until the termination criteria is met. Defaults to None.
         if target_dict provided, then the optimisation will be done to minimize the error between the target_dict and the output of the evaluator function. Defaults to None.
+
+        # HPC parameters
+        hpc_cores_per_worker (int): Number of CPU cores to allocate per worker (SLURM job)
+        hpc_memory_gb_per_worker (int): Memory in GB to allocate per worker
+        hpc_wall_time (str): Wall time limit for each SLURM job, must be in the format "DD:HH:MM:SS" or "HH:MM:SS"
+        hpc_qos (str): Quality of Service for SLURM jobs
     """
 
     directory_manager = DirectoryManager(
@@ -58,7 +70,11 @@ def optimise(
         start_epoch=start_epoch,
         target_dict=target_dict,
         verbose=verbose,
-        max_workers=int(max_workers)
+        max_workers=int(max_workers),
+        cores_per_worker=hpc_cores_per_worker,
+        memory_gb_per_worker=hpc_memory_gb_per_worker,
+        wall_time = hpc_wall_time,
+        qos=hpc_qos
     )
     try:
         with directory_manager.logger:

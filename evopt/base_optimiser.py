@@ -300,8 +300,6 @@ class BaseOptimiser(ABC):
 		target_dict,
 		verbose) = args
 		
-		# Add deterministic seed based on solution ID
-		# This ensures reproducibility regardless of which process runs which solution
 		np.random.seed(1000 + sol_id)  # Deterministic unique seed per solution
 
 
@@ -357,12 +355,9 @@ class BaseOptimiser(ABC):
 		"""
 		# Rescale solutions
 		rescaled_solutions = [self.rescale_params(sol) for sol in solutions]
-		
-		# Pickle the evaluator function to handle complex cases (lambdas, notebook functions, etc.)
 		pickled_evaluator = cloudpickle.dumps(self.evaluator)
-
-		# Create arguments list for each solution with ALL necessary parameters
 		solution_args = []
+
 		for i, params in enumerate(rescaled_solutions):
 			solution_folder = self.dir_manager.create_solution_folder(self.current_epoch, i)
 			args = (
