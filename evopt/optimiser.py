@@ -1,5 +1,4 @@
 import os
-import time
 from typing import Callable
 from .cma_optimiser import CmaesOptimiser
 from .directory_manager import DirectoryManager
