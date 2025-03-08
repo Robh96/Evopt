@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.130',
+    version='0.131',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
@@ -13,6 +13,7 @@ setup(
         'plotly>=5.24.1',
         'matplotlib>=3.10.0',
     ],
+    include_package_data=True,
     author='Roberto Hart-Villamil',
     author_email='rob.hartvillamil@gmail.com',
     description='User Friendly Black-Box Numerical Optimisation Package in Python.',
