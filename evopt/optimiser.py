@@ -42,7 +42,7 @@ def optimise(
         verbose (bool, optional): Whether to print detailed information during optimisation. Defaults to False.
         n_epochs (int, optional): The number of epochs to run the optimisation for. If None, the optimisation runs until the termination criteria is met. Defaults to None.
         if target_dict provided, then the optimisation will be done to minimize the error between the target_dict and the output of the evaluator function. Defaults to None.
-
+        
         # HPC parameters
         hpc_cores_per_worker (int): Number of CPU cores to allocate per worker (SLURM job)
         hpc_memory_gb_per_worker (int): Memory in GB to allocate per worker

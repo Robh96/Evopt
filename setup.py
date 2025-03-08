@@ -2,16 +2,20 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.122',
+    version='0.130',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
         'pandas>=2.2.3',
         'cma>=4.0.0',
+        'cloudpickle>=3.1.1',
+        'scipy>=1.15.0',
+        'plotly>=5.24.1',
+        'matplotlib>=3.10.0',
     ],
     author='Roberto Hart-Villamil',
     author_email='rob.hartvillamil@gmail.com',
-    description='Simple evolutionary optimisation package in Python.',
+    description='User Friendly Black-Box Numerical Optimisation Package in Python.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/Robh96/Evopt',

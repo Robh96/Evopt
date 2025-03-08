@@ -340,7 +340,7 @@ For HPCs using the SLURM scheduler, you can initiate an optimisation study by su
 #SBATCH --mem=4096M             # Memory limit (M for MB, G for GB)
 
 # Load the necessary module
-module load python/3.9
+module load python/3.13.1
 
 # Activate virtual environment containg evopt
 source myenv/bin/activate
