@@ -320,40 +320,37 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 
 
 ## HPC compatibility
-`Evopt` can be run from several HPC environments such as SLURM and OMP.
+`evopt` can be run from several HPC environments such as SLURM and OMP.
+First you'll need to create a virtual environment where you can `pip install evopt` and required dependencies. You can skip this step if `evopt` is already installed as an HPC module, in which case simple load it in.
+
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name=evopt
-#SBATCH --output=evopt_%j.out
-#SBATCH --error=evopt_%j.err
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=8G
+#SBATCH --job-name=evopt        # Job name
+#SBATCH --output=evopt_%j.out   # Output file
+#SBATCH --error=evopt_%j.err    # Error file
+#SBATCH --time=01:00:00         # Wall time limit HH:MM:SS
+#SBATCH --ntasks=1              # number CPUs
+#SBATCH --mem=4096M             # Memory limit (M for MB, G for GB)
 
-# Load Python module if needed
+# Load the necessary module
 module load python/3.9
 
-# Define job directory using SLURM job ID
-export JOB_DIR="/scratch/$USER/evopt_jobs/job_${SLURM_JOB_ID}"
-mkdir -p $JOB_DIR
+# Activate virtual environment containg evopt
+source myenv/bin/activate
 
 # Run the optimization script
-python run_optimization.py
+python example_script.py
 ```
 
-**Where your run_optimization.py python script looks something like:**
+**Where your example_script.py python script looks something like:**
 <br>
 ```python
 import os
 import numpy as np
 from evopt import optimise
 
-# Get SLURM environment variables
-job_id = os.environ.get('SLURM_JOB_ID', '0')
-cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '1'))
-job_dir = os.environ.get('JOB_DIR', './results')
-
-print(f"Starting optimization with {cpus} CPUs in {job_dir}")
+my_dir = r"path/to/my/dir"
 
 # Define example problem (Ackley function)
 params = {
@@ -361,22 +358,23 @@ params = {
     'y': (-5, 5)
 }
 
-def evaluator(param_dict):
+def my_function(param_dict):
     x = param_dict['x']
     y = param_dict['y']
-    # Ackley function
-    return -20*np.exp(-0.2*np.sqrt(0.5*(x**2 + y**2))) - \
-           np.exp(0.5*(np.cos(2*np.pi*x) + np.cos(2*np.pi*y))) + 20 + np.e
+    return x+y
 
 # Run optimization
 params = optimise(
-    params=params,
-    evaluator=evaluator,
-    base_dir=job_dir,
-    max_workers=cpus,
-    batch_size=cpus*2,  # 2 evaluations per CPU
-    rand_seed=int(job_id) if job_id.isdigit() else None,
-    verbose=True
+    params = params,
+    evaluator = my_function,
+    base_dir = my_dir,
+    batch_size = 32, # ideally divisible by max_workers
+    num_epochs = 20,
+    max_workers = 32,
+    hpc_cores_per_worker = 10,
+    hpc_memory_gb_per_worker = 4,
+    hpc_wall_time = "24:00:00" # HH:MM:SS,
+    hpc_qos = "short" # this will be specific to your HPC
 )
 ```
 
