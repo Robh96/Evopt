@@ -25,7 +25,7 @@ class BaseOptimiser(ABC):
 		verbose: bool = True,
 		n_epochs: int = None,
 		target_dict: dict = None,
-		num_processes=None,
+		max_workers=None,
 	):
 		"""
 		Initialise the BaseOptimiser.
@@ -59,13 +59,13 @@ class BaseOptimiser(ABC):
 		self.init_sigmas = self.get_init_sigmas
 		self.norm_bounds = self.get_norm_bounds
 		self.init_params = self.get_init_params
-		self.num_processes = num_processes if num_processes else mp.cpu_count()
+		self.max_workers = max_workers if max_workers else mp.cpu_count()
 		self._file_lock = mp.Lock()  # For CSV file access synchronization
 		
 		self._executor = None
-		if self.num_processes > 1:
+		if self.max_workers > 1:
 			self._executor = concurrent.futures.ProcessPoolExecutor(
-				max_workers=min(self.num_processes, mp.cpu_count())
+				max_workers=min(self.max_workers, mp.cpu_count())
 		)
 
 		self._mean_error_history = []

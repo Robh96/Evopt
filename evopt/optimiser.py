@@ -14,7 +14,7 @@ def optimise(
     batch_size: int = 16,
     start_epoch: int = None,
     verbose: bool = True,
-    n_epochs: int = None,
+    num_epochs: int = None,
     target_dict: dict = None,
     num_processes: int = 1,
     rand_seed: int = None
@@ -51,7 +51,7 @@ def optimise(
     optimizer = optimizer_class(
         parameters=params,
         evaluator=evaluator,
-        n_epochs=n_epochs,
+        n_epochs=num_epochs,
         batch_size=batch_size,
         directory_manager=directory_manager,
         sigma_threshold=sigma_threshold,
