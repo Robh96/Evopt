@@ -318,6 +318,68 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 </div>
 <br>
 
+
+## HPC compatibility
+`Evopt` can be run from several HPC environments such as SLURM and OMP.
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=evopt
+#SBATCH --output=evopt_%j.out
+#SBATCH --error=evopt_%j.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=8G
+
+# Load Python module if needed
+module load python/3.9
+
+# Define job directory using SLURM job ID
+export JOB_DIR="/scratch/$USER/evopt_jobs/job_${SLURM_JOB_ID}"
+mkdir -p $JOB_DIR
+
+# Run the optimization script
+python run_optimization.py
+```
+
+**Where your run_optimization.py python script looks something like:**
+<br>
+```python
+import os
+import numpy as np
+from evopt import optimise
+
+# Get SLURM environment variables
+job_id = os.environ.get('SLURM_JOB_ID', '0')
+cpus = int(os.environ.get('SLURM_CPUS_PER_TASK', '1'))
+job_dir = os.environ.get('JOB_DIR', './results')
+
+print(f"Starting optimization with {cpus} CPUs in {job_dir}")
+
+# Define example problem (Ackley function)
+params = {
+    'x': (-5, 5),
+    'y': (-5, 5)
+}
+
+def evaluator(param_dict):
+    x = param_dict['x']
+    y = param_dict['y']
+    # Ackley function
+    return -20*np.exp(-0.2*np.sqrt(0.5*(x**2 + y**2))) - \
+           np.exp(0.5*(np.cos(2*np.pi*x) + np.cos(2*np.pi*y))) + 20 + np.e
+
+# Run optimization
+params = optimise(
+    params=params,
+    evaluator=evaluator,
+    base_dir=job_dir,
+    max_workers=cpus,
+    batch_size=cpus*2,  # 2 evaluations per CPU
+    rand_seed=int(job_id) if job_id.isdigit() else None,
+    verbose=True
+)
+```
+
 ## Citing
 If you publish research making use of this library, we encourage you to cite this repository:
 > Hart-Villamil, R. (2024). Evopt, simple but powerful gradient-free numerical optimisation.
