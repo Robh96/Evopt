@@ -116,7 +116,7 @@ print(optimised_params)
 ```
 
 
-## Optimising for targets
+## Multi-objective target optimisation
 Sometimes when using black-box functions like simulations, your result may be a specific variable such as mean pressure, temperature, or velocity. With `evopt` it is possible to specify a target value for the optimiser to reach, and in cases where targets are in conflict, you can specify `hard` or `soft` target preference such that the optimiser can weigh target priority.
 
 For example:
@@ -143,8 +143,7 @@ params = {
     "x2": (-5, 5),
 }
 
-optimised_params = evopt.optimise(params, example_eval, batch_size = 64,            
-...                     target_dict=target_dict)
+optimised_params = evopt.optimise(params, example_eval, target_dict=target_dict)
 ```
 
 and corresponding output:
@@ -237,7 +236,7 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 *   `verbose (bool, optional)`: Whether to print detailed information about the optimization process to the console. If `True`, the optimization will print information about each epoch and solution. Defaults to `True`.
 *   `n_epochs (int, optional)`: The maximum number of epochs to run the optimization for. If specified, the optimization will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimization will run until the convergence criteria is met. Defaults to `None`.
 
-## Plotting
+## Plotting convergence
 
 `Evopt` provides an overview of the convergence for each parameter over the epochs, through the `evopt.Plotting.plot_epochs()` method.
 
@@ -247,45 +246,65 @@ evolve_dir = r"path\to\base\dir\evolve_0"
 evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
 ```
 Output:
-<div style="text-align: center;"> <figure> <img src="images/mean_error_vs_epoch.png" alt="Error convergence." width="400" style="display: block; margin: 0 auto;"> <figcaption style="text-align: center;">Error convergence.</figcaption> </figure> </div>
-<div style="text-align: center;"> <figure> <img src="images/mean_x1_vs_epoch.png" alt="Parameter convergence." width="400" style="display: block; margin: 0 auto;"> <figcaption style="text-align: center;">Parameter convergence.</figcaption> </figure> </div> <div style="text-align: center;"> <figure> <img src="images/mean_target1_vs_epoch.png" alt="Target convergence." width="400" style="display: block; margin: 0 auto;"> <figcaption style="text-align: center;">Target convergence.</figcaption> </figure> </div>
-<div style="text-align: center;"> <figure> <img src="images/convergence_plot.png" alt="Step size convergence." width="400" style="display: block; margin: 0 auto;"> <figcaption style="text-align: center;">Step size convergence.</figcaption> </figure> </div>
+<div align="center">
+  <img src="images/convergence_plots.png" alt="Error convergence." width="800">
+  <br>
+  <em>Convergence plots displaying error, parameters, targets, and normalised standard-deviation of the solution (normalised sigma) as a function of the number of epochs.</em>
+</div>
 
-Note that while this produces a convergence plot for each parameter and target, for simplicity only one of each type was shown here.
+## Plotting variables
 
-`Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the variable from the results.csv file that you wish to plot.
+`Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the `Evolve_i` file directory and the columns of the results.csv file you want to plot. By default the figures will save to Evolve_i\figures.
 
 1-D example (simple xy plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
 ```
 Output:
-<div style="text-align: center;"> <figure> <img src="images/x1_vs_error.png" alt="Parameter versus error." width="400" style="display: block; margin: 0 auto;"> <figcaption style="text-align: center;">Parameter versus error.</figcaption> </figure> </div>
+<div align="center">
+  <img src="images/x1_vs_error.png" alt="Parameter versus error." width="400">
+  <br>
+  <em>Scatter plot showing parameter versus error. The axis handle is returned to the user for any modifications.</em>
+</div>
+
 
 2-D example (Voronoi plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", cval="error")
 ```
 Output:
-<div style="text-align: center;"> <figure> <img src="images/x1_vs_x2_vs_error_Voronoi.png" alt="Parameter versus error Voronoi plot." width="400" style="display: block; margin: 0 auto;"> <figcaption>Parameter versus error Voronoi plot.</figcaption> </figure> </div>
+<div align="center">
+  <img src="images/x1_vs_x2_vs_error_Voronoi.png" alt="Parameters versus error Voronoi plot." width="400">
+  <br>
+  <em>2-D Voronoi plot illustrating parameters versus error. Each cell contains a single solution, with cell line is equidistant between points on either size. In this sense the plot conveys the exploration/explotation nature of the evolutionary algorithm as it hones in on the global optimum. The axis handle is returned to the user for any modifications.
+  </em>
+</div>
+
 
 3-D example (Interactive html surface plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2")
 ```
 Output:
-<div style="text-align: center;"> <figure> <img src="images/x1_vs_x2_vs_target2_surface.png" width="400" style="display: block; margin: 0 auto;"> <figcaption>Parameters versus target.</figcaption> </figure> </div>
+<div align="center">
+  <img src="images/x1_vs_x2_vs_target2_surface.png" alt="Parameters versus target 3-D surface plot." width="400">
+  <br>
+  <em>3-D surface plot of the parameters versus the target values, illustrating the calibrated parameter combination. The axis handle is returned to the user for any modifications.
+  </em>
+</div>
+
 
 4-D example (interactive html surface plot)
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", cval="epoch")
 ```
 Output:
-<div style="text-align: center;"> <figure> <img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" width="400" style="display: block; margin: 0 auto;"> <figcaption>Parameters versus error coloured by epoch.</figcaption> </figure> </div> 
-
-
-
-All you need to do is specify the evolve file directory and the columns of the results file you want to plot.
+<div align="center">
+  <img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="Parameters versus error coloured by epoch 3-D surface plot." width="400">
+  <br>
+  <em>3-D surface plot of the parameters versus the error values, coloured by epoch. As is the nature of convergent optimisation, the latest epochs show the lowest error values.
+  </em>
+</div>
 
 
 ## Citing
