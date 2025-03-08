@@ -4,7 +4,174 @@ import pandas as pd
 import os
 import sys
 from datetime import datetime
+import multiprocessing as mp
+import concurrent.futures
+import subprocess
+import tempfile
+import time
+from contextlib import contextmanager
+from enum import Enum, auto
 
+# Set multiprocessing start method once during import
+try:
+    mp.set_start_method('spawn', force=True)
+except RuntimeError:
+    # Method already set
+    pass
+
+class ExecutionEnvironment(Enum):
+    """Enum representing different execution environments"""
+    LOCAL = auto()
+    SLURM = auto()
+    PBS = auto()
+    LSF = auto()
+    
+def detect_environment():
+    """Detect the execution environment"""
+    if 'SLURM_JOB_ID' in os.environ:
+        return ExecutionEnvironment.SLURM
+    elif 'PBS_JOBID' in os.environ:
+        return ExecutionEnvironment.PBS
+    elif 'LSB_JOBID' in os.environ:
+        return ExecutionEnvironment.LSF
+    return ExecutionEnvironment.LOCAL
+
+def get_available_cpus():
+    """Get number of CPUs available, accounting for HPC environment variables"""
+    env = detect_environment()
+    
+    # SLURM-specific environment variables
+    if env == ExecutionEnvironment.SLURM:
+        if 'SLURM_CPUS_PER_TASK' in os.environ:
+            return int(os.environ['SLURM_CPUS_PER_TASK'])
+        elif 'SLURM_NTASKS' in os.environ:
+            return int(os.environ['SLURM_NTASKS'])
+        elif 'SLURM_JOB_CPUS_PER_NODE' in os.environ:
+            # This might be complex like "16(x2),12" - take the first number
+            cpus_str = os.environ['SLURM_JOB_CPUS_PER_NODE'].split('(')[0]
+            return int(cpus_str)
+    
+    # PBS-specific environment variables
+    elif env == ExecutionEnvironment.PBS:
+        if 'PBS_NP' in os.environ:
+            return int(os.environ['PBS_NP'])
+    
+    # Generic OpenMP environment variable
+    if 'OMP_NUM_THREADS' in os.environ:
+        return int(os.environ['OMP_NUM_THREADS'])
+    
+    # Fall back to CPU count if no environment variables are set
+    return mp.cpu_count()
+
+@contextmanager
+def working_directory(path):
+    """A context manager for changing working directory temporarily"""
+    prev_cwd = os.getcwd()
+    os.makedirs(path, exist_ok=True)
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(prev_cwd)
+
+class SlurmJobManager:
+    """Manages SLURM job submissions"""
+    
+    @staticmethod
+    def submit_job(script_content, job_name, cpus_per_task, output_dir, 
+                  memory_mb=None, time_minutes=60):
+        """Submit a job to SLURM scheduler"""
+        # Create a temporary script file
+        fd, path = tempfile.mkstemp(suffix='.sh')
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write("#!/bin/bash\n")
+                f.write(f"#SBATCH --job-name={job_name}\n")
+                f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
+                if memory_mb:
+                    f.write(f"#SBATCH --mem={memory_mb}M\n")
+                f.write(f"#SBATCH --time={time_minutes}\n")
+                f.write(f"#SBATCH --output={output_dir}/slurm_%j.out\n")
+                f.write(f"#SBATCH --error={output_dir}/slurm_%j.err\n")
+                f.write(f"\n")
+                f.write(f"export OMP_NUM_THREADS={cpus_per_task}\n")
+                f.write(f"{script_content}\n")
+            
+            # Submit the job
+            cmd = ["sbatch", path]
+            result = subprocess.check_output(cmd, text=True)
+            # Parse job ID from output
+            job_id = int(result.strip().split()[-1])
+            return job_id
+        finally:
+            os.unlink(path)  # Clean up temp file
+    
+    @staticmethod
+    def wait_for_job(job_id, check_interval=10):
+        """Wait for a SLURM job to complete"""
+        while True:
+            cmd = ["squeue", "-j", str(job_id), "-h"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            # If no output, job is done
+            if not result.stdout.strip():
+                return
+            time.sleep(check_interval)
+    
+    @staticmethod
+    def cancel_job(job_id):
+        """Cancel a SLURM job"""
+        subprocess.run(["scancel", str(job_id)], check=False)
+
+class ProcessPoolManager:
+    """Manages process pools across different execution environments"""
+    
+    def __init__(self, max_workers=None, cores_per_worker=1, memory_mb_per_worker=None):
+        self.env = detect_environment()
+        self.cores_per_worker = cores_per_worker
+        self.memory_mb_per_worker = memory_mb_per_worker
+        
+        # Determine max workers based on available CPUs and cores per worker
+        available_cpus = get_available_cpus()
+        if max_workers is None:
+            max_workers = max(1, available_cpus // cores_per_worker)
+        self.max_workers = min(max_workers, available_cpus // cores_per_worker)
+        
+        self._executor = None
+        self._file_lock = mp.Lock()  # For synchronizing file access
+        self._job_ids = []  # For tracking submitted HPC jobs
+    
+    def initialize(self):
+        """Initialize the appropriate executor based on environment"""
+        if self._executor is not None:
+            return self._executor
+        
+        # If only one worker or single core per worker, use standard ProcessPoolExecutor
+        if self.max_workers <= 1 or (self.cores_per_worker == 1 and self.env == ExecutionEnvironment.LOCAL):
+            self._executor = concurrent.futures.ProcessPoolExecutor(
+                max_workers=self.max_workers,
+                mp_context=mp.get_context("spawn")
+            )
+            return self._executor
+        
+        # For SLURM with multiple cores per worker, we'll implement custom job submission
+        # This would need a custom executor implementation
+        return None  # For now, no executor means fall back to serial processing
+    
+    def cleanup(self):
+        """Clean up resources"""
+        if self._executor:
+            self._executor.shutdown(wait=False)
+            self._executor = None
+        
+        # Cancel any pending SLURM jobs
+        for job_id in self._job_ids:
+            if self.env == ExecutionEnvironment.SLURM:
+                SlurmJobManager.cancel_job(job_id)
+        self._job_ids = []
+    
+    def __del__(self):
+        """Ensure resources are cleaned up"""
+        self.cleanup()
 
 def convert_to_native(value):
     """

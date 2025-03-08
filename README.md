@@ -234,7 +234,9 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 *   `batch_size (int, optional)`: The number of solutions to evaluate in each epoch (generation) of the CMA-ES algorithm. A larger batch size can speed up the optimization but may require more computational resources. Defaults to `16`.
 *   `start_epoch (int, optional)`: The epoch number to start from. This is useful for resuming an interrupted optimization run from a checkpoint. Defaults to `None`.
 *   `verbose (bool, optional)`: Whether to print detailed information about the optimization process to the console. If `True`, the optimization will print information about each epoch and solution. Defaults to `True`.
-*   `n_epochs (int, optional)`: The maximum number of epochs to run the optimization for. If specified, the optimization will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimization will run until the convergence criteria is met. Defaults to `None`.
+*   `num_epochs (int, optional)`: The maximum number of epochs to run the optimization for. If specified, the optimization will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimization will run until the convergence criteria is met. Defaults to `None`.
+*   `max_workers (int, optional)`: The number of multi-processing workers to operate concurrently. Defaults to 1. Each worker operates on a different processor.
+
 
 ## Plotting convergence
 
@@ -245,67 +247,76 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 evolve_dir = r"path\to\base\dir\evolve_0" 
 evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
 ```
-Output:
+**Output:**
+
 <div align="center">
   <img src="images/convergence_plots.png" alt="Error convergence." width="800">
   <br>
   <em>Convergence plots displaying error, parameters, targets, and normalised standard-deviation of the solution (normalised sigma) as a function of the number of epochs.</em>
 </div>
+<br>
 
 ## Plotting variables
 
-`Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the `Evolve_i` file directory and the columns of the results.csv file you want to plot. By default the figures will save to Evolve_i\figures.
+`Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the `Evolve_i` file directory and the columns of the results.csv file you want to plot. By default the figures will save to `Evolve_i\figures`.
 
-1-D example (simple xy plot):
+
+### 1-D example (simple xy plot):
+
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
 ```
-Output:
+**Output:**
+
 <div align="center">
   <img src="images/x1_vs_error.png" alt="Parameter versus error." width="400">
   <br>
   <em>Scatter plot showing parameter versus error. The axis handle is returned to the user for any modifications.</em>
 </div>
+<br>
 
+### 2-D example (Voronoi plot):
 
-2-D example (Voronoi plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", cval="error")
 ```
-Output:
+**Output:**
+
 <div align="center">
   <img src="images/x1_vs_x2_vs_error_Voronoi.png" alt="Parameters versus error Voronoi plot." width="400">
   <br>
   <em>2-D Voronoi plot illustrating parameters versus error. Each cell contains a single solution, with cell line is equidistant between points on either size. In this sense the plot conveys the exploration/explotation nature of the evolutionary algorithm as it hones in on the global optimum. The axis handle is returned to the user for any modifications.
   </em>
 </div>
+<br>
 
-
-3-D example (Interactive html surface plot):
+### 3-D example (Interactive html surface plot):
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2")
 ```
-Output:
+**Output:**
+
 <div align="center">
   <img src="images/x1_vs_x2_vs_target2_surface.png" alt="Parameters versus target 3-D surface plot." width="400">
   <br>
   <em>3-D surface plot of the parameters versus the target values, illustrating the calibrated parameter combination. The axis handle is returned to the user for any modifications.
   </em>
 </div>
+<br>
 
-
-4-D example (interactive html surface plot)
+### 4-D example (interactive html surface plot)
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", cval="epoch")
 ```
-Output:
+**Output:**
+
 <div align="center">
   <img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="Parameters versus error coloured by epoch 3-D surface plot." width="400">
   <br>
   <em>3-D surface plot of the parameters versus the error values, coloured by epoch. As is the nature of convergent optimisation, the latest epochs show the lowest error values.
   </em>
 </div>
-
+<br>
 
 ## Citing
 If you publish research making use of this library, we encourage you to cite this repository:

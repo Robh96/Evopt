@@ -1,13 +1,11 @@
 import numpy as np
 import cloudpickle
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
 import os
-import multiprocessing as mp
-mp.set_start_method('spawn', force=True)
 import concurrent.futures
+import multiprocessing as mp
 from .directory_manager import DirectoryManager
-from .utils import write_to_csv, format_array, extend_dict
+from .utils import write_to_csv, format_array, extend_dict, ProcessPoolManager, working_directory
 
 class BaseOptimiser(ABC):
 	"""
@@ -25,7 +23,9 @@ class BaseOptimiser(ABC):
 		verbose: bool = True,
 		n_epochs: int = None,
 		target_dict: dict = None,
-		max_workers=None,
+		max_workers: int = 1,
+		cores_per_worker: int = 1,
+		**kwargs
 	):
 		"""
 		Initialise the BaseOptimiser.
@@ -59,13 +59,12 @@ class BaseOptimiser(ABC):
 		self.init_sigmas = self.get_init_sigmas
 		self.norm_bounds = self.get_norm_bounds
 		self.init_params = self.get_init_params
-		self.max_workers = max_workers if max_workers else mp.cpu_count()
+		self.max_workers = max_workers
 		self._file_lock = mp.Lock()  # For CSV file access synchronization
 		
-		self._executor = None
-		if self.max_workers > 1:
-			self._executor = concurrent.futures.ProcessPoolExecutor(
-				max_workers=min(self.max_workers, mp.cpu_count())
+		self.process_manager = ProcessPoolManager(
+			max_workers=max_workers, 
+			cores_per_worker=cores_per_worker
 		)
 
 		self._mean_error_history = []
@@ -272,26 +271,6 @@ class BaseOptimiser(ABC):
 			print(f"Epoch {self.current_epoch} | Normalised Sigma parameters: [{format_array(norm_sigmas)}]")
 
 	@classmethod
-	def working_directory(cls, path: str):
-		"""
-		A context manager which changes the working directory to the given
-		path, and then changes it back to its previous value on exit.
-
-		Args:
-			path (str): The path to change the working directory to.
-		"""
-		@contextmanager
-		def _change_directory_context(path):
-			prev_cwd = os.getcwd()
-			os.makedirs(path, exist_ok=True)
-			os.chdir(path)
-			try:
-				yield
-			finally:
-				os.chdir(prev_cwd)
-		return _change_directory_context(path)
-
-	@classmethod
 	def _evaluate_solution_worker(cls, args):
 		"""
 		Class method for evaluating a solution that can be pickled and sent to worker processes.
@@ -321,6 +300,11 @@ class BaseOptimiser(ABC):
 		target_dict,
 		verbose) = args
 		
+		# Add deterministic seed based on solution ID
+		# This ensures reproducibility regardless of which process runs which solution
+		np.random.seed(1000 + sol_id)  # Deterministic unique seed per solution
+
+
 		# Unpickle the evaluator function
 		try:
 			evaluator_func = cloudpickle.loads(pickled_evaluator)
@@ -332,7 +316,7 @@ class BaseOptimiser(ABC):
 		param_dict = dict(zip(param_names, params))
 		result_dict = None
 		try:
-			with cls.working_directory(solution_folder):
+			with working_directory(solution_folder):
 				error = evaluator_func(param_dict)
 
 			# Process target dictionary if provided
@@ -393,40 +377,44 @@ class BaseOptimiser(ABC):
 			solution_args.append(args)
 		
 		# Process solutions in parallel or serial based on number of processes
-		errors = []
-		observed_dict = {}
 		all_results = []
 		
-		# Use serial processing if num_processes is 1
-		if self.num_processes <= 1:
+		# Use serial processing if max_workers is 1
+		executor = self.process_manager.initialize() if self.max_workers > 1 else None
+	
+		if executor is None:
+			# Serial processing
 			for args in solution_args:
 				result = self._evaluate_solution_worker(args)
 				all_results.append(result)
 		else:
-			try:
-				# Submit tasks
-				future_to_sol_id = {
-					self._executor.submit(self._evaluate_solution_worker, args): args[0]
-					for args in solution_args
-				}
-				for future in concurrent.futures.as_completed(future_to_sol_id):
-					try:
-						result = future.result(timeout=300)
-						all_results.append(result)
-					except concurrent.futures.TimeoutError:
-						sol_id = future_to_sol_id[future]
-						print(f"Solution {sol_id} timed out after 5 minutes")
-					except Exception as exc:
-						sol_id = future_to_sol_id[future]
-						print(f"Solution {sol_id} generated an exception: {exc}")
-						# Continue with other solutions
-			except Exception as e:
-				# Fall back to serial processing if parallel processing fails
-				print(f"Warning: Parallel processing failed ({e}), falling back to serial processing")
-				all_results = []
-				for args in solution_args:
-					result = self._evaluate_solution_worker(args)
-					all_results.append(result)
+		
+			# Submit all tasks at once
+			futures = [executor.submit(self._evaluate_solution_worker, args) 
+					for args in solution_args]
+			
+			# Create a placeholder for results in the correct order
+			results = [None] * len(solution_args)
+			missing_indices = []
+			
+			# Process results in the SAME ORDER as they were submitted
+			# This ensures deterministic behavior between serial and parallel runs
+			for i, future in enumerate(futures):
+				try:
+					# Store result at its corresponding index position
+					results[i] = future.result(timeout=300)
+				except concurrent.futures.TimeoutError:
+					print(f"Solution {solution_args[i][0]} timed out after 5 minutes")
+					missing_indices.append(i)
+				except Exception as exc:
+					print(f"Solution {solution_args[i][0]} generated an exception: {exc}")
+					missing_indices.append(i)
+			
+			# Add all non-None results to all_results in order
+			all_results = [r for r in results if r is not None]
+
+		errors = []
+		observed_dict = {}
 
 		# Process all results in the main process
 		with self._file_lock:
@@ -493,15 +481,12 @@ class BaseOptimiser(ABC):
 
 	def __del__(self):
 		"""Clean up resources when object is deleted."""
-		if hasattr(self, '_executor') and self._executor:
-			self._executor.shutdown(wait=False)
-			self._executor = None
-        
+		self.cleanup()
+		
 	def cleanup(self):
 		"""Explicitly clean up resources."""
-		if hasattr(self, '_executor') and self._executor:
-			self._executor.shutdown(wait=False)
-			self._executor = None
+		if hasattr(self, 'process_manager'):
+			self.process_manager.cleanup()
 
 	def check_termination(self):
 		"""

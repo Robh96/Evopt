@@ -16,7 +16,7 @@ def optimise(
     verbose: bool = True,
     num_epochs: int = None,
     target_dict: dict = None,
-    num_processes: int = 1,
+    max_workers: int = 1,
     rand_seed: int = None
 ):
     """
@@ -59,7 +59,7 @@ def optimise(
         start_epoch=start_epoch,
         target_dict=target_dict,
         verbose=verbose,
-        num_processes=int(num_processes)
+        max_workers=int(max_workers)
     )
     try:
         with directory_manager.logger:
