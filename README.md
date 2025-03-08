@@ -235,6 +235,12 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 *   `verbose (bool, optional)`: Whether to print detailed information about the optimisation process to the console. If `True`, the optimisation will print information about each epoch and solution. Defaults to `True`.
 *   `num_epochs (int, optional)`: The maximum number of epochs to run the optimisation for. If specified, the optimisation will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimisation will run until the convergence criteria is met. Defaults to `None`.
 *   `max_workers (int, optional)`: The number of multi-processing workers to operate concurrently. Defaults to 1. Each worker operates on a different processor.
+*   `rand_seed (int, optional)`:
+*   `hpc_cores_per_worker (int, optional)`: Number of CPU cores to allocate per HPC worker.
+*   `hpc_memory_gb_per_worker (int)`: Memory in GB to allocate per worker on the HPC.
+*   `hpc_wall_time (str)`: Wall time limit for each HPC worker, must be in the format "DD:HH:MM:SS" or "HH:MM:SS".
+*   `hpc_qos (str)`: Quality of Service for HPC jobs.
+
 
 
 ## Plotting convergence
@@ -322,7 +328,8 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 `evopt` can be run from several HPC environments such as SLURM and OMP.
 First you'll need to create a virtual environment where you can `pip install evopt` and required dependencies. You can skip this step if `evopt` is already installed as an HPC module, in which case simple load it in.
 
-
+For HPCs using the SLURM scheduler, you can initiate an optimisation study by submitting a master bash script to SLURM that runs a python script that calls the `evopt.optimise()` method. The OS environment is detected automatically and a number of workers in parallel will submit a SLURM job corresponding to a single function evaluation.
+<br>
 ```bash
 #!/bin/bash
 #SBATCH --job-name=evopt        # Job name
