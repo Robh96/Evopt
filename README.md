@@ -3,7 +3,7 @@
 `evopt` is a package for efficient parameter optimisation using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
 
 <div align="center">
-  <img src="images/cover_img.png" alt="Optimisation of the two parameter Ackley function." width="800">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimisation of the two parameter Ackley function." width="800">
   <br>
   <em>Optimisation of the two parameter Ackley function.</em>
 </div>
@@ -255,7 +255,7 @@ evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
 **Output:**
 
 <div align="center">
-  <img src="images/convergence_plots.png" alt="Error convergence." width="800">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/convergence_plots.png" alt="Error convergence." width="800">
   <br>
   <em>Convergence plots displaying error, parameters, targets, and normalised standard-deviation of the solution (normalised sigma) as a function of the number of epochs.</em>
 </div>
@@ -274,7 +274,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
 **Output:**
 
 <div align="center">
-  <img src="images/x1_vs_error.png" alt="Parameter versus error." width="400">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_error.png" alt="Parameter versus error." width="400">
   <br>
   <em>Scatter plot showing parameter versus error. The axis handle is returned to the user for any modifications.</em>
 </div>
@@ -288,7 +288,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", cval="error
 **Output:**
 
 <div align="center">
-  <img src="images/x1_vs_x2_vs_error_Voronoi.png" alt="Parameters versus error Voronoi plot." width="400">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_Voronoi.png" alt="Parameters versus error Voronoi plot." width="400">
   <br>
   <em>2-D Voronoi plot illustrating parameters versus error. Each cell contains a single solution, with cell line is equidistant between points on either size. In this sense the plot conveys the exploration/explotation nature of the evolutionary algorithm as it hones in on the global optimum. The axis handle is returned to the user for any modifications.
   </em>
@@ -302,7 +302,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2"
 **Output:**
 
 <div align="center">
-  <img src="images/x1_vs_x2_vs_target2_surface.png" alt="Parameters versus target 3-D surface plot." width="400">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_target2_surface.png" alt="Parameters versus target 3-D surface plot." width="400">
   <br>
   <em>3-D surface plot of the parameters versus the target values, illustrating the calibrated parameter combination. The axis handle is returned to the user for any modifications.
   </em>
@@ -316,7 +316,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 **Output:**
 
 <div align="center">
-  <img src="images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="Parameters versus error coloured by epoch 3-D surface plot." width="400">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="Parameters versus error coloured by epoch 3-D surface plot." width="400">
   <br>
   <em>3-D surface plot of the parameters versus the error values, coloured by epoch. As is the nature of convergent optimisation, the latest epochs show the lowest error values.
   </em>
