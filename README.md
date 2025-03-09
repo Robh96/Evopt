@@ -235,7 +235,7 @@ The `evopt.optimise()` function takes several keyword arguments to control the o
 *   `verbose (bool, optional)`: Whether to print detailed information about the optimisation process to the console. If `True`, the optimisation will print information about each epoch and solution. Defaults to `True`.
 *   `num_epochs (int, optional)`: The maximum number of epochs to run the optimisation for. If specified, the optimisation will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimisation will run until the convergence criteria is met. Defaults to `None`.
 *   `max_workers (int, optional)`: The number of multi-processing workers to operate concurrently. Defaults to 1. Each worker operates on a different processor.
-*   `rand_seed (int, optional)`:
+*   `rand_seed (int, optional)`: Specify the deterministic seed.
 *   `hpc_cores_per_worker (int, optional)`: Number of CPU cores to allocate per HPC worker.
 *   `hpc_memory_gb_per_worker (int)`: Memory in GB to allocate per worker on the HPC.
 *   `hpc_wall_time (str)`: Wall time limit for each HPC worker, must be in the format "DD:HH:MM:SS" or "HH:MM:SS".
