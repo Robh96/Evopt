@@ -257,14 +257,14 @@ def write_to_csv(data, csv_path, sort_columns=None):
 
 def extend_dict(master_dict, slave_dict):
     """
-    Extends the observed_dict with values from loss_observed_dict.
-    If a key exists in both dictionaries, the values from loss_observed_dict
-    are appended to the list of values in observed_dict. If a key only
-    exists in loss_observed_dict, it is added to observed_dict.
+    Merges dictionary keys and values.
+    If a key exists in both dictionaries, the values from slave_dict
+    are appended to the list of values in master_. If a key only
+    exists in slave_dict, it is added to master_dict.
 
     Args:
-        observed_dict (dict): The dictionary to extend.
-        loss_observed_dict (dict): The dictionary containing new values.
+        master_dict (dict): The dictionary to extend.
+        slave_dict (dict): The dictionary containing new values.
     """
     for key, value in slave_dict.items():
         if key in master_dict:
