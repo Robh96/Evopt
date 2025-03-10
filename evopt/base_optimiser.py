@@ -398,10 +398,18 @@ class BaseOptimiser(ABC):
 		if executor is None:
 			# Serial processing
 			for i, args in enumerate(solution_args):
-				result = self._evaluate_solution_worker(args)
-				store_result(result, i)
+				try:
+					result = self._evaluate_solution_worker(args)
+					store_result(result, i)
+				except Exception as e:
+					print(f"Solution {args[0]} failed with error: {e}")
+					sol_id = args[0]
+					param_names = args[2]
+					params = args[1]
+					param_dict = dict(zip(param_names, params))
+					store_result((sol_id, None, None, param_dict), i) # placeholder values
 		else:
-			# Submit all tasks at once
+			# Submit tasks and automatically replace crashed workers
 			futures = {executor.submit(self._evaluate_solution_worker, args): i
 					for i, args in enumerate(solution_args)}
 			
@@ -409,12 +417,21 @@ class BaseOptimiser(ABC):
 			for future in concurrent.futures.as_completed(futures):
 				idx = futures[future]
 				try:
-					result = future.result(timeout=300)
+					# No timeout - let tasks run as long as needed
+					result = future.result()  
 					store_result(result, idx)
-				except concurrent.futures.TimeoutError:
-					print(f"Solution {solution_args[idx][0]} timed out after 5 minutes")
-				except Exception as exc:
-					print(f"Solution {solution_args[idx][0]} generated an exception: {exc}")
+				except Exception as e:
+					# Log the error but continue processing
+					print(f"Solution {solution_args[idx][0]} failed: {e}")
+					
+					# Create a placeholder result
+					sol_id = solution_args[idx][0]
+					param_names = solution_args[idx][2]
+					params = solution_args[idx][1]
+					param_dict = dict(zip(param_names, params))
+					
+					# Store placeholder result
+					store_result((sol_id, None, None, param_dict), idx)
 
 		# Build observed_dict from result_dicts
 		observed_dict = {}
