@@ -302,8 +302,6 @@ class BaseOptimiser(ABC):
 		
 		np.random.seed(1000 + sol_id)  # Deterministic unique seed per solution
 
-
-		# Unpickle the evaluator function
 		try:
 			evaluator_func = cloudpickle.loads(pickled_evaluator)
 		except Exception as e:
@@ -372,68 +370,59 @@ class BaseOptimiser(ABC):
 			solution_args.append(args)
 		
 		# Initialise result containers
-		errors = []
-		observed_dict = {}
-		all_results = []
+		all_results = [None] * len(solution_args)
+		temp_result_dicts = [None] * len(solution_args) 
+		errors = [None] * len(solution_args)
 		
+		def store_result(result, sol_idx):
+			sol_id, error, result_dict, param_dict = result
+
+			with self._file_lock:
+				self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
+			
+			# Store in correct position for later processing
+			all_results[sol_idx] = result
+			errors[sol_idx] = error
+			temp_result_dicts[sol_idx] = result_dict
+			
+			if self.verbose:
+				self.print_solution(sol_id, rescaled_solutions[sol_id], error)
+		
+			# Store result in its original position for deterministic order
+			if sol_idx is not None:
+				all_results[sol_idx] = result
+
 		# Use serial processing if max_workers is 1
 		executor = self.process_manager.initialize() if self.max_workers > 1 else None
 	
 		if executor is None:
 			# Serial processing
-			for args in solution_args:
+			for i, args in enumerate(solution_args):
 				result = self._evaluate_solution_worker(args)
-				all_results.append(result)
-
-				# Process results immediately
-				sol_id, error, result_dict, param_dict = result
-				with self._file_lock:
-					self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
-					if error is not None:
-						errors.append(error)
-					if result_dict:
-						extend_dict(observed_dict, result_dict)
-
-				if self.verbose:
-					self.print_solution(sol_id, params, error)
+				store_result(result, i)
 		else:
-		
 			# Submit all tasks at once
-			futures = [executor.submit(self._evaluate_solution_worker, args) 
-					for args in solution_args]
+			futures = {executor.submit(self._evaluate_solution_worker, args): i
+					for i, args in enumerate(solution_args)}
 			
-			# Create a placeholder for results in the correct order
-			results = [None] * len(solution_args)
-			missing_indices = []
-			
-			# Process results in the SAME ORDER as they were submitted
-			# This ensures deterministic behavior between serial and parallel runs
-			for i, future in enumerate(futures):
+			# Process results as they complete
+			for future in concurrent.futures.as_completed(futures):
+				idx = futures[future]
 				try:
-					# Store result at its corresponding index position
-					results[i] = future.result(timeout=300)
+					result = future.result(timeout=300)
+					store_result(result, idx)
 				except concurrent.futures.TimeoutError:
-					print(f"Solution {solution_args[i][0]} timed out after 5 minutes")
-					missing_indices.append(i)
+					print(f"Solution {solution_args[idx][0]} timed out after 5 minutes")
 				except Exception as exc:
-					print(f"Solution {solution_args[i][0]} generated an exception: {exc}")
-					missing_indices.append(i)
-			
-			# Add all non-None results to all_results in order
-			all_results = [r for r in results if r is not None]
+					print(f"Solution {solution_args[idx][0]} generated an exception: {exc}")
 
-			# Process all results in the main process
-			with self._file_lock:
-				for sol_id, error, result_dict, param_dict in all_results:
-					self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
-					if error is not None:
-						errors.append(error)
-					if result_dict:
-						extend_dict(observed_dict, result_dict)
-					if self.verbose:
-						self.print_solution(sol_id, params, error)
+		# Build observed_dict from result_dicts
+		observed_dict = {}
+		for result_dict in temp_result_dicts:
+			if result_dict:
+				extend_dict(observed_dict, result_dict)	
 
-		# remove solution folder dir if empty
+		# remove epoch folder dir if empty
 		if len(os.listdir(os.path.dirname(solution_folder))) == 0:
 			os.rmdir(os.path.dirname(solution_folder))
 
