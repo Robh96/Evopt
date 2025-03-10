@@ -371,7 +371,9 @@ class BaseOptimiser(ABC):
 			)
 			solution_args.append(args)
 		
-		# Process solutions in parallel or serial based on number of processes
+		# Initialise result containers
+		errors = []
+		observed_dict = {}
 		all_results = []
 		
 		# Use serial processing if max_workers is 1
@@ -382,6 +384,18 @@ class BaseOptimiser(ABC):
 			for args in solution_args:
 				result = self._evaluate_solution_worker(args)
 				all_results.append(result)
+
+				# Process results immediately
+				sol_id, error, result_dict, param_dict = result
+				with self._file_lock:
+					self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
+					if error is not None:
+						errors.append(error)
+					if result_dict:
+						extend_dict(observed_dict, result_dict)
+
+				if self.verbose:
+					self.print_solution(sol_id, params, error)
 		else:
 		
 			# Submit all tasks at once
@@ -408,17 +422,16 @@ class BaseOptimiser(ABC):
 			# Add all non-None results to all_results in order
 			all_results = [r for r in results if r is not None]
 
-		errors = []
-		observed_dict = {}
-
-		# Process all results in the main process
-		with self._file_lock:
-			for sol_id, error, result_dict, param_dict in all_results:
-				self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
-				if error is not None:
-					errors.append(error)
-				if result_dict:
-					extend_dict(observed_dict, result_dict)
+			# Process all results in the main process
+			with self._file_lock:
+				for sol_id, error, result_dict, param_dict in all_results:
+					self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
+					if error is not None:
+						errors.append(error)
+					if result_dict:
+						extend_dict(observed_dict, result_dict)
+					if self.verbose:
+						self.print_solution(sol_id, params, error)
 
 		# remove solution folder dir if empty
 		if len(os.listdir(os.path.dirname(solution_folder))) == 0:
