@@ -47,7 +47,18 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.inheritance_diagram',
 ]
-
+autosectionlabel_prefix_document = True
+suppress_warnings = [
+    'app.add_directive', # Suppress warnings about directives being added twice
+    'app.duplicated_objectid',
+    'app.add_node', 
+    'app.add_role',
+    'app.add_generic_role',
+    'app.add_source_parser',
+    'autosectionlabel.*',  # Suppress warnings about duplicate section labels
+    'image.nonlocal_uri',
+    'toc.secnum',  # Table of contents section numbering warnings
+]
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 

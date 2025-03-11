@@ -1,0 +1,378 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loss functions (evopt.loss) &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Slurm HPC executor (evopt.slurm_executor)" href="slurm_executor.html" />
+    <link rel="prev" title="Directory Manager (evopt.directory_manager)" href="directory_manager.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api/internal/loss.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="loss-functions-evopt-loss">
+<h1>Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)<a class="headerlink" href="#loss-functions-evopt-loss" title="Link to this heading"></a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This module is part of the internal implementation of evopt and is not
+intended for direct use by end users. Its API may change without notice.</p>
+</div>
+<p>Multi-objective loss calculation for evolutionary optimization.</p>
+<p>This module provides functionality for calculating loss values in optimization scenarios
+with multiple objectives and constraints. It supports both hard and soft constraints,
+with configurable weighting between them.</p>
+<p>The module implements normalized error calculations to handle objectives with different
+scales and provides mechanisms to distinguish between hard constraints (must be satisfied)
+and soft objectives (should be optimized).</p>
+<p class="rubric">Example</p>
+<p>Basic usage with target values and observed results:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">evopt.loss</span><span class="w"> </span><span class="kn">import</span> <span class="n">calc_loss</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Define target values with constraints</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>               <span class="c1"># Target weight (default: hard constraint)</span>
+<span class="gp">... </span>    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>            <span class="c1"># Stress must be between 0 and 50</span>
+<span class="gp">... </span>    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>  <span class="c1"># Soft objective</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Observed values from evaluation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observed</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">12.5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="mf">30.2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="mf">0.8</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate loss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">calc_loss</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mae&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Combined loss: </span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">combined_loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observed values: </span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">observed_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">evopt.loss.</span></span><span class="sig-name descname"><span class="pre">CLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mae'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_to_soft_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/loss.html#CLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Loss calculator for multi-objective optimization with constraints.</p>
+<p>This class handles the calculation of loss values when optimizing against
+multiple objectives with both hard and soft constraints. It normalizes
+errors across different scales and can weight hard constraints more heavily
+than soft objectives.</p>
+<p>Hard constraints are treated as requirements that must be satisfied, while
+soft objectives are goals that should be optimized but can be compromised.
+The final loss combines both types with configurable weighting.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">target_dict</span></span></dt>
+<dd><p>Dictionary of target values with optional constraint settings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">method</span></span></dt>
+<dd><p>Error calculation method (‘mse’ or ‘mae’).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">verbose</span></span></dt>
+<dd><p>Whether to print detailed information during calculation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">w</span></span></dt>
+<dd><p>Weight factor for hard constraints (between 0 and 1).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">observed_dict</span></span></dt>
+<dd><p>Dictionary of mean observed values after calculation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">combined_loss</span></span></dt>
+<dd><p>The final weighted loss value after calculation.</p>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Creating a loss calculator and computing loss:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observed</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="mf">80.0</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">55.2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span> <span class="o">=</span> <span class="n">CLoss</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mae&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span><span class="o">.</span><span class="n">calc_loss</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loss: </span><span class="si">{</span><span class="n">loss_calc</span><span class="o">.</span><span class="n">combined_loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calc_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observed_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/evopt/loss.html#CLoss.calc_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculate the combined loss across all constraints and objectives.</p>
+<p>Processes the observed values for each key in target_dict, computing
+individual errors and determining if constraints are satisfied. Hard constraints
+and soft objectives are weighted according to the hard_to_soft_weight parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>observed_dict</strong> – Dictionary of observed values with the same keys as target_dict.
+Values can be single numbers, lists, or arrays.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The combined loss value is stored in self.combined_loss but not returned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If a key in target_dict is not found in observed_dict.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>After calling this method, access the results via self.combined_loss
+and self.observed_dict properties.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observed</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">12.5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="mf">80.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="mf">0.8</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span> <span class="o">=</span> <span class="n">CLoss</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span><span class="o">.</span><span class="n">calc_loss</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Combined loss: </span><span class="si">{</span><span class="n">loss_calc</span><span class="o">.</span><span class="n">combined_loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calculate_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_values</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/evopt/loss.html#CLoss.calculate_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculate normalized error between target and observed values.</p>
+<p>Computes a normalized error measure that handles different scales automatically.
+The normalization divides the difference by the sum of absolute values plus 1,
+making the error scale-independent. NaN values in observed data are ignored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_values</strong> – List or array of target values.</p></li>
+<li><p><strong>observed_values</strong> – List or array of observed values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Normalized error value (MAE or MSE based on the configured method).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Returns NaN if all observed values are NaN.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span> <span class="o">=</span> <span class="n">CLoss</span><span class="p">({</span><span class="s2">&quot;dummy&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">loss_calc</span><span class="o">.</span><span class="n">calculate_error</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">35</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Output depends on method</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">constraint_satisfied</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/evopt/loss.html#CLoss.constraint_satisfied"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check if observed values satisfy the constraint for a given key.</p>
+<p>Determines whether observed values meet the constraint defined in target_dict.
+For single values, a 5% tolerance is applied unless the constraint is defined
+as a range using a tuple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key in target_dict to check.</p></li>
+<li><p><strong>observed_values</strong> – List of observed values to check against the constraint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>True if the constraint is satisfied (at least 50% of values within bounds),</dt><dd><p>False otherwise.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Returns False if observed_values is empty or contains only None/NaN.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>  <span class="c1"># Stress must be between 0 and 100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_calc</span> <span class="o">=</span> <span class="n">CLoss</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">satisfied</span> <span class="o">=</span> <span class="n">loss_calc</span><span class="o">.</span><span class="n">constraint_satisfied</span><span class="p">(</span><span class="s1">&#39;stress&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">120</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Constraint satisfied: </span><span class="si">{</span><span class="n">satisfied</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># True (2/3 within bounds)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">evopt.loss.</span></span><span class="sig-name descname"><span class="pre">calc_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_to_soft_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CLoss</span></span></span><a class="reference internal" href="../../_modules/evopt/loss.html#calc_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Convenience function to calculate loss for multi-objective optimization.</p>
+<p>Creates a CLoss object with the specified parameters, calculates the loss,
+and returns the configured loss calculator for further access to results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_dict</strong> – Dictionary of target values and constraint specifications.
+See CLoss class documentation for format details.</p></li>
+<li><p><strong>observed_dict</strong> – Dictionary of observed values to evaluate.</p></li>
+<li><p><strong>method</strong> – Error calculation method (‘mse’ or ‘mae’). Default is ‘mse’.</p></li>
+<li><p><strong>hard_to_soft_weight</strong> – Weight for balancing hard vs. soft constraints (0.0-1.0).
+Default is 0.9 (90% weight to hard constraints).</p></li>
+<li><p><strong>verbose</strong> – Whether to print detailed calculation information. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Configured loss calculator object with results accessible via</dt><dd><p>the combined_loss and observed_dict properties.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>CLoss</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If a key in target_dict is not found in observed_dict.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observed</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">12.5</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="mf">80.0</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">calc_loss</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;mae&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Combined loss: </span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">combined_loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observed values: </span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">observed_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="directory_manager.html" class="btn btn-neutral float-left" title="Directory Manager (evopt.directory_manager)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="slurm_executor.html" class="btn btn-neutral float-right" title="Slurm HPC executor (evopt.slurm_executor)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

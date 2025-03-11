@@ -90,6 +90,7 @@ class SlurmExecutor(concurrent.futures.Executor):
             ...     wall_time="4:00:00"
             ... )
         """
+
         self.max_workers = max_workers
         self.cores_per_worker = cores_per_worker
         self.memory_gb = memory_gb
@@ -138,6 +139,7 @@ class SlurmExecutor(concurrent.futures.Executor):
             >>> result = future.result()  # Wait for the job to complete
             >>> print(result)  # Should print 24
         """
+
         if self._shutdown:
             raise RuntimeError("Executor is shutdown")
             
@@ -265,6 +267,7 @@ with open("{os.path.join(job_dir, 'COMPLETED')}", 'w') as f:
         Note:
             This is an internal method used by the submit method.
         """
+
         def monitor_job():
             try:
                 # Wait for job to complete
@@ -320,6 +323,7 @@ with open("{os.path.join(job_dir, 'COMPLETED')}", 'w') as f:
             >>> # Shutdown and wait for all jobs to complete
             >>> executor.shutdown(wait=True)
         """
+        
         self._shutdown = True
         
         # Cancel all running jobs

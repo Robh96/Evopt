@@ -96,6 +96,7 @@ class CLoss:
             ... }
             >>> loss_calc = CLoss(targets, method='mae', verbose=True)
         """
+
         self.target_dict = target_dict
         self.method = method.lower() if method.lower() in ["mse", "mae"] else "mse"
         self.verbose = verbose
@@ -125,6 +126,7 @@ class CLoss:
             >>> error = loss_calc.calculate_error([10, 20, 30], [12, 18, 35])
             >>> print(f"Error: {error:.4f}")  # Output depends on method
         """
+
         target_values = np.array(target_values)
         observed_values = np.array(observed_values)
         mask = ~np.isnan(observed_values)
@@ -163,6 +165,7 @@ class CLoss:
             >>> satisfied = loss_calc.constraint_satisfied('stress', [50, 80, 120])
             >>> print(f"Constraint satisfied: {satisfied}")  # True (2/3 within bounds)
         """
+
         constraint_info = self.target_dict[key]
         if isinstance(constraint_info, dict):
             target_val = constraint_info.get("value", constraint_info)
@@ -221,6 +224,7 @@ class CLoss:
             >>> loss_calc.calc_loss(observed)
             >>> print(f"Combined loss: {loss_calc.combined_loss}")
         """
+
         observed_dict = {k: self._convert_to_native(v) for k, v in observed_dict.items()}
         hard_losses = []
         soft_losses = []
@@ -270,6 +274,7 @@ class CLoss:
         Note:
             This is an internal helper method not meant for direct use.
         """
+
         if isinstance(value, (np.float64, float, int)):
             return [float(value)]
         elif isinstance(value, (list, np.ndarray, tuple)):
@@ -313,6 +318,7 @@ def calc_loss(
         >>> print(f"Combined loss: {loss.combined_loss}")
         >>> print(f"Observed values: {loss.observed_dict}")
     """
+    
     loss_function = CLoss(
         target_dict=target_dict,
         method=method,

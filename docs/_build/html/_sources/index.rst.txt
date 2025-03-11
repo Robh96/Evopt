@@ -75,12 +75,29 @@ Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Guide:
    
    getting started
    tutorials
-   optimizer
-   plotting
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Public API:
+   
+   api/public/optimizer
+   api/public/plotting
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Internal API:
+   :hidden:
+   
+   api/internal/base_optimizer
+   api/internal/cma_optimizer
+   api/internal/directory_manager
+   api/internal/loss
+   api/internal/slurm_executor
+   api/internal/utils
 
 Indices and Search
 ------------------

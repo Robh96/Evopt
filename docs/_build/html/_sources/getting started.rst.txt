@@ -176,4 +176,4 @@ Now that you understand the basics, you can:
 * Use checkpointing for long-running optimizations
 * Scale up to high-performance computing environments
 
-See the :ref:`Tutorials` section for more detailed examples.
+See the :ref:`tutorials` section for more detailed examples.

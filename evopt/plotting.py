@@ -389,6 +389,7 @@ class Plotting:
         Returns:
             matplotlib.axes._axes.Axes: The axes object with the Voronoi plot.
         """
+        
         if ax is None:
             fig, ax = plt.subplots()
 

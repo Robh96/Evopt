@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>evopt.slurm_executor &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/loss.html">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">evopt.slurm_executor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for evopt.slurm_executor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SLURM-based parallel execution for evolutionary optimization tasks.</span>
+
+<span class="sd">This module provides a concurrent.futures.Executor implementation that submits tasks</span>
+<span class="sd">to a SLURM cluster for parallel execution. It handles job submission, monitoring,</span>
+<span class="sd">and result retrieval, providing a seamless interface for distributed computing on</span>
+<span class="sd">HPC clusters running SLURM workload manager.</span>
+
+<span class="sd">The SlurmExecutor integrates with the Python concurrent.futures API, allowing code</span>
+<span class="sd">written for ProcessPoolExecutor to run on SLURM clusters with minimal changes.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    Basic usage submitting a function to SLURM:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from evopt.slurm_executor import SlurmExecutor</span>
+<span class="sd">    &gt;&gt;&gt; executor = SlurmExecutor(max_workers=4, cores_per_worker=2, memory_gb=8)</span>
+<span class="sd">    &gt;&gt;&gt; future = executor.submit(my_function, arg1, arg2)</span>
+<span class="sd">    &gt;&gt;&gt; result = future.result()  # Blocks until the job completes</span>
+<span class="sd">    &gt;&gt;&gt; executor.shutdown()</span>
+<span class="sd">    </span>
+<span class="sd">    Using with concurrent.futures API:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; with SlurmExecutor(max_workers=10) as executor:</span>
+<span class="sd">    ...     results = list(executor.map(my_function, my_args))</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlurmJobManager</span>
+
+<div class="viewcode-block" id="SlurmExecutor">
+<a class="viewcode-back" href="../../api/internal/slurm_executor.html#evopt.slurm_executor.SlurmExecutor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SlurmExecutor</span><span class="p">(</span><span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">Executor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Executor implementation that submits tasks as SLURM jobs.</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides a concurrent.futures.Executor interface for executing tasks</span>
+<span class="sd">    on a SLURM cluster. It handles job submission, monitoring, and result retrieval,</span>
+<span class="sd">    allowing for efficient parallel execution across multiple compute nodes.</span>
+<span class="sd">    </span>
+<span class="sd">    The executor maintains a pool of worker slots limited by max_workers, submitting</span>
+<span class="sd">    new jobs as slots become available and collecting results asynchronously.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        max_workers (int): Maximum number of concurrent SLURM jobs.</span>
+<span class="sd">        cores_per_worker (int): Number of CPU cores to request per job.</span>
+<span class="sd">        memory_gb (float): Memory in GB to request per job.</span>
+<span class="sd">        wall_time (str): Maximum wall time for each job in format &quot;HH:MM:SS&quot;.</span>
+<span class="sd">        qos (str or None): Quality of Service to request from SLURM.</span>
+<span class="sd">        job_manager (SlurmJobManager): Manager for SLURM job operations.</span>
+<span class="sd">        base_dir (str): Temporary directory for job files and results.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Submit multiple tasks and process results as they complete:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; executor = SlurmExecutor(max_workers=4)</span>
+<span class="sd">        &gt;&gt;&gt; futures = [executor.submit(process_data, data_chunk) for data_chunk in data]</span>
+<span class="sd">        &gt;&gt;&gt; for future in concurrent.futures.as_completed(futures):</span>
+<span class="sd">        ...     try:</span>
+<span class="sd">        ...         result = future.result()</span>
+<span class="sd">        ...         print(f&quot;Task completed with result: {result}&quot;)</span>
+<span class="sd">        ...     except Exception as e:</span>
+<span class="sd">        ...         print(f&quot;Task failed: {e}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; executor.shutdown()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">cores_per_worker</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">memory_gb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="n">wall_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1:00:00&quot;</span><span class="p">,</span>
+            <span class="n">qos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the SlurmExecutor with specified resources.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            max_workers: Maximum number of concurrent SLURM jobs. Default is 1.</span>
+<span class="sd">            cores_per_worker: Number of CPU cores to request per job. Default is 1.</span>
+<span class="sd">            memory_gb: Memory in GB to request per job. Default is 4 GB.</span>
+<span class="sd">            wall_time: Maximum wall time for jobs in format &quot;HH:MM:SS&quot;. Default is &quot;1:00:00&quot;.</span>
+<span class="sd">            qos: Quality of Service to request from SLURM. Default is None.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # Create an executor with 8 concurrent jobs, each with 4 cores and 16GB</span>
+<span class="sd">            &gt;&gt;&gt; executor = SlurmExecutor(</span>
+<span class="sd">            ...     max_workers=8, </span>
+<span class="sd">            ...     cores_per_worker=4, </span>
+<span class="sd">            ...     memory_gb=16, </span>
+<span class="sd">            ...     wall_time=&quot;4:00:00&quot;</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_worker</span> <span class="o">=</span> <span class="n">cores_per_worker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory_gb</span> <span class="o">=</span> <span class="n">memory_gb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wall_time</span> <span class="o">=</span> <span class="n">wall_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qos</span> <span class="o">=</span> <span class="n">qos</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">job_manager</span> <span class="o">=</span> <span class="n">SlurmJobManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># job_id -&gt; (future, result_path)</span>
+        
+        <span class="c1"># Create base temp directory for job results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;evopt_slurm_&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1"># Semaphore to limit concurrent jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job_semaphore</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="SlurmExecutor.submit">
+<a class="viewcode-back" href="../../api/internal/slurm_executor.html#evopt.slurm_executor.SlurmExecutor.submit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a function for execution as a SLURM job.</span>
+<span class="sd">        </span>
+<span class="sd">        This method submits a function and its arguments to be executed as a SLURM job.</span>
+<span class="sd">        It creates a temporary directory for the job, pickles the function and arguments,</span>
+<span class="sd">        generates a Python script to run in the SLURM environment, and submits the job.</span>
+<span class="sd">        </span>
+<span class="sd">        The method returns a Future object that can be used to check the status and</span>
+<span class="sd">        retrieve the result of the job.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            fn (callable): The function to execute.</span>
+<span class="sd">            *args: Positional arguments to pass to the function.</span>
+<span class="sd">            **kwargs: Keyword arguments to pass to the function.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            concurrent.futures.Future: A Future representing the execution of the function.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If the executor has been shut down.</span>
+<span class="sd">            Exception: Any exception raised during job submission is set on the future.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; def my_task(x, y, z=1):</span>
+<span class="sd">            ...     return x * y * z</span>
+<span class="sd">            &gt;&gt;&gt; </span>
+<span class="sd">            &gt;&gt;&gt; executor = SlurmExecutor(max_workers=4)</span>
+<span class="sd">            &gt;&gt;&gt; future = executor.submit(my_task, 2, 3, z=4)</span>
+<span class="sd">            &gt;&gt;&gt; result = future.result()  # Wait for the job to complete</span>
+<span class="sd">            &gt;&gt;&gt; print(result)  # Should print 24</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Executor is shutdown&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># Wait for a job slot to become available</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job_semaphore</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        
+        <span class="c1"># Create future</span>
+        <span class="n">future</span> <span class="o">=</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">Future</span><span class="p">()</span>
+        
+        <span class="c1"># Extract working directory from args if it&#39;s the BaseOptimizer._evaluate_solution_worker</span>
+        <span class="c1"># The solution_folder is the 4th argument (index 3) in the args tuple</span>
+        <span class="n">original_working_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;_evaluate_solution_worker&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># args[0] is the args tuple passed to _evaluate_solution_worker</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">original_working_dir</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Extract solution_folder</span>
+
+        <span class="c1"># Create unique job directory</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span> <span class="o">%</span> <span class="mi">10000</span><span class="p">)</span>
+        <span class="n">job_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;job_</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="c1"># Pickle function and arguments</span>
+        <span class="n">input_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="s2">&quot;task.pkl&quot;</span><span class="p">)</span>
+        <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="s2">&quot;result.pkl&quot;</span><span class="p">)</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">fn</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">original_working_dir</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+        
+        <span class="c1"># Create the Python script that will run in SLURM</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">import os</span>
+<span class="s2">import sys</span>
+<span class="s2">import pickle</span>
+<span class="s2">import traceback</span>
+
+<span class="s2"># Ensure the package is in the path (adjust as needed)</span>
+<span class="s2">sys.path.insert(0, &quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;..&#39;</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;)</span>
+
+<span class="s2"># Load the pickled function and arguments</span>
+<span class="s2">with open(&quot;</span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">&quot;, &#39;rb&#39;) as f:</span>
+<span class="s2">    fn, args, kwargs, original_working_dir = pickle.load(f)</span>
+
+<span class="s2"># Execute the function in the correct directory if specified</span>
+<span class="s2">try:</span>
+<span class="s2">    if original_working_dir and os.path.exists(original_working_dir):</span>
+<span class="s2">        # Change to the original working directory</span>
+<span class="s2">        original_cwd = os.getcwd()</span>
+<span class="s2">        os.chdir(original_working_dir)</span>
+<span class="s2">        try:</span>
+<span class="s2">            result = fn(*args, **kwargs)</span>
+<span class="s2">            success = True</span>
+<span class="s2">            error = None</span>
+<span class="s2">        finally:</span>
+<span class="s2">            # Restore original directory</span>
+<span class="s2">            os.chdir(original_cwd)</span>
+<span class="s2">    else:</span>
+<span class="s2">        # No working directory specified or doesn&#39;t exist, run as-is</span>
+<span class="s2">        result = fn(*args, **kwargs)</span>
+<span class="s2">        success = True</span>
+<span class="s2">        error = None</span>
+<span class="s2">except Exception as e:</span>
+<span class="s2">    result = None</span>
+<span class="s2">    success = False</span>
+<span class="s2">    error = traceback.format_exc()</span>
+
+<span class="s2"># Save the result</span>
+<span class="s2">with open(&quot;</span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;, &#39;wb&#39;) as f:</span>
+<span class="s2">    pickle.dump((success, result, error), f)</span>
+
+<span class="s2"># Create a completion marker file</span>
+<span class="s2">with open(&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;COMPLETED&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;, &#39;w&#39;) as f:</span>
+<span class="s2">    f.write(&#39;done&#39;)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="n">runner_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="s2">&quot;runner.py&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">runner_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+        
+        <span class="c1"># Create the job submission script</span>
+        <span class="n">job_script</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;python </span><span class="si">{</span><span class="n">runner_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># Submit the job</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">slurm_job_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_manager</span><span class="o">.</span><span class="n">submit_job</span><span class="p">(</span>
+                <span class="n">script_content</span><span class="o">=</span><span class="n">job_script</span><span class="p">,</span>
+                <span class="n">job_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;evopt_</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">cpus_per_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_worker</span><span class="p">,</span>
+                <span class="n">output_dir</span><span class="o">=</span><span class="n">job_dir</span><span class="p">,</span>
+                <span class="n">memory_gb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">memory_gb</span><span class="p">,</span>
+                <span class="n">wall_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wall_time</span><span class="p">,</span>
+                <span class="n">qos</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qos</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Store job info</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="p">[</span><span class="n">slurm_job_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">job_dir</span><span class="p">)</span>
+            
+            <span class="c1"># Start monitoring thread</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_monitor_thread</span><span class="p">(</span><span class="n">slurm_job_id</span><span class="p">,</span> <span class="n">future</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">job_dir</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">future</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Release semaphore on error</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_job_semaphore</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">future</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_monitor_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">future</span><span class="p">,</span> <span class="n">result_path</span><span class="p">,</span> <span class="n">job_dir</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start a thread to monitor job completion.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates and starts a daemon thread that monitors the status of a SLURM job.</span>
+<span class="sd">        The thread waits for job completion, checks for output files, and sets the</span>
+<span class="sd">        result or exception on the associated Future object.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            job_id (int): The SLURM job ID to monitor.</span>
+<span class="sd">            future (concurrent.futures.Future): The Future associated with the job.</span>
+<span class="sd">            result_path (str): Path to the file where the job result will be stored.</span>
+<span class="sd">            job_dir (str): Directory containing job files.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None: This method does not return a value.</span>
+<span class="sd">            </span>
+<span class="sd">        Note:</span>
+<span class="sd">            This is an internal method used by the submit method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">monitor_job</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Wait for job to complete</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_manager</span><span class="o">.</span><span class="n">wait_for_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                
+                <span class="c1"># Wait for completion file (may take a moment after job finishes)</span>
+                <span class="n">completion_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="s2">&quot;COMPLETED&quot;</span><span class="p">)</span>
+                <span class="n">max_wait</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># seconds</span>
+                <span class="n">wait_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                
+                <span class="k">while</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">completion_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">wait_start</span> <span class="o">&lt;</span> <span class="n">max_wait</span><span class="p">:</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                
+                <span class="c1"># Load result if available</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">result_path</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">result_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">success</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                        
+                    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                        <span class="n">future</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job failed: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job completed but no result found&quot;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="c1"># Release semaphore to allow another job</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_job_semaphore</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">monitor_job</span><span class="p">)</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="SlurmExecutor.shutdown">
+<a class="viewcode-back" href="../../api/internal/slurm_executor.html#evopt.slurm_executor.SlurmExecutor.shutdown">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shutdown the executor and clean up resources.</span>
+<span class="sd">        </span>
+<span class="sd">        This method marks the executor as shutdown, cancels any running SLURM jobs,</span>
+<span class="sd">        and prevents new jobs from being submitted. If wait is True, it will not</span>
+<span class="sd">        return until all currently executing jobs have completed.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            wait: Whether to wait for running jobs to complete before returning.</span>
+<span class="sd">                Default is True.</span>
+<span class="sd">                </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # Shutdown and cancel all running jobs</span>
+<span class="sd">            &gt;&gt;&gt; executor.shutdown(wait=False)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Shutdown and wait for all jobs to complete</span>
+<span class="sd">            &gt;&gt;&gt; executor.shutdown(wait=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1"># Cancel all running jobs</span>
+        <span class="k">for</span> <span class="n">job_id</span><span class="p">,</span> <span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jobs</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">future</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">job_manager</span><span class="o">.</span><span class="n">cancel_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

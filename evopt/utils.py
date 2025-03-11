@@ -57,6 +57,7 @@ class ExecutionEnvironment(Enum):
         PBS: PBS/Torque cluster execution.
         LSF: LSF cluster execution.
     """
+
     LOCAL = auto()
     SLURM = auto()
     PBS = auto()
@@ -76,6 +77,7 @@ def detect_environment() -> ExecutionEnvironment:
         >>> if env == ExecutionEnvironment.SLURM:
         >>>     print("Running in a SLURM environment")
     """
+
     if 'SLURM_JOB_ID' in os.environ:
         return ExecutionEnvironment.SLURM
     elif 'PBS_JOBID' in os.environ:
@@ -98,6 +100,7 @@ def get_available_cpus() -> int:
         >>> num_cpus = get_available_cpus()
         >>> print(f"Using {num_cpus} CPUs for computation")
     """
+
     env = detect_environment()
     
     # SLURM-specific environment variables
@@ -141,6 +144,7 @@ def working_directory(path):
         >>>     # Do something in the new directory
         >>>     pass
     """
+
     prev_cwd = os.getcwd()
     os.makedirs(path, exist_ok=True)
     os.chdir(path)
@@ -213,6 +217,7 @@ class SlurmJobManager:
             ...     memory_gb=16
             ... )
         """
+
         # Create a temporary script file
         fd, path = tempfile.mkstemp(suffix='.sh')
         try:
@@ -262,6 +267,7 @@ class SlurmJobManager:
             >>> SlurmJobManager.wait_for_job(job_id, check_interval=30)
             >>> print("Job finished")
         """
+
         while True:
             cmd = ["squeue", "-j", str(job_id), "-h"]
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -287,6 +293,7 @@ class SlurmJobManager:
             >>> # Cancel the job if needed
             >>> SlurmJobManager.cancel_job(job_id)
         """
+
         subprocess.run(["scancel", str(job_id)], check=False)
 
 class ProcessPoolManager:
@@ -357,6 +364,7 @@ class ProcessPoolManager:
             ...     memory_gb_per_worker=8
             ... )
         """
+
         self.env = detect_environment()
         self.cores_per_worker = cores_per_worker
         self.memory_gb_per_worker = memory_gb_per_worker
@@ -385,6 +393,7 @@ class ProcessPoolManager:
             >>> if executor:
             ...     futures = [executor.submit(func, i) for i in range(10)]
         """
+        
         if self._executor is not None:
             return self._executor
         
@@ -433,6 +442,7 @@ class ProcessPoolManager:
             ... finally:
             ...     manager.cleanup()
         """
+        
         if self._executor:
             self._executor.shutdown(wait=False)
             self._executor = None
@@ -466,6 +476,7 @@ def convert_to_native(value):
         >>> convert_to_native(data)
         {'value': 3.142, 'array': [1.0, 2.0, 3.0]}
     """
+
     if isinstance(value, (np.float64, float)):
         return round(float(value), 3)
     elif isinstance(value, list):
@@ -495,6 +506,7 @@ def format_array(arr, precision=3):
         >>> format_array(arr, precision=2)
         '1.23, 5.68, 9.88'
     """
+
     return ", ".join(f"{x:.{precision}f}" for x in arr)
 
 def write_to_csv(data, csv_path, sort_columns=None):
@@ -518,6 +530,7 @@ def write_to_csv(data, csv_path, sort_columns=None):
         >>> data = {'epoch': 1, 'error': 0.023, 'param1': 0.5, 'param2': 1.2}
         >>> write_to_csv(data, 'results.csv', sort_columns=['epoch'])
     """
+
     data = {k: convert_to_native(v) for k, v in data.items()}
     df_row = pd.DataFrame([data])
     
@@ -561,6 +574,7 @@ def extend_dict(master_dict: dict, slave_dict: dict) -> None:
         >>> print(master)
         {'a': [1, 2, 4], 'b': [3, 5, 6], 'c': 7}
     """
+
     for key, value in slave_dict.items():
         if key in master_dict:
             if isinstance(master_dict[key], list):
@@ -606,6 +620,7 @@ class Logger:
         Example:
             >>> logger = Logger("./experiment_logs", "run_1.log")
         """
+
         self.terminal = sys.stdout
         os.makedirs(log_dir, exist_ok=True)
         self.log_path = os.path.join(log_dir, log_file)
@@ -625,6 +640,7 @@ class Logger:
             >>> with Logger("./logs") as logger:
             ...     print("This is logged")
         """
+
         self.log = open(self.log_path, "a")
         sys.stdout = self
         return self
@@ -643,6 +659,7 @@ class Logger:
         Returns:
             None
         """
+
         sys.stdout = self.terminal
         if self.log:
             self.log.close()
@@ -663,6 +680,7 @@ class Logger:
         Raises:
             AttributeError: If the terminal doesn't have the requested attribute.
         """
+
         return getattr(self.terminal, attr)
     
     def write(self, message: str) -> None:
@@ -677,6 +695,7 @@ class Logger:
         Returns:
             None
         """
+
         # Prepend the current date and time to each line in the message
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         lines = message.splitlines(True)  # Keep the newline characters
@@ -698,5 +717,6 @@ class Logger:
         Returns:
             None
         """
+        
         self.terminal.flush()
         self.log.flush()

@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>evopt.cma_optimizer &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/loss.html">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">evopt.cma_optimizer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for evopt.cma_optimizer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;CMA-ES (Covariance Matrix Adaptation Evolution Strategy) implementation for optimization.</span>
+
+<span class="sd">This module provides an implementation of the CMA-ES algorithm for black-box optimization</span>
+<span class="sd">of non-linear or non-convex continuous optimization problems. CMA-ES is particularly</span>
+<span class="sd">effective for problems that are ill-conditioned, have multiple local optima, or where</span>
+<span class="sd">gradient information is not available.</span>
+
+<span class="sd">The implementation extends the BaseOptimizer class and leverages the pycma library</span>
+<span class="sd">for core CMA-ES functionality while handling parameter management, parallel evaluation,</span>
+<span class="sd">convergence detection, and result logging.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    Basic usage with a simple objective function:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from evopt import CmaesOptimizer, DirectoryManager</span>
+<span class="sd">    &gt;&gt;&gt; parameters = {&#39;x&#39;: (-10, 10), &#39;y&#39;: (-5, 5)}</span>
+<span class="sd">    &gt;&gt;&gt; def evaluator(params):</span>
+<span class="sd">    &gt;&gt;&gt;     return params[&#39;x&#39;]**2 + params[&#39;y&#39;]**2  # Simple quadratic function</span>
+<span class="sd">    &gt;&gt;&gt; dir_manager = DirectoryManager(&#39;./optimization_results&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; optimizer = CmaesOptimizer(</span>
+<span class="sd">    ...     parameters=parameters,</span>
+<span class="sd">    ...     evaluator=evaluator,</span>
+<span class="sd">    ...     batch_size=10,</span>
+<span class="sd">    ...     directory_manager=dir_manager,</span>
+<span class="sd">    ...     n_epochs=50</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; results = optimizer.optimize()</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Best parameters: {results.best_parameters}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Final error: {results.final_error}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cma</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base_optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseOptimizer</span>
+
+
+<div class="viewcode-block" id="CmaesOptimizer">
+<a class="viewcode-back" href="../../api/internal/cma_optimizer.html#evopt.cma_optimizer.CmaesOptimizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CmaesOptimizer</span><span class="p">(</span><span class="n">BaseOptimizer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm.</span>
+<span class="sd">    </span>
+<span class="sd">    This class implements the CMA-ES algorithm for black-box optimization of non-linear, </span>
+<span class="sd">    non-convex continuous optimization problems. CMA-ES adapts a multivariate normal </span>
+<span class="sd">    distribution to sample increasingly optimal solutions, using the covariance matrix</span>
+<span class="sd">    to capture parameter dependencies and step-size adaptation for efficient convergence.</span>
+<span class="sd">    </span>
+<span class="sd">    The implementation uses the pycma library for core functionality while adding support</span>
+<span class="sd">    for parallel evaluation, checkpoint management, and comprehensive result tracking.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        es (cma.CMAEvolutionStrategy): The underlying CMA-ES optimizer instance.</span>
+<span class="sd">        </span>
+<span class="sd">    Note:</span>
+<span class="sd">        This class inherits from BaseOptimizer and implements the required abstract methods.</span>
+<span class="sd">        See BaseOptimizer for inherited attributes and methods.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from evopt import CmaesOptimizer, DirectoryManager</span>
+<span class="sd">        &gt;&gt;&gt; # Define parameter space with bounds</span>
+<span class="sd">        &gt;&gt;&gt; parameters = {&#39;length&#39;: (10, 100), &#39;width&#39;: (5, 50), &#39;height&#39;: (1, 10)}</span>
+<span class="sd">        &gt;&gt;&gt; # Define evaluator function (lower is better)</span>
+<span class="sd">        &gt;&gt;&gt; def evaluator(params):</span>
+<span class="sd">        ...     volume = params[&#39;length&#39;] * params[&#39;width&#39;] * params[&#39;height&#39;]</span>
+<span class="sd">        ...     return 1000 - volume  # Maximize volume by minimizing this value</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Set up optimizer</span>
+<span class="sd">        &gt;&gt;&gt; dir_manager = DirectoryManager(&#39;./cmaes_results&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; optimizer = CmaesOptimizer(</span>
+<span class="sd">        ...     parameters=parameters,</span>
+<span class="sd">        ...     evaluator=evaluator,</span>
+<span class="sd">        ...     batch_size=16,</span>
+<span class="sd">        ...     directory_manager=dir_manager,</span>
+<span class="sd">        ...     sigma_threshold=0.05,  # Convergence threshold</span>
+<span class="sd">        ...     max_workers=4,  # Parallel evaluation</span>
+<span class="sd">        ...     n_epochs=100  # Maximum epochs</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Run optimization</span>
+<span class="sd">        &gt;&gt;&gt; results = optimizer.optimize()</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Access results</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Best parameters: {results.best_parameters}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Best fitness: {results.final_error}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CmaesOptimizer.setup_opt">
+<a class="viewcode-back" href="../../api/internal/cma_optimizer.html#evopt.cma_optimizer.CmaesOptimizer.setup_opt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the CMA-ES optimizer instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Initializes or restores the CMA-ES optimizer either by creating a new instance</span>
+<span class="sd">        or loading a checkpoint from a previous run. This method configures the CMA-ES</span>
+<span class="sd">        algorithm with appropriate parameters and bounds.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            epoch: The epoch number to resume from if restoring from a checkpoint.</span>
+<span class="sd">                If None, starts a new optimization run. Default is None.</span>
+<span class="sd">                </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Note:</span>
+<span class="sd">            This method stores the CMA-ES instance in self.es and updates the</span>
+<span class="sd">            current_epoch counter.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # Start a new optimization</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.setup_opt()</span>
+<span class="sd">            &gt;&gt;&gt; </span>
+<span class="sd">            &gt;&gt;&gt; # Resume from epoch 10</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.setup_opt(epoch=10)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">es</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_manager</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">es</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">opts</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">1000000</span><span class="p">,</span> <span class="c1"># large number</span>
+                <span class="s1">&#39;seed&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_seed</span><span class="p">,</span>
+                <span class="s1">&#39;popsize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="s1">&#39;bounds&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">bound</span><span class="p">)</span> <span class="k">for</span> <span class="n">bound</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_bounds</span><span class="p">)],</span>
+                <span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">9</span> <span class="c1"># Silence most output, we handle our own reporting</span>
+            <span class="p">}</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="n">es</span> <span class="o">=</span> <span class="n">cma</span><span class="o">.</span><span class="n">CMAEvolutionStrategy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_params</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting new CMAES run in directory </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_manager</span><span class="o">.</span><span class="n">evolve_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Continuing CMAES run from epoch </span><span class="si">{</span><span class="n">es</span><span class="o">.</span><span class="n">countiter</span><span class="si">}</span><span class="s2"> in directory </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_manager</span><span class="o">.</span><span class="n">evolve_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">es</span> <span class="o">=</span> <span class="n">es</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">countiter</span></div>
+
+        
+<div class="viewcode-block" id="CmaesOptimizer.check_termination">
+<a class="viewcode-back" href="../../api/internal/cma_optimizer.html#evopt.cma_optimizer.CmaesOptimizer.check_termination">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_termination</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if optimization termination criteria are met.</span>
+<span class="sd">        </span>
+<span class="sd">        Determines whether the optimization should terminate based on either:</span>
+
+<span class="sd">        1. Convergence: All parameters&#39; normalized standard deviations have fallen</span>
+<span class="sd">           below the threshold, indicating the algorithm has converged</span>
+<span class="sd">        2. Maximum epochs: The specified maximum number of epochs has been reached</span>
+<span class="sd">        </span>
+<span class="sd">        The method uses the standard deviations from the CMA-ES covariance matrix</span>
+<span class="sd">        as a direct measure of search space exploration.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if termination criteria are met (either convergence or</span>
+<span class="sd">                maximum epochs reached), False otherwise.</span>
+<span class="sd">                </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; while not optimizer.check_termination():</span>
+<span class="sd">            ...     # Run one iteration</span>
+<span class="sd">            ...     solutions = optimizer.es.ask(optimizer.batch_size)</span>
+<span class="sd">            ...     errors = optimizer.process_batch(solutions)</span>
+<span class="sd">            ...     optimizer.es.tell(solutions, errors)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1">#sigmas = np.array([v[-1] for p, v in self.norm_sigmas.items() if v]) # old implementation</span>
+        <span class="n">sigmas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">C</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigmas</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="n">sigma_check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">sigmas</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_threshold</span><span class="p">)</span>
+        <span class="n">epoch_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span>
+        <span class="k">return</span> <span class="n">sigma_check</span> <span class="ow">or</span> <span class="n">epoch_check</span></div>
+
+    
+
+<div class="viewcode-block" id="CmaesOptimizer.optimize">
+<a class="viewcode-back" href="../../api/internal/cma_optimizer.html#evopt.cma_optimizer.CmaesOptimizer.optimize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;OptimizationResults&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the CMA-ES optimization process until termination.</span>
+<span class="sd">        </span>
+<span class="sd">        Executes the complete CMA-ES optimization loop, handling:</span>
+<span class="sd">        </span>
+<span class="sd">        1. Setup/initialization of the optimizer</span>
+<span class="sd">        2. Generation of candidate solutions</span>
+<span class="sd">        3. Evaluation of solutions (potentially in parallel)</span>
+<span class="sd">        4. Updating the internal state of the algorithm</span>
+<span class="sd">        5. Checkpointing for resumability</span>
+<span class="sd">        6. Termination detection</span>
+<span class="sd">        7. Results compilation</span>
+<span class="sd">        </span>
+<span class="sd">        The method continues until either convergence criteria are met or</span>
+<span class="sd">        the maximum number of epochs is reached.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            OptimizationResults: A comprehensive results object containing the best</span>
+<span class="sd">                parameters found, optimization history, and algorithm-specific data.</span>
+<span class="sd">                </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # Run the full optimization process</span>
+<span class="sd">            &gt;&gt;&gt; results = optimizer.optimize()</span>
+<span class="sd">            &gt;&gt;&gt; </span>
+<span class="sd">            &gt;&gt;&gt; # Extract best results</span>
+<span class="sd">            &gt;&gt;&gt; best_params = results.best_parameters</span>
+<span class="sd">            &gt;&gt;&gt; error = results.final_error</span>
+<span class="sd">            &gt;&gt;&gt; </span>
+<span class="sd">            &gt;&gt;&gt; # Analyze convergence behavior</span>
+<span class="sd">            &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">            &gt;&gt;&gt; plt.plot(results.mean_error_history)</span>
+<span class="sd">            &gt;&gt;&gt; plt.title(&quot;Error Convergence&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; plt.xlabel(&quot;Epoch&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; plt.ylabel(&quot;Error&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; plt.show()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_opt</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="p">)</span>
+        
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_termination</span><span class="p">():</span>
+            <span class="n">solutions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">ask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_batch</span><span class="p">(</span><span class="n">solutions</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">tell</span><span class="p">(</span><span class="n">solutions</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">disp</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dir_manager</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">countiter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">countiter</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="p">:</span>
+                <span class="n">termination_reason</span> <span class="o">=</span> <span class="s2">&quot;Maximum epochs reached&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Terminating after reaching maximum epochs (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">termination_reason</span> <span class="o">=</span> <span class="s2">&quot;Termination criteria met&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Terminating after meeting termination criteria at epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Create and return comprehensive results object</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">OptimizationResults</span><span class="p">(</span>
+            <span class="n">best_parameters</span><span class="o">=</span><span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_params_history</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">final_error</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mean_error_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">mean_error_history</span><span class="o">=</span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_error_history</span><span class="p">],</span>
+            <span class="n">sigma_error_history</span><span class="o">=</span><span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_error_history</span><span class="p">],</span>
+            <span class="n">mean_params_history</span><span class="o">=</span><span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_params_history</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">sigma_params_history</span><span class="o">=</span><span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_params_history</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">norm_sigmas_history</span><span class="o">=</span><span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_norm_sigmas_history</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">mean_target_history</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_target_history</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> 
+                            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_mean_target_history&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_target_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> 
+                            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sigma_target_history</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_target_history</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> 
+                                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_sigma_target_history&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_target_history</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> 
+                                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">epochs_completed</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">),</span>
+            <span class="n">terminated_reason</span><span class="o">=</span><span class="n">termination_reason</span><span class="p">,</span>
+            <span class="n">cmaes_sigma</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">sigma</span><span class="p">),</span>
+            <span class="n">cmaes_C</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+    
+        <span class="k">return</span> <span class="n">results</span></div>
+</div>
+
+    
+
+<div class="viewcode-block" id="OptimizationResults">
+<a class="viewcode-back" href="../../api/internal/cma_optimizer.html#evopt.cma_optimizer.OptimizationResults">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OptimizationResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for comprehensive optimization results.</span>
+<span class="sd">    </span>
+<span class="sd">    This dataclass stores all results from a completed optimization run, including</span>
+<span class="sd">    the best parameters found, error values, complete optimization history, </span>
+<span class="sd">    and algorithm-specific data. All numeric values are stored as native Python types</span>
+<span class="sd">    for better serialization compatibility.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        best_parameters: Dictionary of the best parameter values found, with parameter</span>
+<span class="sd">            names as keys and their optimized values as values.</span>
+<span class="sd">        final_error: The error/fitness value of the best solution.</span>
+<span class="sd">        mean_error_history: List of mean error values for each epoch.</span>
+<span class="sd">        sigma_error_history: List of error standard deviations for each epoch.</span>
+<span class="sd">        mean_params_history: Dictionary of parameter means over time, with parameter </span>
+<span class="sd">            names as keys and lists of their mean values as values.</span>
+<span class="sd">        sigma_params_history: Dictionary of parameter standard deviations over time.</span>
+<span class="sd">        norm_sigmas_history: Dictionary of normalized sigma values over time.</span>
+<span class="sd">        mean_target_history: Dictionary of mean target values over time (for multi-objective</span>
+<span class="sd">            optimization). None if no targets were specified.</span>
+<span class="sd">        sigma_target_history: Dictionary of target standard deviations over time.</span>
+<span class="sd">        epochs_completed: Total number of epochs/generations completed.</span>
+<span class="sd">        terminated_reason: String describing why optimization terminated.</span>
+<span class="sd">        cmaes_sigma: Final step size of the CMA-ES algorithm.</span>
+<span class="sd">        cmaes_C: Final covariance matrix of the CMA-ES algorithm.</span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # Accessing optimization results</span>
+<span class="sd">        &gt;&gt;&gt; results = optimizer.optimize()</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Get best parameters and error</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Best parameters: {results.best_parameters}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Best fitness: {results.final_error}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Plot convergence history</span>
+<span class="sd">        &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">        &gt;&gt;&gt; plt.figure(figsize=(12, 6))</span>
+<span class="sd">        &gt;&gt;&gt; plt.plot(results.mean_error_history)</span>
+<span class="sd">        &gt;&gt;&gt; plt.title(f&quot;Optimization Convergence ({results.terminated_reason})&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; plt.xlabel(&quot;Epoch&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; plt.ylabel(&quot;Error&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; plt.grid(True)</span>
+<span class="sd">        &gt;&gt;&gt; plt.show()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Final parameters</span>
+    <span class="n">best_parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    
+    <span class="c1"># Final error</span>
+    <span class="n">final_error</span><span class="p">:</span> <span class="nb">float</span>
+    
+    <span class="c1"># History data</span>
+    <span class="n">mean_error_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">sigma_error_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">mean_params_history</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+    <span class="n">sigma_params_history</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+    <span class="n">norm_sigmas_history</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+    
+    <span class="c1"># If targets were provided</span>
+    <span class="n">mean_target_history</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sigma_target_history</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># Metadata</span>
+    <span class="n">epochs_completed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">terminated_reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># CMAES specific data</span>
+    <span class="n">cmaes_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cmaes_C</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

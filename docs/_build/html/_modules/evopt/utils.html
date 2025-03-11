@@ -1,0 +1,893 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>evopt.utils &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/loss.html">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/internal/utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">evopt.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for evopt.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utility functions and classes for evolutionary optimization.</span>
+
+<span class="sd">This module provides various utility functions and classes for supporting evolutionary optimization</span>
+<span class="sd">processes in different environments, including HPC clusters and local machines. It includes tools for</span>
+<span class="sd">environment detection, process management, file operations, dictionary manipulation, and logging.</span>
+
+<span class="sd">The module supports different execution environments:</span>
+<span class="sd">- Local execution</span>
+<span class="sd">- SLURM cluster execution</span>
+<span class="sd">- PBS/Torque cluster execution</span>
+<span class="sd">- LSF cluster execution</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    Basic usage of the process pool manager:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from evopt.utils import ProcessPoolManager</span>
+<span class="sd">    &gt;&gt;&gt; manager = ProcessPoolManager(max_workers=4)</span>
+<span class="sd">    &gt;&gt;&gt; executor = manager.initialize()</span>
+<span class="sd">    &gt;&gt;&gt; # Use executor for parallel processing</span>
+<span class="sd">    &gt;&gt;&gt; manager.cleanup()</span>
+<span class="sd">    </span>
+<span class="sd">    Using the logging utility:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; with Logger(&quot;./logs&quot;) as logger:</span>
+<span class="sd">    &gt;&gt;&gt;     print(&quot;This will be logged to both console and file&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">concurrent.futures</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+
+<span class="c1"># Set multiprocessing start method once during import</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s1">&#39;spawn&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+    <span class="c1"># Method already set</span>
+    <span class="k">pass</span>
+
+<div class="viewcode-block" id="ExecutionEnvironment">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ExecutionEnvironment">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExecutionEnvironment</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum representing different execution environments.</span>
+<span class="sd">    </span>
+<span class="sd">    This enumeration defines the different types of execution environments</span>
+<span class="sd">    that the code can run in, from local machines to various HPC systems.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        LOCAL: Local machine execution.</span>
+<span class="sd">        SLURM: SLURM-based cluster execution.</span>
+<span class="sd">        PBS: PBS/Torque cluster execution.</span>
+<span class="sd">        LSF: LSF cluster execution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOCAL</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SLURM</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">PBS</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">LSF</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="detect_environment">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.detect_environment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_environment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ExecutionEnvironment</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect the current execution environment based on environment variables.</span>
+<span class="sd">    </span>
+<span class="sd">    This function examines environment variables to determine whether the code</span>
+<span class="sd">    is running on a local machine or in a cluster environment (SLURM, PBS, LSF).</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        ExecutionEnvironment: The detected execution environment.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; env = detect_environment()</span>
+<span class="sd">        &gt;&gt;&gt; if env == ExecutionEnvironment.SLURM:</span>
+<span class="sd">        &gt;&gt;&gt;     print(&quot;Running in a SLURM environment&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;SLURM_JOB_ID&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">SLURM</span>
+    <span class="k">elif</span> <span class="s1">&#39;PBS_JOBID&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">PBS</span>
+    <span class="k">elif</span> <span class="s1">&#39;LSB_JOBID&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">LSF</span>
+    <span class="k">return</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">LOCAL</span></div>
+
+
+<div class="viewcode-block" id="get_available_cpus">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.get_available_cpus">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_available_cpus</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get number of CPUs available, accounting for HPC environment variables.</span>
+<span class="sd">    </span>
+<span class="sd">    This function determines the number of available CPUs based on the current</span>
+<span class="sd">    execution environment, checking relevant environment variables for </span>
+<span class="sd">    different HPC systems before falling back to the system CPU count.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        int: The number of available CPUs.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; num_cpus = get_available_cpus()</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Using {num_cpus} CPUs for computation&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">env</span> <span class="o">=</span> <span class="n">detect_environment</span><span class="p">()</span>
+    
+    <span class="c1"># SLURM-specific environment variables</span>
+    <span class="k">if</span> <span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;SLURM_CPUS_PER_TASK&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SLURM_CPUS_PER_TASK&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;SLURM_NTASKS&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SLURM_NTASKS&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s1">&#39;SLURM_JOB_CPUS_PER_NODE&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="c1"># This might be complex like &quot;16(x2),12&quot; - take the first number</span>
+            <span class="n">cpus_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SLURM_JOB_CPUS_PER_NODE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">cpus_str</span><span class="p">)</span>
+    
+    <span class="c1"># PBS-specific environment variables</span>
+    <span class="k">elif</span> <span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">PBS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;PBS_NP&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PBS_NP&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Generic OpenMP environment variable</span>
+    <span class="k">if</span> <span class="s1">&#39;OMP_NUM_THREADS&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;OMP_NUM_THREADS&#39;</span><span class="p">])</span>
+    
+    <span class="c1"># Fall back to CPU count if no environment variables are set</span>
+    <span class="k">return</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="working_directory">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.working_directory">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">working_directory</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A context manager for temporarily changing the working directory.</span>
+<span class="sd">    </span>
+<span class="sd">    This context manager allows for temporarily changing the working directory</span>
+<span class="sd">    and automatically restoring it when exiting the context.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        path: Path to the directory to change to.</span>
+<span class="sd">        </span>
+<span class="sd">    Yields:</span>
+<span class="sd">        None</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; with working_directory(&#39;/path/to/dir&#39;):</span>
+<span class="sd">        &gt;&gt;&gt;     # Do something in the new directory</span>
+<span class="sd">        &gt;&gt;&gt;     pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prev_cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">prev_cwd</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SlurmJobManager">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.SlurmJobManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SlurmJobManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages job submissions to SLURM workload manager.</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides static methods for submitting, monitoring, and canceling jobs</span>
+<span class="sd">    on SLURM-based HPC clusters. It handles script creation, job submission,</span>
+<span class="sd">    and job status monitoring.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Submit a simple job:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; job_id = SlurmJobManager.submit_job(</span>
+<span class="sd">        ...     &quot;python my_script.py&quot;, </span>
+<span class="sd">        ...     &quot;optimization&quot;, </span>
+<span class="sd">        ...     4, </span>
+<span class="sd">        ...     &quot;./output&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Job submitted with ID: {job_id}&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        Wait for job completion:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; SlurmJobManager.wait_for_job(job_id)</span>
+<span class="sd">        &gt;&gt;&gt; print(&quot;Job completed&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="SlurmJobManager.submit_job">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.SlurmJobManager.submit_job">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">submit_job</span><span class="p">(</span>
+        <span class="n">script_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">job_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cpus_per_task</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">memory_gb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">wall_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;01:00:00&quot;</span><span class="p">,</span>
+        <span class="n">qos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a job to the SLURM scheduler.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a temporary SLURM batch script with the specified parameters and</span>
+<span class="sd">        submits it to the SLURM workload manager.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            script_content: The script content to be executed.</span>
+<span class="sd">            job_name: Name for the SLURM job.</span>
+<span class="sd">            cpus_per_task: Number of CPUs to allocate per task.</span>
+<span class="sd">            output_dir: Directory for SLURM output and error files.</span>
+<span class="sd">            memory_gb: Memory allocation in gigabytes. Default is None (uses SLURM default).</span>
+<span class="sd">            wall_time: Maximum wall time in format &quot;HH:MM:SS&quot;. Default is &quot;01:00:00&quot;.</span>
+<span class="sd">            qos: Quality of Service to request. Default is None.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The SLURM job ID.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            subprocess.SubprocessError: If job submission fails.</span>
+<span class="sd">            ValueError: If job ID cannot be parsed from SLURM response.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; job_id = SlurmJobManager.submit_job(</span>
+<span class="sd">            ...     &quot;python run_optimization.py&quot;,</span>
+<span class="sd">            ...     &quot;evopt_job&quot;, </span>
+<span class="sd">            ...     4, </span>
+<span class="sd">            ...     &quot;./slurm_logs&quot;,</span>
+<span class="sd">            ...     memory_gb=16</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create a temporary script file</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.sh&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;#!/bin/bash</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --job-name=</span><span class="si">{</span><span class="n">job_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --cpus-per-task=</span><span class="si">{</span><span class="n">cpus_per_task</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">memory_gb</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --mem=</span><span class="si">{</span><span class="n">memory_gb</span><span class="si">}</span><span class="s2">G</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --time=</span><span class="si">{</span><span class="n">wall_time</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">qos</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --qos=</span><span class="si">{</span><span class="n">qos</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --output=</span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">/slurm_%j.out</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --error=</span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">/slurm_%j.err</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;export OMP_NUM_THREADS=</span><span class="si">{</span><span class="n">cpus_per_task</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">script_content</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Submit the job</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sbatch&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Parse job ID from output</span>
+            <span class="n">job_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">job_id</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># Clean up temp file</span></div>
+
+    
+<div class="viewcode-block" id="SlurmJobManager.wait_for_job">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.SlurmJobManager.wait_for_job">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">check_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for a SLURM job to complete.</span>
+<span class="sd">        </span>
+<span class="sd">        Polls the SLURM queue periodically until the specified job</span>
+<span class="sd">        is no longer found in the queue, indicating completion.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            job_id: The SLURM job ID to monitor.</span>
+<span class="sd">            check_interval: Seconds to wait between checks. Default is 10.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            subprocess.SubprocessError: If checking job status fails.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; job_id = SlurmJobManager.submit_job(...)</span>
+<span class="sd">            &gt;&gt;&gt; SlurmJobManager.wait_for_job(job_id, check_interval=30)</span>
+<span class="sd">            &gt;&gt;&gt; print(&quot;Job finished&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;squeue&quot;</span><span class="p">,</span> <span class="s2">&quot;-j&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">),</span> <span class="s2">&quot;-h&quot;</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># If no output, job is done</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="k">return</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">check_interval</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SlurmJobManager.cancel_job">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.SlurmJobManager.cancel_job">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cancel a running SLURM job.</span>
+<span class="sd">        </span>
+<span class="sd">        Sends a cancellation request for the specified job ID.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            job_id: The SLURM job ID to cancel.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; job_id = SlurmJobManager.submit_job(...)</span>
+<span class="sd">            &gt;&gt;&gt; # Cancel the job if needed</span>
+<span class="sd">            &gt;&gt;&gt; SlurmJobManager.cancel_job(job_id)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;scancel&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">)],</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="ProcessPoolManager">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ProcessPoolManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcessPoolManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages process pools across different execution environments.</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides a unified interface for parallel processing across</span>
+<span class="sd">    different computing environments (local machine or HPC clusters).</span>
+<span class="sd">    It automatically detects the environment and sets up the appropriate</span>
+<span class="sd">    executor for parallel task processing.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        env: The detected execution environment.</span>
+<span class="sd">        cores_per_worker: Number of CPU cores allocated to each worker.</span>
+<span class="sd">        memory_gb_per_worker: Memory (GB) allocated to each worker.</span>
+<span class="sd">        wall_time: Maximum job runtime for HPC jobs.</span>
+<span class="sd">        qos: Quality of Service for SLURM jobs.</span>
+<span class="sd">        max_workers: Maximum number of concurrent workers.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Basic usage on a local machine:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; manager = ProcessPoolManager(max_workers=4)</span>
+<span class="sd">        &gt;&gt;&gt; with manager.initialize() as executor:</span>
+<span class="sd">        ...     results = list(executor.map(my_function, my_inputs))</span>
+<span class="sd">        </span>
+<span class="sd">        Usage with more specific resource requirements:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; manager = ProcessPoolManager(</span>
+<span class="sd">        ...     max_workers=8,</span>
+<span class="sd">        ...     cores_per_worker=4,</span>
+<span class="sd">        ...     memory_gb_per_worker=16,</span>
+<span class="sd">        ...     wall_time=&quot;08:00:00&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; executor = manager.initialize()</span>
+<span class="sd">        &gt;&gt;&gt; try:</span>
+<span class="sd">        ...     futures = [executor.submit(my_function, arg) for arg in my_inputs]</span>
+<span class="sd">        ...     for future in concurrent.futures.as_completed(futures):</span>
+<span class="sd">        ...         result = future.result()</span>
+<span class="sd">        ... finally:</span>
+<span class="sd">        ...     manager.cleanup()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">cores_per_worker</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">memory_gb_per_worker</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">wall_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;01:00:00&quot;</span><span class="p">,</span>
+        <span class="n">qos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the ProcessPoolManager.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            max_workers: Maximum number of concurrent worker processes.</span>
+<span class="sd">                Default is 1.</span>
+<span class="sd">            cores_per_worker: CPU cores allocated to each worker process.</span>
+<span class="sd">                Default is 1.</span>
+<span class="sd">            memory_gb_per_worker: Memory in GB allocated to each worker.</span>
+<span class="sd">                Default is 4 GB.</span>
+<span class="sd">            wall_time: Maximum job runtime in format &quot;HH:MM:SS&quot;.</span>
+<span class="sd">                Default is &quot;01:00:00&quot; (1 hour).</span>
+<span class="sd">            qos: Quality of Service for SLURM jobs. Default is None.</span>
+<span class="sd">                </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; manager = ProcessPoolManager(</span>
+<span class="sd">            ...     max_workers=4,</span>
+<span class="sd">            ...     cores_per_worker=2,</span>
+<span class="sd">            ...     memory_gb_per_worker=8</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">detect_environment</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_worker</span> <span class="o">=</span> <span class="n">cores_per_worker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory_gb_per_worker</span> <span class="o">=</span> <span class="n">memory_gb_per_worker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wall_time</span> <span class="o">=</span> <span class="n">wall_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qos</span> <span class="o">=</span> <span class="n">qos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_lock</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>  <span class="c1"># For synchronizing file access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job_ids</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># For tracking submitted HPC jobs</span>
+    
+<div class="viewcode-block" id="ProcessPoolManager.initialize">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ProcessPoolManager.initialize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the appropriate executor based on the execution environment.</span>
+<span class="sd">        </span>
+<span class="sd">        This method detects the current execution environment and creates the</span>
+<span class="sd">        appropriate type of executor. For local environments, it creates a</span>
+<span class="sd">        ProcessPoolExecutor. For SLURM environments, it creates a SlurmExecutor</span>
+<span class="sd">        if available, otherwise falls back to local processing.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            concurrent.futures.Executor or None: The initialized executor object,</span>
+<span class="sd">                or None if max_workers &lt;= 1 (serial processing).</span>
+<span class="sd">                </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; manager = ProcessPoolManager(max_workers=4)</span>
+<span class="sd">            &gt;&gt;&gt; executor = manager.initialize()</span>
+<span class="sd">            &gt;&gt;&gt; if executor:</span>
+<span class="sd">            ...     futures = [executor.submit(func, i) for i in range(10)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># No need for executor if only one worker</span>
+        
+        <span class="c1"># SLURM-specific environment variables</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">.slurm_executor</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlurmExecutor</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="n">SlurmExecutor</span><span class="p">(</span>
+                    <span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span><span class="p">,</span>
+                    <span class="n">cores_per_worker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_worker</span><span class="p">,</span>
+                    <span class="n">memory_gb_per_worker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">memory_gb_per_worker</span><span class="p">,</span>
+                    <span class="n">wall_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wall_time</span><span class="p">,</span>
+                    <span class="n">qos</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qos</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: SLURM environment detected but SLURM executor not available.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Falling back to local processing pool.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">(</span>
+                <span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span><span class="p">,</span>
+                <span class="n">mp_context</span><span class="o">=</span><span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">&quot;spawn&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># No executor means fall back to serial processing</span></div>
+
+    
+<div class="viewcode-block" id="ProcessPoolManager.cleanup">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ProcessPoolManager.cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources used by the executor.</span>
+<span class="sd">        </span>
+<span class="sd">        Shuts down the executor if it exists and cancels any pending SLURM jobs.</span>
+<span class="sd">        This method should be called when the executor is no longer needed to</span>
+<span class="sd">        ensure proper resource cleanup.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; manager = ProcessPoolManager(max_workers=4)</span>
+<span class="sd">            &gt;&gt;&gt; executor = manager.initialize()</span>
+<span class="sd">            &gt;&gt;&gt; try:</span>
+<span class="sd">            ...     # Use executor for parallel processing</span>
+<span class="sd">            ...     pass</span>
+<span class="sd">            ... finally:</span>
+<span class="sd">            ...     manager.cleanup()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># Cancel any pending SLURM jobs</span>
+        <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_job_ids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
+                <span class="n">SlurmJobManager</span><span class="o">.</span><span class="n">cancel_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job_ids</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure resources are cleaned up when the instance is garbage collected.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="convert_to_native">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.convert_to_native">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_to_native</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a value to a native Python type for serialization.</span>
+
+<span class="sd">    Converts NumPy types, nested lists, and dictionaries to their native Python</span>
+<span class="sd">    equivalents. This is particularly useful for preparing data for JSON serialization</span>
+<span class="sd">    or other formats that don&#39;t support NumPy types.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value (Any): The value to convert. Can be a NumPy type, list, dict, or None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Any: The converted value in native Python format.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; data = {&#39;value&#39;: np.float64(3.14159), &#39;array&#39;: np.array([1.0, 2.0, 3.0])}</span>
+<span class="sd">        &gt;&gt;&gt; convert_to_native(data)</span>
+<span class="sd">        {&#39;value&#39;: 3.142, &#39;array&#39;: [1.0, 2.0, 3.0]}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">convert_to_native</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">convert_to_native</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;None&#39;</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="format_array">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.format_array">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Format a numpy array into a string with a specified precision.</span>
+
+<span class="sd">    Creates a comma-separated string representation of the array values,</span>
+<span class="sd">    with each value formatted to the specified precision.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        arr (np.ndarray or list): The array to format.</span>
+<span class="sd">        precision (int, optional): The number of decimal places to include. Default is 3.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A string representation of the array.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; arr = np.array([1.2345, 5.6789, 9.8765])</span>
+<span class="sd">        &gt;&gt;&gt; format_array(arr, precision=2)</span>
+<span class="sd">        &#39;1.23, 5.68, 9.88&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="write_to_csv">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.write_to_csv">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_to_csv</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">,</span> <span class="n">sort_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a dictionary of data to a CSV file with optional sorting.</span>
+
+<span class="sd">    Appends a row of data to an existing CSV file or creates a new one.</span>
+<span class="sd">    The function handles numeric conversion and supports sorting by specified columns.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (dict): The data to write as a row in the CSV.</span>
+<span class="sd">        csv_path (str): The path to the CSV file.</span>
+<span class="sd">        sort_columns (list, optional): Column names to sort the data by. Default is None.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        OSError: If the file cannot be created or written to.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; data = {&#39;epoch&#39;: 1, &#39;error&#39;: 0.023, &#39;param1&#39;: 0.5, &#39;param2&#39;: 1.2}</span>
+<span class="sd">        &gt;&gt;&gt; write_to_csv(data, &#39;results.csv&#39;, sort_columns=[&#39;epoch&#39;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">convert_to_native</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">df_row</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">data</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">csv_path</span><span class="p">):</span>
+        <span class="c1"># Read existing CSV, append new data, sort, and rewrite</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df_existing</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
+            <span class="n">df_combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_existing</span><span class="p">,</span> <span class="n">df_row</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">sort_columns</span><span class="p">:</span>
+                <span class="n">df_combined</span> <span class="o">=</span> <span class="n">df_combined</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="n">sort_columns</span><span class="p">)</span>
+                
+            <span class="n">df_combined</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">EmptyDataError</span><span class="p">:</span>
+            <span class="c1"># File exists but is empty</span>
+            <span class="n">df_row</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Creating new file</span>
+        <span class="n">df_row</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="extend_dict">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.extend_dict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extend_dict</span><span class="p">(</span><span class="n">master_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">slave_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge dictionary keys and extend values as lists.</span>
+<span class="sd">    </span>
+<span class="sd">    If a key exists in both dictionaries, the values from slave_dict</span>
+<span class="sd">    are appended to the list of values in master_dict. If a key only</span>
+<span class="sd">    exists in slave_dict, it is added to master_dict.</span>
+<span class="sd">    </span>
+<span class="sd">    This function modifies master_dict in-place.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        master_dict (dict): The dictionary to extend (modified in-place).</span>
+<span class="sd">        slave_dict (dict): The dictionary containing values to add.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None: The master_dict is modified in-place.</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; master = {&#39;a&#39;: [1, 2], &#39;b&#39;: 3}</span>
+<span class="sd">        &gt;&gt;&gt; slave = {&#39;a&#39;: 4, &#39;b&#39;: [5, 6], &#39;c&#39;: 7}</span>
+<span class="sd">        &gt;&gt;&gt; extend_dict(master, slave)</span>
+<span class="sd">        &gt;&gt;&gt; print(master)</span>
+<span class="sd">        {&#39;a&#39;: [1, 2, 4], &#39;b&#39;: [3, 5, 6], &#39;c&#39;: 7}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">slave_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">master_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">master_dict</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">master_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">master_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">master_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span> <span class="o">+</span> <span class="p">(</span><span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">master_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="Logger">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.Logger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Logger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simple logger that writes messages to both the terminal and a log file.</span>
+<span class="sd">    </span>
+<span class="sd">    This class redirects standard output to both the console and a log file,</span>
+<span class="sd">    adding timestamps to each line. It&#39;s designed to be used as a context manager.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        terminal: The original stdout stream.</span>
+<span class="sd">        log_path: Path to the log file.</span>
+<span class="sd">        log: File handle for the log file.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Basic usage:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; with Logger(&quot;./logs&quot;, &quot;my_run.log&quot;) as logger:</span>
+<span class="sd">        ...     print(&quot;This message goes to both console and log file&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        Simple message logging:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; logger = Logger(&quot;./logs&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; with logger:</span>
+<span class="sd">        ...     for i in range(5):</span>
+<span class="sd">        ...         print(f&quot;Processing item {i}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;logfile.log&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the logger.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            log_dir (str): Directory to store the log file.</span>
+<span class="sd">            log_file (str, optional): Name of the log file. Default is &quot;logfile.log&quot;.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; logger = Logger(&quot;./experiment_logs&quot;, &quot;run_1.log&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enter the context and redirect stdout to both terminal and log file.</span>
+<span class="sd">        </span>
+<span class="sd">        This method is called when entering a &#39;with&#39; statement. It redirects</span>
+<span class="sd">        stdout to this Logger instance, which writes to both the console and</span>
+<span class="sd">        the log file.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Logger: The logger instance.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; with Logger(&quot;./logs&quot;) as logger:</span>
+<span class="sd">            ...     print(&quot;This is logged&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exit the context and restore stdout to the terminal.</span>
+<span class="sd">        </span>
+<span class="sd">        This method is called when exiting a &#39;with&#39; statement. It restores</span>
+<span class="sd">        the original stdout and closes the log file.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            exc_type: Exception type if an exception occurred.</span>
+<span class="sd">            exc_val: Exception value if an exception occurred. </span>
+<span class="sd">            exc_tb: Exception traceback if an exception occurred.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delegate attribute access to the terminal.</span>
+<span class="sd">        </span>
+<span class="sd">        This allows the Logger to properly proxy attribute access to the</span>
+<span class="sd">        underlying terminal object, ensuring compatibility with code that</span>
+<span class="sd">        expects stdout to have certain attributes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            attr (str): The attribute name to access.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Any: The attribute from the terminal object.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            AttributeError: If the terminal doesn&#39;t have the requested attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="Logger.write">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.Logger.write">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write a message to both the terminal and the log file.</span>
+<span class="sd">        </span>
+<span class="sd">        Adds a timestamp to each non-empty line before writing to the log file.</span>
+<span class="sd">        The original message (without timestamps) is written to the terminal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message (str): The message to write.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Prepend the current date and time to each line in the message</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">splitlines</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Keep the newline characters</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>  <span class="c1"># Only add timestamp to non-empty lines</span>
+                <span class="n">formatted_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">formatted_message</span> <span class="o">=</span> <span class="n">line</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">formatted_message</span><span class="p">)</span>    
+            <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Logger.flush">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.Logger.flush">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the buffers of both the terminal and the log file.</span>
+<span class="sd">        </span>
+<span class="sd">        This ensures that any buffered output is written immediately.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminal</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
