@@ -169,6 +169,12 @@ Generate plots showing how parameters converged during optimization:
         save_figures=True
     )
 
+.. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/convergence_plots.png
+   :alt: Error convergence.
+   :width: 800
+   :align: center
+
+
 Parameter Space Visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
