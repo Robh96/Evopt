@@ -9,7 +9,6 @@ Classes
 .. currentmodule:: evopt.plotting
 
 .. autoclass:: Plotting
-   :members:
    :undoc-members:
    :show-inheritance:
    
