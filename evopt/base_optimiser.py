@@ -301,7 +301,6 @@ class BaseOptimiser(ABC):
 		verbose) = args
 		
 		np.random.seed(1000 + sol_id)  # Deterministic unique seed per solution
-
 		try:
 			evaluator_func = cloudpickle.loads(pickled_evaluator)
 		except Exception as e:
@@ -318,7 +317,7 @@ class BaseOptimiser(ABC):
 			# Process target dictionary if provided
 			if target_dict and isinstance(error, dict):
 				from .loss import calc_loss  # Import here to avoid circular imports
-				loss = calc_loss(target_dict, error, hard_to_soft_weight=0.9, method="mae", verbose=True)
+				loss = calc_loss(target_dict, error, hard_to_soft_weight=0.9, method="mae")
 				result_dict = loss.observed_dict
 				error = loss.combined_loss
 
@@ -338,7 +337,7 @@ class BaseOptimiser(ABC):
 				os.rmdir(solution_folder)
 			except:
 				pass  # Ignore errors during cleanup
-
+		print("5")
 		return sol_id, error, result_dict, param_dict
 
 	def process_batch(self, solutions):
@@ -394,7 +393,7 @@ class BaseOptimiser(ABC):
 
 		# Use serial processing if max_workers is 1
 		executor = self.process_manager.initialize() if self.max_workers > 1 else None
-	
+		
 		if executor is None:
 			# Serial processing
 			for i, args in enumerate(solution_args):
