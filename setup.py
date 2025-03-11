@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.135',
+    version='0.136',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
