@@ -271,30 +271,39 @@ focusing on the core functionality of the <code class="docutils literal notransl
 
 <span class="n">evolve_dir</span> <span class="o">=</span> <span class="s2">&quot;./optimization_results/evolve_5&quot;</span>
 
-<span class="c1"># 2D scatter plot (parameter vs error)</span>
+<span class="c1"># 2-D scatter plot (parameter vs error)</span>
 <span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
     <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="s2">&quot;error&quot;</span>
 <span class="p">)</span>
-
-<span class="c1"># Voronoi diagram colored by error</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_error.png"><img alt="Parameter versus error." class="align-center" src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_error.png" style="width: 450px;" />
+</a>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 2-D Voronoi diagram colored by error</span>
 <span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
     <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="s2">&quot;width&quot;</span><span class="p">,</span>
     <span class="n">cval</span><span class="o">=</span><span class="s2">&quot;error&quot;</span>
 <span class="p">)</span>
-
-<span class="c1"># 3D surface plot</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_Voronoi.png"><img alt="Parameters versus error Voronoi plot." class="align-center" src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_Voronoi.png" style="width: 450px;" />
+</a>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 3-D surface plot</span>
 <span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
     <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="s2">&quot;width&quot;</span><span class="p">,</span>
     <span class="n">z</span><span class="o">=</span><span class="s2">&quot;stress&quot;</span>
 <span class="p">)</span>
-
-<span class="c1"># 4D visualization (3D surface with color)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_target2_surface.png"><img alt="Parameters versus target 3-D surface plot." class="align-center" src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_target2_surface.png" style="width: 450px;" />
+</a>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 4-D visualization (3D surface with color)</span>
 <span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
     <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
@@ -304,6 +313,8 @@ focusing on the core functionality of the <code class="docutils literal notransl
 <span class="p">)</span>
 </pre></div>
 </div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_vs_epoch_surface.png"><img alt="Parameters versus error coloured by epoch 3-D surface plot." class="align-center" src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_vs_epoch_surface.png" style="width: 450px;" />
+</a>
 </section>
 </section>
 <section id="high-performance-computing">

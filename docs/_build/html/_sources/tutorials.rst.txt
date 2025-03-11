@@ -180,30 +180,51 @@ Create various visualizations of the parameter space:
     
     evolve_dir = "./optimization_results/evolve_5"
     
-    # 2D scatter plot (parameter vs error)
+    # 2-D scatter plot (parameter vs error)
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
         x="height",
         y="error"
     )
-    
-    # Voronoi diagram colored by error
+
+.. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_error.png
+   :alt: Parameter versus error.
+   :width: 450
+   :align: center
+
+.. code-block:: python
+
+    # 2-D Voronoi diagram colored by error
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
         x="height", 
         y="width",
         cval="error"
     )
-    
-    # 3D surface plot
+
+.. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_Voronoi.png
+   :alt: Parameters versus error Voronoi plot.
+   :width: 450
+   :align: center
+
+.. code-block:: python
+
+    # 3-D surface plot
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
         x="height",
         y="width",
         z="stress"
     )
+
+.. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_target2_surface.png
+   :alt: Parameters versus target 3-D surface plot.
+   :width: 450
+   :align: center
+
+.. code-block:: python
     
-    # 4D visualization (3D surface with color)
+    # 4-D visualization (3D surface with color)
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
         x="height",
@@ -211,6 +232,11 @@ Create various visualizations of the parameter space:
         z="deflection",
         cval="epoch"
     )
+
+.. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_vs_epoch_surface.png
+   :alt: Parameters versus error coloured by epoch 3-D surface plot.
+   :width: 450
+   :align: center
 
 
 High-Performance Computing

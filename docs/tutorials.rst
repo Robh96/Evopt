@@ -193,6 +193,7 @@ Create various visualizations of the parameter space:
    :align: center
 
 .. code-block:: python
+
     # 2-D Voronoi diagram colored by error
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
@@ -206,7 +207,8 @@ Create various visualizations of the parameter space:
    :width: 450
    :align: center
 
-.. code-block:: python    
+.. code-block:: python
+
     # 3-D surface plot
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
@@ -220,7 +222,8 @@ Create various visualizations of the parameter space:
    :width: 450
    :align: center
 
-.. code-block:: python    
+.. code-block:: python
+    
     # 4-D visualization (3D surface with color)
     evopt.Plotting.plot_vars(
         evolve_dir_path=evolve_dir,
