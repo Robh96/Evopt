@@ -24,8 +24,14 @@ try:
 except ImportError:
     # If the package isn't installed, use autodoc_mock_imports
     autodoc_mock_imports = [
-        'evopt', 'numpy', 'matplotlib', 'cma', 'pandas'
-    ]
+    'numpy', 
+    'pandas', 
+    'matplotlib', 
+    'cma',
+    'cloudpickle',
+    'scipy',
+    'plotly'
+]
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -40,7 +46,6 @@ extensions = [
     'sphinx.ext.imgconverter',
     'sphinx.ext.mathjax',
     'sphinx.ext.inheritance_diagram',
-    'sphinx_rtd_theme'
 ]
 
 templates_path = ['_templates']

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.136',
+    version='0.137',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
@@ -26,7 +26,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.13.1',
+    python_requires='>=3.10',
     keywords=(
         'optimization evolutionary cmaes calibration'
         'simulation fine-tuning simple'
