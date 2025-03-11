@@ -1,0 +1,35 @@
+Optimization (:py:mod:`evopt.optimizer`)
+========================================
+
+The optimizer module provides a simplified interface to the black-box optimization framework,
+abstracting away the details of specific optimization algorithms and offering a convenient
+function-based API for running optimization tasks with minimal setup.
+
+Functions
+---------
+
+.. currentmodule:: evopt.optimizer
+
+.. autofunction:: optimize
+
+   Core Functionality
+   ~~~~~~~~~~~~~~~~~~
+
+   This function is the primary entry point for optimization tasks. It supports:
+
+   - Parameter space definition with min/max bounds
+   - Various optimization algorithms (currently CMA-ES)
+   - Parallel evaluation of solutions
+   - Multi-objective optimization with target dictionaries
+   - Checkpointing and resumability
+   - HPC integration with SLURM, PBS, and LSF
+
+   HPC Options
+   ~~~~~~~~~~~
+
+   The function offers several parameters for HPC environment configuration:
+
+   - ``hpc_cores_per_worker``: CPU cores per worker
+   - ``hpc_memory_gb_per_worker``: Memory allocation in GB
+   - ``hpc_wall_time``: Maximum job runtime
+   - ``hpc_qos``: Quality of Service specification

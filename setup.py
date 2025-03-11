@@ -16,7 +16,7 @@ setup(
     include_package_data=True,
     author='Roberto Hart-Villamil',
     author_email='rob.hartvillamil@gmail.com',
-    description='User Friendly Black-Box Numerical Optimisation Package in Python.',
+    description='User Friendly Black-Box Numerical Optimization Package in Python.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/Robh96/Evopt',
@@ -28,7 +28,7 @@ setup(
     ],
     python_requires='>=3.13.1',
     keywords=(
-        'optimisation evolutionary cmaes calibration'
+        'optimization evolutionary cmaes calibration'
         'simulation fine-tuning simple'
     ),
 )

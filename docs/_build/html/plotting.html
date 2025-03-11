@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plotting (evopt.plotting) &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=6fefd858"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Optimization (evopt.optimizer)" href="optimizer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#evopt.plotting.Plotting"><code class="docutils literal notranslate"><span class="pre">Plotting</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.plotting.Plotting.plot_epochs"><code class="docutils literal notranslate"><span class="pre">Plotting.plot_epochs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.plotting.Plotting.plot_vars"><code class="docutils literal notranslate"><span class="pre">Plotting.plot_vars()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Plotting.plot_epochs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Plotting.plot_vars()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/plotting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="plotting-evopt-plotting">
+<h1>Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)<a class="headerlink" href="#plotting-evopt-plotting" title="Link to this heading"></a></h1>
+<p>The plotting module provides visualization functions for optimization results.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="evopt.plotting.Plotting">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">evopt.plotting.</span></span><span class="sig-name descname"><span class="pre">Plotting</span></span><a class="reference internal" href="_modules/evopt/plotting.html#Plotting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.plotting.Plotting" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Visualization tools for evolutionary optimization results.</p>
+<p>This class provides static methods for visualizing results from evolutionary optimization
+runs. It can generate plots showing the evolution of parameters across epochs, parameter
+convergence, and explore relationships between parameters through various visualization
+techniques.</p>
+<p>The class operates on the CSV result files produced during optimization runs, which contain
+information about individual evaluations and epoch statistics.</p>
+<p class="rubric">Examples</p>
+<p>Create epoch plots showing parameter evolution:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_epochs</span><span class="p">(</span><span class="s2">&quot;path/to/evolve_dir&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a 1-D scatterplot visualization of two parameters:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span><span class="s2">&quot;path/to/evolve_dir&quot;</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;param1&quot;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s2">&quot;param2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a 2-D Voronoi plot visualization with parameter values:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span><span class="s2">&quot;path/to/evolve_dir&quot;</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;param1&quot;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s2">&quot;param2&quot;</span><span class="p">,</span> <span class="n">cval</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a 3-D surface plot visualization with parameter values:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span><span class="s2">&quot;path/to/evolve_dir&quot;</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;param1&quot;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s2">&quot;param2&quot;</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s2">&quot;param3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a 3-D surface plot visualization with parameter values and color:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span><span class="s2">&quot;path/to/evolve_dir&quot;</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;param1&quot;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s2">&quot;param2&quot;</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s2">&quot;param3&quot;</span><span class="p">,</span> <span class="n">cval</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="epoch-visualization">
+<h3>Epoch Visualization<a class="headerlink" href="#epoch-visualization" title="Link to this heading"></a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.plotting.Plotting.plot_epochs">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Dark2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shade_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evopt/plotting.html#Plotting.plot_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.plotting.Plotting.plot_epochs" title="Link to this definition"></a></dt>
+<dd><p>Plot the mean and sigma values for each parameter across epochs.</p>
+<p>Creates visualizations showing how parameters evolved during optimization. For each parameter,
+this method generates a plot showing:
+- The mean value across epochs (line)
+- The individual evaluation results (scattered points)
+- The standard deviation ranges (shaded areas)</p>
+<p>Additionally, generates a convergence plot showing normalized sigma values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evolve_dir_path</strong> – Path to the directory containing the evolution data files.</p></li>
+<li><p><strong>show</strong> – Whether to display the plots in the current interface.</p></li>
+<li><p><strong>save_dir</strong> – Directory to save the plot files. If None, creates a ‘figures’
+subdirectory in evolve_dir_path.</p></li>
+<li><p><strong>save_ext</strong> – File extension for saved plots. Must be one of ‘png’, ‘jpg’,
+‘jpeg’, ‘pdf’, or ‘svg’.</p></li>
+<li><p><strong>cmap</strong> – Matplotlib colormap name to use for the plots.</p></li>
+<li><p><strong>point_alpha</strong> – Opacity of the scattered points (0.0-1.0).</p></li>
+<li><p><strong>shade_alpha</strong> – Opacity of the standard deviation shaded areas (0.0-1.0).</p></li>
+<li><p><strong>save_figures</strong> – Whether to save the generated figures to disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the required CSV files are not found.</p></li>
+<li><p><strong>ValueError</strong> – If an invalid file extension is provided.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="parameter-space-visualization">
+<h3>Parameter Space Visualization<a class="headerlink" href="#parameter-space-visualization" title="Link to this heading"></a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.plotting.Plotting.plot_vars">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_colour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evopt/plotting.html#Plotting.plot_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.plotting.Plotting.plot_vars" title="Link to this definition"></a></dt>
+<dd><p>Visualize relationships between optimization parameters and results.</p>
+<p>Creates visualizations to explore the relationships between parameters and results.
+The visualization type depends on the provided parameters:</p>
+<ul class="simple">
+<li><p>If only x and y are provided: Creates a 2D scatter plot</p></li>
+<li><p>If x, y, and cval are provided: Creates a Voronoi diagram with regions colored by cval</p></li>
+<li><p>If x, y, and z are provided: Creates a 3D surface plot of x, y, z</p></li>
+<li><p>If x, y, z, and cval are provided: Creates a 3D surface with color determined by cval</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evolve_dir_path</strong> – Path to the directory containing evolution data.</p></li>
+<li><p><strong>x</strong> – Column name for x-axis values.</p></li>
+<li><p><strong>y</strong> – Column name for y-axis values.</p></li>
+<li><p><strong>z</strong> – Column name for z-axis values (for 3D plots). Defaults to None.</p></li>
+<li><p><strong>cval</strong> – Column name for values used to color the plot. Defaults to None.</p></li>
+<li><p><strong>show</strong> – Whether to display the plots in the current interface.</p></li>
+<li><p><strong>save_dir</strong> – Directory to save the plots. If None, creates a ‘figures’
+subdirectory in evolve_dir_path.</p></li>
+<li><p><strong>save_ext</strong> – File extension for saved plots (‘png’, ‘jpg’, ‘jpeg’, ‘pdf’, ‘svg’).
+For 3D plots, always saved as HTML regardless of this setting.</p></li>
+<li><p><strong>cmap</strong> – Colormap name to use for the plots.</p></li>
+<li><p><strong>point_colour</strong> – Color for scatter points.</p></li>
+<li><p><strong>alpha</strong> – Opacity of plot elements (0.0-1.0).</p></li>
+<li><p><strong>save_figures</strong> – Whether to save the generated figures to disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Either a matplotlib Axes object (for 2D plots) or a plotly Figure object (for 3D plots).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the required CSV files are not found.</p></li>
+<li><p><strong>ValueError</strong> – If invalid parameters are provided or file extension is invalid.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Dark2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shade_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evopt/plotting.html#Plotting.plot_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Plot the mean and sigma values for each parameter across epochs.</p>
+<p>Creates visualizations showing how parameters evolved during optimization. For each parameter,
+this method generates a plot showing:
+- The mean value across epochs (line)
+- The individual evaluation results (scattered points)
+- The standard deviation ranges (shaded areas)</p>
+<p>Additionally, generates a convergence plot showing normalized sigma values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evolve_dir_path</strong> – Path to the directory containing the evolution data files.</p></li>
+<li><p><strong>show</strong> – Whether to display the plots in the current interface.</p></li>
+<li><p><strong>save_dir</strong> – Directory to save the plot files. If None, creates a ‘figures’
+subdirectory in evolve_dir_path.</p></li>
+<li><p><strong>save_ext</strong> – File extension for saved plots. Must be one of ‘png’, ‘jpg’,
+‘jpeg’, ‘pdf’, or ‘svg’.</p></li>
+<li><p><strong>cmap</strong> – Matplotlib colormap name to use for the plots.</p></li>
+<li><p><strong>point_alpha</strong> – Opacity of the scattered points (0.0-1.0).</p></li>
+<li><p><strong>shade_alpha</strong> – Opacity of the standard deviation shaded areas (0.0-1.0).</p></li>
+<li><p><strong>save_figures</strong> – Whether to save the generated figures to disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the required CSV files are not found.</p></li>
+<li><p><strong>ValueError</strong> – If an invalid file extension is provided.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_colour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evopt/plotting.html#Plotting.plot_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Visualize relationships between optimization parameters and results.</p>
+<p>Creates visualizations to explore the relationships between parameters and results.
+The visualization type depends on the provided parameters:</p>
+<ul class="simple">
+<li><p>If only x and y are provided: Creates a 2D scatter plot</p></li>
+<li><p>If x, y, and cval are provided: Creates a Voronoi diagram with regions colored by cval</p></li>
+<li><p>If x, y, and z are provided: Creates a 3D surface plot of x, y, z</p></li>
+<li><p>If x, y, z, and cval are provided: Creates a 3D surface with color determined by cval</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evolve_dir_path</strong> – Path to the directory containing evolution data.</p></li>
+<li><p><strong>x</strong> – Column name for x-axis values.</p></li>
+<li><p><strong>y</strong> – Column name for y-axis values.</p></li>
+<li><p><strong>z</strong> – Column name for z-axis values (for 3D plots). Defaults to None.</p></li>
+<li><p><strong>cval</strong> – Column name for values used to color the plot. Defaults to None.</p></li>
+<li><p><strong>show</strong> – Whether to display the plots in the current interface.</p></li>
+<li><p><strong>save_dir</strong> – Directory to save the plots. If None, creates a ‘figures’
+subdirectory in evolve_dir_path.</p></li>
+<li><p><strong>save_ext</strong> – File extension for saved plots (‘png’, ‘jpg’, ‘jpeg’, ‘pdf’, ‘svg’).
+For 3D plots, always saved as HTML regardless of this setting.</p></li>
+<li><p><strong>cmap</strong> – Colormap name to use for the plots.</p></li>
+<li><p><strong>point_colour</strong> – Color for scatter points.</p></li>
+<li><p><strong>alpha</strong> – Opacity of plot elements (0.0-1.0).</p></li>
+<li><p><strong>save_figures</strong> – Whether to save the generated figures to disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Either a matplotlib Axes object (for 2D plots) or a plotly Figure object (for 3D plots).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If the required CSV files are not found.</p></li>
+<li><p><strong>ValueError</strong> – If invalid parameters are provided or file extension is invalid.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="optimizer.html" class="btn btn-neutral float-left" title="Optimization (evopt.optimizer)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

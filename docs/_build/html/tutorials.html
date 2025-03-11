@@ -1,0 +1,546 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorials &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=6fefd858"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Optimization (evopt.optimizer)" href="optimizer.html" />
+    <link rel="prev" title="Getting Started" href="getting%20started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-optimization">Basic Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#single-objective-optimization">Single-Objective Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-optimization">Advanced Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multi-objective-optimization-with-constraints">Multi-Objective Optimization with Constraints</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checkpointing-and-resuming-optimization">Checkpointing and Resuming Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization">Visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-convergence-plots">Basic Convergence Plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameter-space-visualization">Parameter Space Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#high-performance-computing">High-Performance Computing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-on-slurm-clusters">Running on SLURM Clusters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-create-a-simple-optimization-script">Step 1: Create a simple optimization script</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-create-a-simple-slurm-submission-script">Step 2: Create a simple SLURM submission script</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-submit-the-job">Step 3: Submit the job</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-it-works">How it works</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#case-studies">Case Studies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#engineering-design-optimization">Engineering Design Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#machine-learning-hyperparameter-optimization">Machine Learning Hyperparameter Optimization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorials</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorials.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading"></a></h1>
+<p>This section provides step-by-step tutorials for using the evolutionary optimization framework,
+focusing on the core functionality of the <code class="docutils literal notranslate"><span class="pre">evopt</span></code> package.</p>
+<section id="basic-optimization">
+<h2>Basic Optimization<a class="headerlink" href="#basic-optimization" title="Link to this heading"></a></h2>
+<section id="single-objective-optimization">
+<h3>Single-Objective Optimization<a class="headerlink" href="#single-objective-optimization" title="Link to this heading"></a></h3>
+<p>Learn how to set up and run a basic optimization problem:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="c1"># Define parameter space with bounds</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># Define evaluator function (Rosenbrock function)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluator</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Print results</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best parameters: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">best_parameters</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final error: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">final_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Analyze convergence history</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epochs completed: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">epochs_completed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Termination reason: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">terminated_reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-optimization">
+<h2>Advanced Optimization<a class="headerlink" href="#advanced-optimization" title="Link to this heading"></a></h2>
+<section id="multi-objective-optimization-with-constraints">
+<h3>Multi-Objective Optimization with Constraints<a class="headerlink" href="#multi-objective-optimization-with-constraints" title="Link to this heading"></a></h3>
+<p>This example demonstrates how to optimize with multiple objectives and constraints:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="c1"># Define engineering simulation that returns multiple metrics</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">structural_simulation</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">]</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Calculate metrics (in a real case, this would run your simulation)</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="n">height</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">length</span> <span class="o">*</span> <span class="mf">7.8</span>  <span class="c1"># Density of steel</span>
+    <span class="n">stress</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">deflection</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">weight</span><span class="p">,</span>
+        <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="n">stress</span><span class="p">,</span>
+        <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="n">deflection</span>
+    <span class="p">}</span>
+
+<span class="c1"># Define parameter space</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+    <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># Define target values with constraints</span>
+<span class="c1"># Targets can be specified by any combination of the following formats:</span>
+    <span class="c1"># dict[key: dict[value, hard], ...]</span>
+    <span class="c1"># dict[key: (min, max), ...]</span>
+    <span class="c1"># dict[key: value, ...]</span>
+    <span class="c1"># dict[key: dict[(min, max), hard], ...]</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>  <span class="c1"># Soft constraint</span>
+    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span>                        <span class="c1"># Hard constraint range</span>
+    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>  <span class="c1"># Hard constraint</span>
+<span class="p">}</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">structural_simulation</span><span class="p">,</span>
+    <span class="n">target_dict</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">num_epochs</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best parameters: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">best_parameters</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="checkpointing-and-resuming-optimization">
+<h3>Checkpointing and Resuming Optimization<a class="headerlink" href="#checkpointing-and-resuming-optimization" title="Link to this heading"></a></h3>
+<p>Learn how to resume interrupted optimization runs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Define unique directory ID for this optimization</span>
+<span class="n">base_dir</span> <span class="o">=</span> <span class="s2">&quot;./optimization_studies&quot;</span> <span class="c1"># Your directory for all studies</span>
+<span class="n">dir_id</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># This will create &quot;./optimization_studies/evolve_5&quot;</span>
+
+<span class="c1"># First run (might be interrupted)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">base_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">,</span>
+    <span class="n">dir_id</span><span class="o">=</span><span class="n">dir_id</span><span class="p">,</span>
+    <span class="n">num_epochs</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+
+<span class="c1"># Resume optimization from the last epoch</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">base_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">,</span>
+    <span class="n">dir_id</span><span class="o">=</span><span class="n">dir_id</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Resume from a specific epoch</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">base_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">,</span>
+    <span class="n">dir_id</span><span class="o">=</span><span class="n">dir_id</span><span class="p">,</span>
+    <span class="n">start_epoch</span><span class="o">=</span><span class="mi">57</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="visualization">
+<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h2>
+<section id="basic-convergence-plots">
+<h3>Basic Convergence Plots<a class="headerlink" href="#basic-convergence-plots" title="Link to this heading"></a></h3>
+<p>Generate plots showing how parameters converged during optimization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="c1"># Path to optimization results</span>
+<span class="n">evolve_dir</span> <span class="o">=</span> <span class="s2">&quot;./optimization_results/evolve_5&quot;</span>
+
+<span class="c1"># Generate convergence plots</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_epochs</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_figures</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parameter-space-visualization">
+<h3>Parameter Space Visualization<a class="headerlink" href="#parameter-space-visualization" title="Link to this heading"></a></h3>
+<p>Create various visualizations of the parameter space:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="n">evolve_dir</span> <span class="o">=</span> <span class="s2">&quot;./optimization_results/evolve_5&quot;</span>
+
+<span class="c1"># 2D scatter plot (parameter vs error)</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;error&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Voronoi diagram colored by error</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;width&quot;</span><span class="p">,</span>
+    <span class="n">cval</span><span class="o">=</span><span class="s2">&quot;error&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># 3D surface plot</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;width&quot;</span><span class="p">,</span>
+    <span class="n">z</span><span class="o">=</span><span class="s2">&quot;stress&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># 4D visualization (3D surface with color)</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="n">evolve_dir</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;width&quot;</span><span class="p">,</span>
+    <span class="n">z</span><span class="o">=</span><span class="s2">&quot;deflection&quot;</span><span class="p">,</span>
+    <span class="n">cval</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="high-performance-computing">
+<h2>High-Performance Computing<a class="headerlink" href="#high-performance-computing" title="Link to this heading"></a></h2>
+<section id="running-on-slurm-clusters">
+<h3>Running on SLURM Clusters<a class="headerlink" href="#running-on-slurm-clusters" title="Link to this heading"></a></h3>
+<p>The following demonstrates how to run optimizations on a SLURM-based HPC system:</p>
+<section id="step-1-create-a-simple-optimization-script">
+<h4>Step 1: Create a simple optimization script<a class="headerlink" href="#step-1-create-a-simple-optimization-script" title="Link to this heading"></a></h4>
+<p>Create a file named <code class="docutils literal notranslate"><span class="pre">optimize.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># filepath: optimize.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="c1"># Define a simple parameter space</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># Define evaluator function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluator</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="c1"># This would typically call your simulation or analysis code</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">z</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># Simple function to minimize</span>
+
+<span class="c1"># Run optimization with HPC settings</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>             <span class="c1"># Will use up to 8 parallel SLURM jobs</span>
+    <span class="n">hpc_cores_per_worker</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>    <span class="c1"># Each worker gets 2 CPU cores</span>
+    <span class="n">hpc_memory_gb_per_worker</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="c1"># Each worker gets 4GB RAM</span>
+    <span class="n">hpc_wall_time</span><span class="o">=</span><span class="s2">&quot;2:00:00&quot;</span><span class="p">,</span>   <span class="c1"># 2-hour time limit per worker</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Print results</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best parameters: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">best_parameters</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final error: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">final_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-create-a-simple-slurm-submission-script">
+<h4>Step 2: Create a simple SLURM submission script<a class="headerlink" href="#step-2-create-a-simple-slurm-submission-script" title="Link to this heading"></a></h4>
+<p>Create a file named <code class="docutils literal notranslate"><span class="pre">submit_job.sh</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --job-name=evopt_job</span>
+<span class="c1">#SBATCH --output=evopt_%j.out</span>
+<span class="c1">#SBATCH --error=evopt_%j.err</span>
+<span class="c1">#SBATCH --time=24:00:00</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --cpus-per-task=2</span>
+<span class="c1">#SBATCH --mem=8G</span>
+
+<span class="c1"># Load necessary modules</span>
+module<span class="w"> </span>load<span class="w"> </span>python
+
+<span class="c1"># Run the optimization script</span>
+python<span class="w"> </span>optimize.py
+
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Job completed&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-submit-the-job">
+<h4>Step 3: Submit the job<a class="headerlink" href="#step-3-submit-the-job" title="Link to this heading"></a></h4>
+<p>Submit your job to SLURM:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sbatch<span class="w"> </span>submit_job.sh
+</pre></div>
+</div>
+</section>
+<section id="how-it-works">
+<h4>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h4>
+<p>When you run this setup:</p>
+<ol class="arabic simple">
+<li><p>SLURM launches your main Python script</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">evopt.optimize()</span></code> function detects it’s running in a SLURM environment</p></li>
+<li><p>For each batch of evaluations, evopt automatically:
+- Creates the necessary parameter files
+- Submits worker jobs to SLURM (up to max_workers)
+- Waits for all workers to complete
+- Collects and processes the results</p></li>
+</ol>
+<p>You don’t need to manually handle the parallelization - evopt takes care of submitting
+the appropriate SLURM jobs based on your settings.</p>
+<p>Note: For more complex simulations, you would typically modify the evaluator function
+to interact with your simulation software or external tools as needed.</p>
+</section>
+</section>
+</section>
+<section id="case-studies">
+<h2>Case Studies<a class="headerlink" href="#case-studies" title="Link to this heading"></a></h2>
+<section id="engineering-design-optimization">
+<h3>Engineering Design Optimization<a class="headerlink" href="#engineering-design-optimization" title="Link to this heading"></a></h3>
+<p>A complete example of optimizing an engineering design:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example of optimizing a truss structure</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Define truss simulation function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">simulate_truss</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="c1"># In a real case, this would call an engineering simulation software</span>
+    <span class="c1"># For this example, we&#39;ll use a simplified model</span>
+
+    <span class="c1"># Extract design parameters</span>
+    <span class="n">cross_section</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;cross_section&#39;</span><span class="p">]</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">]</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;span&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Calculate performance metrics</span>
+    <span class="n">material_volume</span> <span class="o">=</span> <span class="n">cross_section</span> <span class="o">*</span> <span class="p">(</span><span class="n">span</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">max_stress</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">span</span> <span class="o">/</span> <span class="p">(</span><span class="n">cross_section</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">deflection</span> <span class="o">=</span> <span class="n">span</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="p">(</span><span class="mi">48</span> <span class="o">*</span> <span class="mf">200e9</span> <span class="o">*</span> <span class="n">cross_section</span> <span class="o">*</span> <span class="n">height</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="n">material_volume</span><span class="p">,</span>
+        <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="n">max_stress</span><span class="p">,</span>
+        <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="n">deflection</span>
+    <span class="p">}</span>
+
+<span class="c1"># Define parameter space</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;cross_section&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>  <span class="c1"># m2</span>
+    <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span>           <span class="c1"># m</span>
+    <span class="s1">&#39;span&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">)</span>             <span class="c1"># m</span>
+<span class="p">}</span>
+
+<span class="c1"># Define targets</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>      <span class="c1"># Minimize volume (soft)</span>
+    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">250e6</span><span class="p">),</span>                         <span class="c1"># Stress limit (hard)</span>
+    <span class="s1">&#39;deflection&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;hard&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>   <span class="c1"># Deflection limit (hard)</span>
+<span class="p">}</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">simulate_truss</span><span class="p">,</span>
+    <span class="n">target_dict</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span>
+<span class="p">)</span>
+
+<span class="c1"># Visualize results</span>
+<span class="n">evolve_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;./evolve_</span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">directory_id</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_epochs</span><span class="p">(</span><span class="n">evolve_dir</span><span class="p">)</span>
+<span class="n">evopt</span><span class="o">.</span><span class="n">Plotting</span><span class="o">.</span><span class="n">plot_vars</span><span class="p">(</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;cross_section&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="s2">&quot;volume&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="machine-learning-hyperparameter-optimization">
+<h3>Machine Learning Hyperparameter Optimization<a class="headerlink" href="#machine-learning-hyperparameter-optimization" title="Link to this heading"></a></h3>
+<p>Optimize hyperparameters for a machine learning model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="c1"># Load data</span>
+<span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span>
+
+<span class="c1"># Define evaluator function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="c1"># Create model with parameters</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
+        <span class="n">n_estimators</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;n_estimators&#39;</span><span class="p">]),</span>
+        <span class="n">max_depth</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;max_depth&#39;</span><span class="p">]),</span>
+        <span class="n">min_samples_split</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;min_samples_split&#39;</span><span class="p">]),</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Evaluate using cross-validation</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="c1"># Return negative score because we&#39;re minimizing</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="c1"># Define parameter space</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;n_estimators&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="s1">&#39;max_depth&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+    <span class="s1">&#39;min_samples_split&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluate_model</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">num_epochs</span><span class="o">=</span><span class="mi">20</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Best hyperparameters:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">best_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;n_estimators&#39;</span><span class="p">,</span> <span class="s1">&#39;max_depth&#39;</span><span class="p">,</span> <span class="s1">&#39;min_samples_split&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best accuracy: </span><span class="si">{</span><span class="o">-</span><span class="n">results</span><span class="o">.</span><span class="n">final_error</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting%20started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optimizer.html" class="btn btn-neutral float-right" title="Optimization (evopt.optimizer)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

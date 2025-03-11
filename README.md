@@ -1,21 +1,21 @@
 # evopt
-### User Friendly Black-Box Numerical Optimisation
-`evopt` is a package for efficient parameter optimisation using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
+### User Friendly Black-Box Numerical Optimization
+`evopt` is a package for efficient parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimisation of the two parameter Ackley function." width="800">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimization of the two parameter Ackley function." width="800">
   <br>
-  <em>Optimisation of the two parameter Ackley function.</em>
+  <em>Optimization of the two parameter Ackley function.</em>
 </div>
 
 ## Scope
 
-*   **Focus**: The primary focus is on providing a CMA-ES-based optimisation routine that is easy to set up and use.
-*   **Parameter Optimisation**: The package is designed for problems where you need to find the optimal values for a set of parameters.
-*   **Function-Value-Free Optimisation**: It is designed to work without needing derivative information.
+*   **Focus**: The primary focus is on providing a CMA-ES-based optimization routine that is easy to set up and use.
+*   **Parameter Optimization**: The package is designed for problems where you need to find the optimal values for a set of parameters.
+*   **Function-Value-Free Optimization**: It is designed to work without needing derivative information.
 *   **Directory Management**: The package includes robust directory management to organise results, checkpoints, and logs.
-*   **Logging**: It provides logging capabilities to track the optimisation process.
-*   **Checkpointing**: It supports saving and loading checkpoints to resume interrupted optimisation runs.
+*   **Logging**: It provides logging capabilities to track the optimization process.
+*   **Checkpointing**: It supports saving and loading checkpoints to resume interrupted optimization runs.
 *   **CSV Output**: It writes results and epoch data to CSV files for easy analysis.
 *   **Easy results plotting**: Simple pain-free methods to plot the results.
 *   **High Performance Computing**: It can leverage HPC resources for increased performance.
@@ -35,15 +35,15 @@
     *   **`evopt` Use**: You can define the hyperparameters and their ranges, use a validation set to evaluate the model's performance with different hyperparameter settings, and then use `evopt` to find the best hyperparameter configuration.
 
 4.  **Optimising Engineering Designs**:
-    *   **Scenario**: You're designing an engineering component (e.g., an airfoil, a bridge, or a circuit) and want to find the dimensions or material properties that maximise performance (e.g., lift, strength, or efficiency).
+    *   **Scenario**: You're designing an engineering component (e.g., an airfoil, a bridge, or a circuit) and want to find the dimensions or material properties that maximize performance (e.g., lift, strength, or efficiency).
     *   **`evopt` Use**: You can create a simulation or model of the component's performance, define the design parameters and their constraints, and then use `evopt` to find the optimal design.
 
 
 ## Key Advantages
 
-*   **Ease of Use**: Simple API for defining parameters, evaluator, and optimisation settings.
+*   **Ease of Use**: Simple API for defining parameters, evaluator, and optimization settings.
 *   **Derivative-Free**: Works well for problems where derivatives are unavailable or difficult to compute.
-*   **Robustness**: CMA-ES is a powerful optimisation algorithm that can handle non-convex and noisy problems.
+*   **Robustness**: CMA-ES is a powerful optimization algorithm that can handle non-convex and noisy problems.
 *   **Organization**: Automatic directory management and logging for easy tracking and analysis.
 
 ## Installation
@@ -56,7 +56,7 @@ pip install evopt
 
 ## Usage
 
-Here is an example of how to use the `evopt` package to optimise the Rosenbrock function:
+Here is an example of how to use the `evopt` package to optimize the Rosenbrock function:
 
 ```python
 import evopt
@@ -73,8 +73,8 @@ def evaluator(param_dict):
     error = (1 - p1) ** 2 + 100*(p2 - p1 ** 2) ** 2
     return error
 
-# Run the optimisation using .optimise method
-results = evopt.optimise(params, evaluator)
+# Run the optimization using .optimize method
+results = evopt.optimize(params, evaluator)
 ```
 
 Here is the corresponding output:
@@ -115,8 +115,8 @@ print(results.best_parameters)
 ```
 
 
-## Multi-objective target optimisation
-Sometimes when using black-box functions like simulations, your result may be a specific variable such as mean pressure, temperature, or velocity. With `evopt` it is possible to specify a target value for the optimiser to reach, and in cases where targets are in conflict, you can specify `hard` or `soft` target preference such that the optimiser can weigh target priority.
+## Multi-objective target optimization
+Sometimes when using black-box functions like simulations, your result may be a specific variable such as mean pressure, temperature, or velocity. With `evopt` it is possible to specify a target value for the optimizer to reach, and in cases where targets are in conflict, you can specify `hard` or `soft` target preference such that the optimizer can weigh target priority.
 
 For example:
 ```python
@@ -142,7 +142,7 @@ params = {
     "x2": (-5, 5),
 }
 
-results = evopt.optimise(params, example_eval, target_dict=target_dict)
+results = evopt.optimize(params, example_eval, target_dict=target_dict)
 ```
 
 and corresponding output:
@@ -169,12 +169,12 @@ Epoch 11 | Mean Parameters: [2.105, -2.501] | Sigma parameters: [0.039, 0.202]
 Epoch 11 | Normalised Sigma parameters: [0.015, 0.081]
 Terminating after meeting termination criteria at epoch 12.
 ```
-Note that verbosity can be controlled with verbose: bool option in evopt.optimise().
+Note that verbosity can be controlled with verbose: bool option in evopt.optimize().
 
 
 ## Directory Structure
 
-When you run an optimisation with `evopt`, it creates the following directory structure to organise the results:
+When you run an optimization with `evopt`, it creates the following directory structure to organise the results:
 Each evaluation function call operates in its respective solution directory. This means that files can be created locally without needing absolute paths.
 For example: 
 ```python
@@ -210,30 +210,30 @@ base_directory/
     └── results.csv
 ```
 
-*   `base_directory`: This is the base directory where the optimisation runs are stored. If not specified, it defaults to the current working directory.
-*   `evolve_{dir_id}`: Each optimisation run gets its own directory named `evolve_{dir_id}`, where `dir_id` is a unique integer.
-*   `epochs`: This directory contains subdirectories for each epoch of the optimisation.
+*   `base_directory`: This is the base directory where the optimization runs are stored. If not specified, it defaults to the current working directory.
+*   `evolve_{dir_id}`: Each optimization run gets its own directory named `evolve_{dir_id}`, where `dir_id` is a unique integer.
+*   `epochs`: This directory contains subdirectories for each epoch of the optimization.
 *   `epoch####`: Each epoch directory contains subdirectories for each solution evaluated in that epoch. Epoch folders are only produced if solution files contain files.
 *   `solution####`: Each solution directory can contain files generated by the evaluator function for that specific solution. Solution folders are only produced if files are created during an evaluation.
-*   `checkpoints`: This directory stores checkpoint files, allowing you to resume interrupted optimisation runs.
-*   `logs`: This directory contains the log file (`logfile.log`) which captures the output of the optimisation process.
+*   `checkpoints`: This directory stores checkpoint files, allowing you to resume interrupted optimization runs.
+*   `logs`: This directory contains the log file (`logfile.log`) which captures the output of the optimization process.
 *   `epochs.csv`: This file contains summary statistics for each epoch, such as mean error, parameter values, and sigma values.
-*   `results.csv`: This file contains the results for each solution evaluated during the optimisation, including parameter values and the corresponding error.
+*   `results.csv`: This file contains the results for each solution evaluated during the optimization, including parameter values and the corresponding error.
 
-## Keywords for `optimise()` Function
+## Keywords for `optimize()` Function
 
-The `evopt.optimise()` function takes several keyword arguments to control the optimisation process:
+The `evopt.optimize()` function takes several keyword arguments to control the optimization process:
 
-*   `params (dict)`: A dictionary defining the parameters to optimise. Keys are parameter names, and values are tuples of `(min, max)` bounds.
-*   `evaluator (Callable)`: A callable (usually a function) that evaluates the parameters and returns an error value. This function is the core of your optimisation problem.
-*   `optimiser (str, optional)`: The optimisation algorithm to use. Currently, only 'cmaes' (Covariance Matrix Adaptation Evolution Strategy) is supported. Defaults to `'cmaes'`.
-*   `base_dir (str, optional)`: The base directory where the optimisation results (checkpoints, logs, CSV files) will be stored. If not specified, it defaults to the current working directory.
-*   `dir_id (int, optional)`: A specific directory ID for the optimisation run. If provided, the results will be stored in base_dir/evolve_{dir_id}. If not provided, a new unique ID will be generated automatically.
-*   `sigma_threshold (float, optional)`: The threshold for the sigma values (step size) of the CMA-ES algorithm. The optimisation will terminate when all sigma values are below this threshold, indicating convergence. Defaults to `0.1`.
-*   `batch_size (int, optional)`: The number of solutions to evaluate in each epoch (generation) of the CMA-ES algorithm. A larger batch size can speed up the optimisation but may require more computational resources. Defaults to `16`.
-*   `start_epoch (int, optional)`: The epoch number to start from. This is useful for resuming an interrupted optimisation run from a checkpoint. Defaults to `None`.
-*   `verbose (bool, optional)`: Whether to print detailed information about the optimisation process to the console. If `True`, the optimisation will print information about each epoch and solution. Defaults to `True`.
-*   `num_epochs (int, optional)`: The maximum number of epochs to run the optimisation for. If specified, the optimisation will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimisation will run until the convergence criteria is met. Defaults to `None`.
+*   `params (dict)`: A dictionary defining the parameters to optimize. Keys are parameter names, and values are tuples of `(min, max)` bounds.
+*   `evaluator (Callable)`: A callable (usually a function) that evaluates the parameters and returns an error value. This function is the core of your optimization problem.
+*   `optimizer (str, optional)`: The optimization algorithm to use. Currently, only 'cmaes' (Covariance Matrix Adaptation Evolution Strategy) is supported. Defaults to `'cmaes'`.
+*   `base_dir (str, optional)`: The base directory where the optimization results (checkpoints, logs, CSV files) will be stored. If not specified, it defaults to the current working directory.
+*   `dir_id (int, optional)`: A specific directory ID for the optimization run. If provided, the results will be stored in base_dir/evolve_{dir_id}. If not provided, a new unique ID will be generated automatically.
+*   `sigma_threshold (float, optional)`: The threshold for the sigma values (step size) of the CMA-ES algorithm. The optimization will terminate when all sigma values are below this threshold, indicating convergence. Defaults to `0.1`.
+*   `batch_size (int, optional)`: The number of solutions to evaluate in each epoch (generation) of the CMA-ES algorithm. A larger batch size can speed up the optimization but may require more computational resources. Defaults to `16`.
+*   `start_epoch (int, optional)`: The epoch number to start from. This is useful for resuming an interrupted optimization run from a checkpoint. Defaults to `None`.
+*   `verbose (bool, optional)`: Whether to print detailed information about the optimization process to the console. If `True`, the optimization will print information about each epoch and solution. Defaults to `True`.
+*   `num_epochs (int, optional)`: The maximum number of epochs to run the optimization for. If specified, the optimization will terminate after this number of epochs, even if the convergence criteria (`sigma_threshold`) has not been met. If None, the optimization will run until the convergence criteria is met. Defaults to `None`.
 *   `max_workers (int, optional)`: The number of multi-processing workers to operate concurrently. Defaults to 1. Each worker operates on a different processor.
 *   `rand_seed (int, optional)`: Specify the deterministic seed.
 *   `hpc_cores_per_worker (int, optional)`: Number of CPU cores to allocate per HPC worker.
@@ -318,7 +318,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 <div align="center">
   <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/x1_vs_x2_vs_error_vs_epoch_surface.png" alt="Parameters versus error coloured by epoch 3-D surface plot." width="400">
   <br>
-  <em>3-D surface plot of the parameters versus the error values, coloured by epoch. As is the nature of convergent optimisation, the latest epochs show the lowest error values.
+  <em>3-D surface plot of the parameters versus the error values, coloured by epoch. As is the nature of convergent optimization, the latest epochs show the lowest error values.
   </em>
 </div>
 <br>
@@ -328,7 +328,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", 
 `evopt` can be run from several HPC environments such as SLURM and OMP.
 First you'll need to create a virtual environment where you can `pip install evopt` and required dependencies. You can skip this step if `evopt` is already installed as an HPC module, in which case simple load it in.
 
-For HPCs using the SLURM scheduler, you can initiate an optimisation study by submitting a master bash script to SLURM that runs a python script that calls the `evopt.optimise()` method. The OS environment is detected automatically and a number of workers in parallel will submit a SLURM job corresponding to a single function evaluation.
+For HPCs using the SLURM scheduler, you can initiate an optimization study by submitting a master bash script to SLURM that runs a python script that calls the `evopt.optimize()` method. The OS environment is detected automatically and a number of workers in parallel will submit a SLURM job corresponding to a single function evaluation.
 <br>
 ```bash
 #!/bin/bash
@@ -345,7 +345,7 @@ module load python/3.13.1
 # Activate virtual environment containg evopt
 source myenv/bin/activate
 
-# Run the optimisation script
+# Run the optimization script
 python example_script.py
 ```
 
@@ -354,7 +354,7 @@ python example_script.py
 ```python
 import evopt
 
-# Define what it is you want to optimise
+# Define what it is you want to optimize
 def my_function(param_dict):
     x = param_dict['x']
     y = param_dict['y']
@@ -368,8 +368,8 @@ params = {
 # Define project directory
 my_dir = r"path/to/my/dir"
 
-# Run optimisation
-results = optimise(
+# Run optimization
+results = optimize(
     params = params,
     evaluator = my_function,
     base_dir = my_dir,
@@ -385,13 +385,13 @@ results = optimise(
 
 ## Citing
 If you publish research making use of this library, we encourage you to cite this repository:
-> Hart-Villamil, R. (2024). Evopt, simple but powerful gradient-free numerical optimisation.
+> Hart-Villamil, R. (2024). Evopt, simple but powerful gradient-free numerical optimization.
 
 This library makes fundamental use of the `pycma` implementation of the state-of-the-art CMA-ES algorithm.
 Hence we kindly ask that research using this library cites:
 > Nikolaus Hansen, Youhei Akimoto, and Petr Baudis. CMA-ES/pycma on Github. Zenodo, DOI:10.5281/zenodo.2559634, February 2019.
 
-Finally, this work was inspired by 'ACCES', a package for derivative-free numerical optimisation designed for simulations.
+Finally, this work was inspired by 'ACCES', a package for derivative-free numerical optimization designed for simulations.
 > Nicusan, A., Werner, D., Sykes, J. A., Seville, J., & Windows-Yule, K. (2022). ACCES: Autonomous Characterisation and Calibration via Evolutionary Simulation (Version 0.2.0) [Computer software]
 
 

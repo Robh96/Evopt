@@ -1,3 +1,21 @@
+"""Visualization utilities for evolutionary optimization results.
+
+This module provides visualization tools for analyzing optimization results from the evopt package.
+It contains functionality for plotting parameter evolution across epochs, convergence metrics,
+and exploring parameter spaces through various visualization techniques including 2D scatter plots,
+Voronoi diagrams, and 3D surface plots.
+
+Examples:
+    Plot the evolution of parameters across epochs:
+    
+    >>> from evopt.plotting import Plotting
+    >>> Plotting.plot_epochs("path/to/evolve_dir")
+    
+    Visualize relationships between two parameters:
+    
+    >>> Plotting.plot_vars("path/to/evolve_dir", "param1", "param2")
+"""
+
 import pandas as pd
 import numpy as np
 from scipy.spatial import Voronoi, voronoi_plot_2d
@@ -7,6 +25,38 @@ import matplotlib.pyplot as plt
 import os
 
 class Plotting:
+    """Visualization tools for evolutionary optimization results.
+        
+    This class provides static methods for visualizing results from evolutionary optimization
+    runs. It can generate plots showing the evolution of parameters across epochs, parameter
+    convergence, and explore relationships between parameters through various visualization
+    techniques.
+    
+    The class operates on the CSV result files produced during optimization runs, which contain
+    information about individual evaluations and epoch statistics.
+    
+    Examples:
+        Create epoch plots showing parameter evolution:
+        
+        >>> Plotting.plot_epochs("path/to/evolve_dir")
+        
+        Create a 1-D scatterplot visualization of two parameters:
+        
+        >>> Plotting.plot_vars("path/to/evolve_dir", x = "param1", y = "param2")
+        
+        Create a 2-D Voronoi plot visualization with parameter values:
+        
+        >>> Plotting.plot_vars("path/to/evolve_dir", x = "param1", y = "param2", cval = "error")
+
+        Create a 3-D surface plot visualization with parameter values:
+
+        >>> Plotting.plot_vars("path/to/evolve_dir", x = "param1", y = "param2", z = "param3")
+
+        Create a 3-D surface plot visualization with parameter values and color:
+
+        >>> Plotting.plot_vars("path/to/evolve_dir", x = "param1", y = "param2", z = "param3", cval = "error")
+    """
+
     @staticmethod
     def plot_epochs(
         evolve_dir_path: str,
@@ -18,18 +68,34 @@ class Plotting:
         shade_alpha: float|int = 0.4,
         save_figures: bool = True
     ):
-        """
-        Plots the mean and sigma values for each parameter across epochs.
-        Also plots the results for each epoch.
+        """Plot the mean and sigma values for each parameter across epochs.
+        
+        Creates visualizations showing how parameters evolved during optimization. For each parameter,
+        this method generates a plot showing:
+        - The mean value across epochs (line)
+        - The individual evaluation results (scattered points)
+        - The standard deviation ranges (shaded areas)
+        
+        Additionally, generates a convergence plot showing normalized sigma values.
+        
         Args:
-            evolve_dir_path (str): Path to the directory containing the evolution data.
-            show (bool, optional): Whether to display the plots. Defaults to True.
-            save_dir (str, optional): Directory to save the plots. Defaults to None.
-            save_ext (str, optional): File extension for saving the plots. Defaults to ".png".
-            cmap (str, optional): Colormap to use. Defaults to "Dark2".
-            point_alpha (float, optional): Alpha value for the points. Defaults to 0.75.
-            shade_alpha (float, optional): Alpha value for the shaded regions. Defaults to 0.4.
-            save_figures (bool, optional): Whether to save the figures. Defaults to True.
+            evolve_dir_path: Path to the directory containing the evolution data files.
+            show: Whether to display the plots in the current interface.
+            save_dir: Directory to save the plot files. If None, creates a 'figures' 
+                subdirectory in evolve_dir_path.
+            save_ext: File extension for saved plots. Must be one of 'png', 'jpg', 
+                'jpeg', 'pdf', or 'svg'.
+            cmap: Matplotlib colormap name to use for the plots.
+            point_alpha: Opacity of the scattered points (0.0-1.0).
+            shade_alpha: Opacity of the standard deviation shaded areas (0.0-1.0).
+            save_figures: Whether to save the generated figures to disk.
+            
+        Returns:
+            None
+            
+        Raises:
+            FileNotFoundError: If the required CSV files are not found.
+            ValueError: If an invalid file extension is provided.
         """
 
         epochs_csv_path = os.path.join(evolve_dir_path, "epochs.csv")
@@ -129,26 +195,38 @@ class Plotting:
         alpha: float|int = 1,
         save_figures: bool = True
     ):
-        """
-        Plots the given variables against each other.
-        if only x and y are provided, plots x vs y.
-        if x, y, and cval are provided but not z, plots 2-d histogram x vs y vs cval.
-        if x, y, and z are provided but not cval, plots 3-d surface of x vs y vs z.
-        if x, y, z, and cval are provided, plots 3-d surface of x vs y vs z with cval as color.
-
+        """Visualize relationships between optimization parameters and results.
+        
+        Creates visualizations to explore the relationships between parameters and results.
+        The visualization type depends on the provided parameters:
+        
+        - If only x and y are provided: Creates a 2D scatter plot
+        - If x, y, and cval are provided: Creates a Voronoi diagram with regions colored by cval
+        - If x, y, and z are provided: Creates a 3D surface plot of x, y, z
+        - If x, y, z, and cval are provided: Creates a 3D surface with color determined by cval
+        
         Args:
-            evolve_dir_path (str): Path to the directory containing the evolution data.
-            x (str): Column name for x-coordinates.
-            y (str): Column name for y-coordinates.
-            z (str, optional): Column name for z-coordinates. Defaults to None.
-            cval (str, optional): Column name for the value to color the regions by. Defaults to None.
-            show (bool, optional): Whether to display the plots. Defaults to True.
-            save_dir (str, optional): Directory to save the plots. Defaults to None.
-            save_ext (str, optional): File extension for saving the plots. Defaults to ".png".
-            cmap (str, optional): Colormap to use. Defaults to "viridis".
-            point_colour (str, optional): Colour of the points. Defaults to "black".
-            alpha (float, optional): Alpha value for the points. Defaults to 1.
-            save_figures (bool, optional): Whether to save the figures. Defaults to True.
+            evolve_dir_path: Path to the directory containing evolution data.
+            x: Column name for x-axis values.
+            y: Column name for y-axis values.
+            z: Column name for z-axis values (for 3D plots). Defaults to None.
+            cval: Column name for values used to color the plot. Defaults to None.
+            show: Whether to display the plots in the current interface.
+            save_dir: Directory to save the plots. If None, creates a 'figures' 
+                subdirectory in evolve_dir_path.
+            save_ext: File extension for saved plots ('png', 'jpg', 'jpeg', 'pdf', 'svg').
+                For 3D plots, always saved as HTML regardless of this setting.
+            cmap: Colormap name to use for the plots.
+            point_colour: Color for scatter points.
+            alpha: Opacity of plot elements (0.0-1.0).
+            save_figures: Whether to save the generated figures to disk.
+            
+        Returns:
+            Either a matplotlib Axes object (for 2D plots) or a plotly Figure object (for 3D plots).
+            
+        Raises:
+            FileNotFoundError: If the required CSV files are not found.
+            ValueError: If invalid parameters are provided or file extension is invalid.
         """
 
         results_csv_path = os.path.join(evolve_dir_path, "results.csv")
@@ -292,19 +370,24 @@ class Plotting:
     
     @staticmethod
     def _plot_voronoi(data, x, y, cval, cmap="viridis", ax=None, clip_infinite=True, point_colour="black", alpha=0.25):
-        """
-        Plots a Voronoi diagram with regions colored by a given value.
-
+        """Create a Voronoi diagram with regions colored by a specified value.
+        
+        This helper method generates a Voronoi tessellation of the parameter space,
+        where each region is colored according to a specified value (e.g., error).
+        
         Args:
-            data (pd.DataFrame): DataFrame containing the data.
-            x (str): Column name for x-coordinates.
-            y (str): Column name for y-coordinates.
-            cval (str): Column name for the value to color the regions by.
-            cmap (str, optional): Colormap to use. Defaults to "viridis".
-            ax (matplotlib.axes._axes.Axes, optional): Axes object to plot on. If None, a new figure and axes are created. Defaults to None.
-            clip_infinite (bool, optional): Whether to clip the infinite regions. Defaults to True.
+            data: DataFrame containing the data points.
+            x: Column name for x-coordinates.
+            y: Column name for y-coordinates.
+            cval: Column name for the value to color the regions by.
+            cmap: Colormap name to use for coloring regions.
+            ax: Matplotlib axes object to plot on. If None, creates a new figure.
+            clip_infinite: Whether to clip infinite Voronoi regions by adding boundary points.
+            point_colour: Color for the data points.
+            alpha: Opacity for the data points (0.0-1.0).
+            
         Returns:
-            matplotlib.axes._axes.Axes: The Axes object with the plot.
+            matplotlib.axes._axes.Axes: The axes object with the Voronoi plot.
         """
         if ax is None:
             fig, ax = plt.subplots()

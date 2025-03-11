@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>evopt.plotting &#8212; evopt 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=2bf1fcf8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    
+    <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">evopt 2024 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">evopt.plotting</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for evopt.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Visualization utilities for evolutionary optimization results.</span>
+
+<span class="sd">This module provides visualization tools for analyzing optimization results from the evopt package.</span>
+<span class="sd">It contains functionality for plotting parameter evolution across epochs, convergence metrics,</span>
+<span class="sd">and exploring parameter spaces through various visualization techniques including 2D scatter plots,</span>
+<span class="sd">Voronoi diagrams, and 3D surface plots.</span>
+
+<span class="sd">Examples:</span>
+<span class="sd">    Plot the evolution of parameters across epochs:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from evopt.plotting import Plotting</span>
+<span class="sd">    &gt;&gt;&gt; Plotting.plot_epochs(&quot;path/to/evolve_dir&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    Visualize relationships between two parameters:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; Plotting.plot_vars(&quot;path/to/evolve_dir&quot;, &quot;param1&quot;, &quot;param2&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">Voronoi</span><span class="p">,</span> <span class="n">voronoi_plot_2d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">griddata</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<div class="viewcode-block" id="Plotting">
+<a class="viewcode-back" href="../../plotting.html#evopt.plotting.Plotting">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Plotting</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualization tools for evolutionary optimization results.</span>
+<span class="sd">        </span>
+<span class="sd">    This class provides static methods for visualizing results from evolutionary optimization</span>
+<span class="sd">    runs. It can generate plots showing the evolution of parameters across epochs, parameter</span>
+<span class="sd">    convergence, and explore relationships between parameters through various visualization</span>
+<span class="sd">    techniques.</span>
+<span class="sd">    </span>
+<span class="sd">    The class operates on the CSV result files produced during optimization runs, which contain</span>
+<span class="sd">    information about individual evaluations and epoch statistics.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Create epoch plots showing parameter evolution:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; Plotting.plot_epochs(&quot;path/to/evolve_dir&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        Create a 1-D scatterplot visualization of two parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; Plotting.plot_vars(&quot;path/to/evolve_dir&quot;, x = &quot;param1&quot;, y = &quot;param2&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        Create a 2-D Voronoi plot visualization with parameter values:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; Plotting.plot_vars(&quot;path/to/evolve_dir&quot;, x = &quot;param1&quot;, y = &quot;param2&quot;, cval = &quot;error&quot;)</span>
+
+<span class="sd">        Create a 3-D surface plot visualization with parameter values:</span>
+
+<span class="sd">        &gt;&gt;&gt; Plotting.plot_vars(&quot;path/to/evolve_dir&quot;, x = &quot;param1&quot;, y = &quot;param2&quot;, z = &quot;param3&quot;)</span>
+
+<span class="sd">        Create a 3-D surface plot visualization with parameter values and color:</span>
+
+<span class="sd">        &gt;&gt;&gt; Plotting.plot_vars(&quot;path/to/evolve_dir&quot;, x = &quot;param1&quot;, y = &quot;param2&quot;, z = &quot;param3&quot;, cval = &quot;error&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Plotting.plot_epochs">
+<a class="viewcode-back" href="../../plotting.html#evopt.plotting.Plotting.plot_epochs">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_epochs</span><span class="p">(</span>
+        <span class="n">evolve_dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Dark2&quot;</span><span class="p">,</span>
+        <span class="n">point_alpha</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="nb">int</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">,</span>
+        <span class="n">shade_alpha</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="nb">int</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">save_figures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the mean and sigma values for each parameter across epochs.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates visualizations showing how parameters evolved during optimization. For each parameter,</span>
+<span class="sd">        this method generates a plot showing:</span>
+<span class="sd">        - The mean value across epochs (line)</span>
+<span class="sd">        - The individual evaluation results (scattered points)</span>
+<span class="sd">        - The standard deviation ranges (shaded areas)</span>
+<span class="sd">        </span>
+<span class="sd">        Additionally, generates a convergence plot showing normalized sigma values.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            evolve_dir_path: Path to the directory containing the evolution data files.</span>
+<span class="sd">            show: Whether to display the plots in the current interface.</span>
+<span class="sd">            save_dir: Directory to save the plot files. If None, creates a &#39;figures&#39; </span>
+<span class="sd">                subdirectory in evolve_dir_path.</span>
+<span class="sd">            save_ext: File extension for saved plots. Must be one of &#39;png&#39;, &#39;jpg&#39;, </span>
+<span class="sd">                &#39;jpeg&#39;, &#39;pdf&#39;, or &#39;svg&#39;.</span>
+<span class="sd">            cmap: Matplotlib colormap name to use for the plots.</span>
+<span class="sd">            point_alpha: Opacity of the scattered points (0.0-1.0).</span>
+<span class="sd">            shade_alpha: Opacity of the standard deviation shaded areas (0.0-1.0).</span>
+<span class="sd">            save_figures: Whether to save the generated figures to disk.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If the required CSV files are not found.</span>
+<span class="sd">            ValueError: If an invalid file extension is provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">epochs_csv_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="p">,</span> <span class="s2">&quot;epochs.csv&quot;</span><span class="p">)</span>
+        <span class="n">results_csv_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="p">,</span> <span class="s2">&quot;results.csv&quot;</span><span class="p">)</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="p">,</span> <span class="s2">&quot;figures&quot;</span><span class="p">)</span>
+        <span class="n">save_ext</span> <span class="o">=</span> <span class="n">save_ext</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">save_ext</span> <span class="k">else</span> <span class="s2">&quot;png&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_ext</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid save_ext. Must be one of &#39;png&#39;, &#39;jpg&#39;, &#39;jpeg&#39;, &#39;pdf&#39;, or &#39;svg&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">epochs_csv_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">epochs_csv_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">results_csv_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">results_csv_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">epochs_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">epochs_csv_path</span><span class="p">)</span>
+        <span class="n">results_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">results_csv_path</span><span class="p">)</span>
+        <span class="n">mean_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">epochs_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">)]</span>
+        <span class="n">sigma_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">epochs_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">)]</span>
+        <span class="n">norm_sigma_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">epochs_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;norm sigma&quot;</span><span class="p">)]</span>
+        <span class="n">epoch_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">epochs_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;epoch&quot;</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">results_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">results_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">epoch_col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;mean &quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">epoch_col</span> <span class="ow">in</span> <span class="n">mean_cols</span><span class="p">)]</span>
+        <span class="n">results_epoch_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">results_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;epoch&quot;</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># assign a colour to each column</span>
+        <span class="n">colours</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mean_cols</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">mean_col</span><span class="p">,</span> <span class="n">sigma_col</span><span class="p">,</span> <span class="n">results_col</span><span class="p">,</span> <span class="n">colour</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mean_cols</span><span class="p">,</span> <span class="n">sigma_cols</span><span class="p">,</span> <span class="n">results_cols</span><span class="p">,</span> <span class="n">colours</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">epoch_col</span><span class="p">],</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">mean_col</span><span class="p">],</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">mean_col</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colour</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">results_data</span><span class="p">[</span><span class="n">results_epoch_col</span><span class="p">],</span>
+                <span class="n">results_data</span><span class="p">[</span><span class="n">results_col</span><span class="p">],</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">results_col</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">point_alpha</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colour</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                <span class="n">edgecolors</span><span class="o">=</span><span class="n">colour</span><span class="p">,</span>
+                <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">epoch_col</span><span class="p">],</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">mean_col</span><span class="p">]</span> <span class="o">-</span> <span class="n">epochs_data</span><span class="p">[</span><span class="n">sigma_col</span><span class="p">],</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">mean_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">epochs_data</span><span class="p">[</span><span class="n">sigma_col</span><span class="p">],</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">shade_alpha</span><span class="p">,</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">colour</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">epoch_col</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">mean_col</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_col</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">epoch_col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            
+            <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mean_col</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">epoch_col</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">save_ext</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+        <span class="c1"># Plot each normalized sigma column with its corresponding color</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">norm_sigma_col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">norm_sigma_cols</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">colours</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Get the color for this line</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">epoch_col</span><span class="p">],</span>
+                <span class="n">epochs_data</span><span class="p">[</span><span class="n">norm_sigma_col</span><span class="p">],</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">norm_sigma_col</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">epoch_col</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Normalised Sigma&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Convergence Plot&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;convergence_plot.</span><span class="si">{</span><span class="n">save_ext</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Plotting.plot_vars">
+<a class="viewcode-back" href="../../plotting.html#evopt.plotting.Plotting.plot_vars">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_vars</span><span class="p">(</span>
+        <span class="n">evolve_dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cval</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">point_colour</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">save_figures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualize relationships between optimization parameters and results.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates visualizations to explore the relationships between parameters and results.</span>
+<span class="sd">        The visualization type depends on the provided parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        - If only x and y are provided: Creates a 2D scatter plot</span>
+<span class="sd">        - If x, y, and cval are provided: Creates a Voronoi diagram with regions colored by cval</span>
+<span class="sd">        - If x, y, and z are provided: Creates a 3D surface plot of x, y, z</span>
+<span class="sd">        - If x, y, z, and cval are provided: Creates a 3D surface with color determined by cval</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            evolve_dir_path: Path to the directory containing evolution data.</span>
+<span class="sd">            x: Column name for x-axis values.</span>
+<span class="sd">            y: Column name for y-axis values.</span>
+<span class="sd">            z: Column name for z-axis values (for 3D plots). Defaults to None.</span>
+<span class="sd">            cval: Column name for values used to color the plot. Defaults to None.</span>
+<span class="sd">            show: Whether to display the plots in the current interface.</span>
+<span class="sd">            save_dir: Directory to save the plots. If None, creates a &#39;figures&#39; </span>
+<span class="sd">                subdirectory in evolve_dir_path.</span>
+<span class="sd">            save_ext: File extension for saved plots (&#39;png&#39;, &#39;jpg&#39;, &#39;jpeg&#39;, &#39;pdf&#39;, &#39;svg&#39;).</span>
+<span class="sd">                For 3D plots, always saved as HTML regardless of this setting.</span>
+<span class="sd">            cmap: Colormap name to use for the plots.</span>
+<span class="sd">            point_colour: Color for scatter points.</span>
+<span class="sd">            alpha: Opacity of plot elements (0.0-1.0).</span>
+<span class="sd">            save_figures: Whether to save the generated figures to disk.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Either a matplotlib Axes object (for 2D plots) or a plotly Figure object (for 3D plots).</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If the required CSV files are not found.</span>
+<span class="sd">            ValueError: If invalid parameters are provided or file extension is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">results_csv_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="p">,</span> <span class="s2">&quot;results.csv&quot;</span><span class="p">)</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span> <span class="k">if</span> <span class="n">save_dir</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="p">,</span> <span class="s2">&quot;figures&quot;</span><span class="p">)</span>
+        <span class="n">save_ext</span> <span class="o">=</span> <span class="n">save_ext</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">save_ext</span> <span class="k">else</span> <span class="s2">&quot;png&quot;</span>
+        <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_ext</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;svg&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid save_ext. Must be one of &#39;png&#39;, &#39;jpg&#39;, &#39;jpeg&#39;, &#39;pdf&#39;, or &#39;svg&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">results_csv_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">results_csv_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Read the csv file</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">results_csv_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">point_colour</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span>
+            <span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">save_ext</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ax</span>
+
+            
+        <span class="k">elif</span> <span class="n">cval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">z</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Voronoi plot with cval as color</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">Plotting</span><span class="o">.</span><span class="n">_plot_voronoi</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cval</span><span class="p">,</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">clip_infinite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">point_colour</span><span class="o">=</span><span class="n">point_colour</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span>
+            <span class="p">)</span> 
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Voronoi Plot of </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> colored by </span><span class="si">{</span><span class="n">cval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">cval</span><span class="si">}</span><span class="s2">_Voronoi.</span><span class="si">{</span><span class="n">save_ext</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ax</span>
+
+        <span class="k">elif</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># 3-D surface plot using Plotly</span>
+            <span class="n">x_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">y_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">z_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">z</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x_values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">))</span>
+            <span class="n">zi</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">((</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">),</span> <span class="n">z_values</span><span class="p">,</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Surface</span><span class="p">(</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">zi</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">xi</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">colorbar</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">z</span><span class="p">),</span>
+                <span class="n">hoverinfo</span><span class="o">=</span><span class="s1">&#39;all&#39;</span>
+                <span class="p">)])</span>
+
+            <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+                <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">xaxis_title</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">yaxis_title</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">zaxis_title</span><span class="o">=</span><span class="n">z</span><span class="p">,</span>
+                    <span class="n">aspectratio</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># Adjust aspect ratio</span>
+                <span class="p">),</span>
+                <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># Adjust margins</span>
+            <span class="p">)</span>
+            <span class="c1"># Save and show the plot</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s2">_surface.html&quot;</span>
+            <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>  <span class="c1"># Save as HTML</span>
+
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">fig</span>
+
+
+        <span class="k">elif</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># 3-D surface plot with color</span>
+            <span class="n">x_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">y_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">z_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">z</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">c_values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># Color values</span>
+
+            <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x_values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">100</span><span class="p">))</span>
+            <span class="n">zi</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">((</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">),</span> <span class="n">z_values</span><span class="p">,</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+            <span class="n">ci</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">((</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">),</span> <span class="n">c_values</span><span class="p">,</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+            
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Surface</span><span class="p">(</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">zi</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">xi</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">yi</span><span class="p">,</span>
+                <span class="n">surfacecolor</span><span class="o">=</span><span class="n">ci</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">colorscale</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">colorbar</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">cval</span><span class="p">),</span>  <span class="c1"># Add colorbar title</span>
+                <span class="p">)])</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+                <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">cval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">xaxis_title</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                    <span class="n">yaxis_title</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">zaxis_title</span><span class="o">=</span><span class="n">z</span><span class="p">,</span>
+                    <span class="n">aspectratio</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># Adjust margins</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Save and show the plot</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">cval</span><span class="si">}</span><span class="s2">_surface.html&quot;</span>
+            <span class="k">if</span> <span class="n">save_figures</span><span class="p">:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">))</span>  <span class="c1"># Save as HTML</span>
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">fig</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input. x and y must be provided. z and cval are optional.&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_voronoi</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cval</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip_infinite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">point_colour</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a Voronoi diagram with regions colored by a specified value.</span>
+<span class="sd">        </span>
+<span class="sd">        This helper method generates a Voronoi tessellation of the parameter space,</span>
+<span class="sd">        where each region is colored according to a specified value (e.g., error).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            data: DataFrame containing the data points.</span>
+<span class="sd">            x: Column name for x-coordinates.</span>
+<span class="sd">            y: Column name for y-coordinates.</span>
+<span class="sd">            cval: Column name for the value to color the regions by.</span>
+<span class="sd">            cmap: Colormap name to use for coloring regions.</span>
+<span class="sd">            ax: Matplotlib axes object to plot on. If None, creates a new figure.</span>
+<span class="sd">            clip_infinite: Whether to clip infinite Voronoi regions by adding boundary points.</span>
+<span class="sd">            point_colour: Color for the data points.</span>
+<span class="sd">            alpha: Opacity for the data points (0.0-1.0).</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            matplotlib.axes._axes.Axes: The axes object with the Voronoi plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+        <span class="c1"># Calculate Bounds</span>
+        <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">clip_infinite</span><span class="p">:</span>
+            <span class="n">x_range</span> <span class="o">=</span> <span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span>
+            <span class="n">y_range</span> <span class="o">=</span> <span class="n">y_max</span> <span class="o">-</span> <span class="n">y_min</span>
+            <span class="n">x_margin</span> <span class="o">=</span> <span class="n">x_range</span> <span class="o">*</span> <span class="mf">0.5</span>  <span class="c1"># Adjust for desired margin</span>
+            <span class="n">y_margin</span> <span class="o">=</span> <span class="n">y_range</span> <span class="o">*</span> <span class="mf">0.5</span>  
+
+            <span class="n">x_lower</span> <span class="o">=</span> <span class="n">x_min</span> <span class="o">-</span> <span class="n">x_margin</span>
+            <span class="n">x_upper</span> <span class="o">=</span> <span class="n">x_max</span> <span class="o">+</span> <span class="n">x_margin</span>
+            <span class="n">y_lower</span> <span class="o">=</span> <span class="n">y_min</span> <span class="o">-</span> <span class="n">y_margin</span>
+            <span class="n">y_upper</span> <span class="o">=</span> <span class="n">y_max</span> <span class="o">+</span> <span class="n">y_margin</span>
+
+            <span class="c1"># Create More Boundary Points</span>
+            <span class="n">num_boundary_points</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># Adjust for desired density</span>
+            <span class="n">x_coords_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">num_boundary_points</span><span class="p">)</span>
+            <span class="n">x_coords_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">num_boundary_points</span><span class="p">)</span>
+            <span class="n">y_coords_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_lower</span><span class="p">,</span> <span class="n">y_upper</span><span class="p">,</span> <span class="n">num_boundary_points</span><span class="p">)</span>
+            <span class="n">y_coords_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_lower</span><span class="p">,</span> <span class="n">y_upper</span><span class="p">,</span> <span class="n">num_boundary_points</span><span class="p">)</span>
+
+            <span class="n">boundary_points</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">x_coord</span> <span class="ow">in</span> <span class="n">x_coords_lower</span><span class="p">:</span>
+                <span class="n">boundary_points</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x_coord</span><span class="p">,</span> <span class="n">y_lower</span><span class="p">])</span>  <span class="c1"># Bottom edge</span>
+            <span class="k">for</span> <span class="n">x_coord</span> <span class="ow">in</span> <span class="n">x_coords_upper</span><span class="p">:</span>
+                <span class="n">boundary_points</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x_coord</span><span class="p">,</span> <span class="n">y_upper</span><span class="p">])</span>  <span class="c1"># Top edge</span>
+            <span class="k">for</span> <span class="n">y_coord</span> <span class="ow">in</span> <span class="n">y_coords_lower</span><span class="p">:</span>
+                <span class="n">boundary_points</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">y_coord</span><span class="p">])</span>  <span class="c1"># Left edge</span>
+            <span class="k">for</span> <span class="n">y_coord</span> <span class="ow">in</span> <span class="n">y_coords_upper</span><span class="p">:</span>
+                <span class="n">boundary_points</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x_upper</span><span class="p">,</span> <span class="n">y_coord</span><span class="p">])</span>  <span class="c1"># Right edge</span>
+
+            <span class="c1"># Assign cval Values</span>
+            <span class="n">boundary_cval</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">boundary_cvals</span> <span class="o">=</span> <span class="p">[</span><span class="n">boundary_cval</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">boundary_points</span><span class="p">)</span>
+
+            <span class="c1"># Append to Data</span>
+            <span class="n">boundary_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">boundary_points</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+            <span class="n">boundary_df</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span> <span class="o">=</span> <span class="n">boundary_cvals</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="p">,</span> <span class="n">boundary_df</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># Extract x and y coordinates</span>
+        <span class="n">vor</span> <span class="o">=</span> <span class="n">Voronoi</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="n">voronoi_plot_2d</span><span class="p">(</span>
+            <span class="n">vor</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">show_vertices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">line_colors</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+            <span class="n">line_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">line_alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">show_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Color the Voronoi regions based on cval</span>
+        <span class="n">min_cval</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">max_cval</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vor</span><span class="o">.</span><span class="n">point_region</span><span class="p">)):</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">vor</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="n">vor</span><span class="o">.</span><span class="n">point_region</span><span class="p">[</span><span class="n">r</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">region</span><span class="p">:</span>
+                <span class="n">polygon</span> <span class="o">=</span> <span class="p">[</span><span class="n">vor</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">region</span><span class="p">]</span>
+                <span class="n">norm_cval</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_cval</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_cval</span> <span class="o">-</span> <span class="n">min_cval</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">polygon</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)(</span><span class="n">norm_cval</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">vor</span><span class="o">.</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">vor</span><span class="o">.</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">point_colour</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">=</span><span class="mi">7</span>
+        <span class="p">)</span>
+
+        <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">cval</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">cval</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ax</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">evopt 2024 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">evopt.plotting</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Roberto Hart-Villamil.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

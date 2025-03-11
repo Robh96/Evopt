@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>evopt.optimiser &#8212; evopt 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=2bf1fcf8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    
+    <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">evopt 2024 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">evopt.optimiser</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for evopt.optimiser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;High-level interface for black-box optimisation algorithms.</span>
+
+<span class="sd">This module provides a simplified entry point to the black-box optimization framework,</span>
+<span class="sd">abstracting away the details of specific optimization algorithms. It offers a convenient</span>
+<span class="sd">function-based interface for running optimization tasks with minimal setup.</span>
+
+<span class="sd">The module supports different optimization algorithms (currently CMA-ES) and handles</span>
+<span class="sd">both local and HPC-based parallel execution environments.</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    Basic usage for a simple optimization problem:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; from evopt import optimise</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Define parameter space</span>
+<span class="sd">    &gt;&gt;&gt; parameters = {&#39;x&#39;: (-10, 10), &#39;y&#39;: (-5, 5)}</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Define evaluation function</span>
+<span class="sd">    &gt;&gt;&gt; def evaluate(params):</span>
+<span class="sd">    &gt;&gt;&gt;     return params[&#39;x&#39;]**2 + params[&#39;y&#39;]**2  # Simple quadratic function</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Run optimization with default settings</span>
+<span class="sd">    &gt;&gt;&gt; result = optimise(parameters, evaluate, batch_size=10, max_workers=4)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Best solution: {result.best_parameters}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Best error: {result.final_error}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cma_optimiser</span><span class="w"> </span><span class="kn">import</span> <span class="n">CmaesOptimiser</span><span class="p">,</span> <span class="n">OptimizationResults</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.directory_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectoryManager</span>
+
+<div class="viewcode-block" id="optimise">
+<a class="viewcode-back" href="../../optimiser.html#evopt.optimiser.optimise">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimise</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">optimiser</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cmaes&#39;</span><span class="p">,</span>
+    <span class="n">base_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dir_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sigma_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="n">start_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">target_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">rand_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+    <span class="c1"># HPC-specific parameters</span>
+    <span class="n">hpc_cores_per_worker</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> 
+    <span class="n">hpc_memory_gb_per_worker</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">hpc_wall_time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;1:00:00&quot;</span><span class="p">,</span>
+    <span class="n">hpc_qos</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizationResults</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run an evolutionary optimization with the specified parameters and evaluator.</span>
+<span class="sd">    </span>
+<span class="sd">    This function provides a simplified interface to run evolutionary optimization</span>
+<span class="sd">    algorithms without needing to directly instantiate optimizer classes. It handles</span>
+<span class="sd">    directory management, optimizer selection, and cleanup of resources.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        params: Parameter space definition as a dictionary where keys are parameter names</span>
+<span class="sd">            and values are tuples of (min_value, max_value) bounds.</span>
+<span class="sd">        evaluator: Function that evaluates a parameter set and returns either:</span>
+<span class="sd">            - A single float value representing the error/fitness (lower is better)</span>
+<span class="sd">            - A dictionary of observed values to be compared with target_dict</span>
+<span class="sd">        optimiser: Name of the optimization algorithm to use. </span>
+<span class="sd">            Currently supported: &#39;cmaes&#39;. Default is &#39;cmaes&#39;.</span>
+<span class="sd">        base_dir: Base directory for storing optimization results. If None,</span>
+<span class="sd">            uses the current working directory. Default is None.</span>
+<span class="sd">        dir_id: Specific identifier for this optimization run. If None, </span>
+<span class="sd">            a new ID will be automatically generated. Default is None.</span>
+<span class="sd">        sigma_threshold: Convergence threshold for normalized sigma values.</span>
+<span class="sd">            Lower values require more precise convergence. Default is 0.1.</span>
+<span class="sd">        batch_size: Number of solutions to evaluate in each optimization epoch.</span>
+<span class="sd">            Higher values provide more exploration but require more compute.</span>
+<span class="sd">            Default is 16.</span>
+<span class="sd">        start_epoch: Epoch number to resume optimization from. If None, starts</span>
+<span class="sd">            a new optimization run. Default is None.</span>
+<span class="sd">        verbose: Whether to print detailed progress information during optimization.</span>
+<span class="sd">            Default is True.</span>
+<span class="sd">        num_epochs: Maximum number of epochs to run. If None, runs until convergence</span>
+<span class="sd">            criteria are met. Default is None.</span>
+<span class="sd">        target_dict: Dictionary of target values to optimize towards. If provided,</span>
+<span class="sd">            the evaluator should return a dictionary of observed values to be compared</span>
+<span class="sd">            with these targets. Default is None.</span>
+<span class="sd">        max_workers: Maximum number of parallel workers for solution evaluation.</span>
+<span class="sd">            Default is 1 (no parallelization).</span>
+<span class="sd">        rand_seed: Seed for random number generation. If None, uses dir_id as seed.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        hpc_cores_per_worker: Number of CPU cores to allocate per worker in HPC</span>
+<span class="sd">            environments. Default is 1.</span>
+<span class="sd">        hpc_memory_gb_per_worker: Memory in GB to allocate per worker in HPC</span>
+<span class="sd">            environments. Default is 4.</span>
+<span class="sd">        hpc_wall_time: Maximum wall time for HPC jobs in format &quot;DD:HH:MM:SS&quot;</span>
+<span class="sd">            or &quot;HH:MM:SS&quot;. Default is &quot;1:00:00&quot; (1 hour).</span>
+<span class="sd">        hpc_qos: Quality of Service specification for SLURM jobs. Default is None.</span>
+<span class="sd">            </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        OptimizationResults: A comprehensive results object containing the best</span>
+<span class="sd">            parameters found, optimization history, and algorithm statistics.</span>
+<span class="sd">            </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If an unsupported optimizer name is provided.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        Basic optimization of a simple function:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; def sphere_function(params):</span>
+<span class="sd">        ...     return sum(value**2 for value in params.values())</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; params = {&#39;x1&#39;: (-5, 5), &#39;x2&#39;: (-5, 5), &#39;x3&#39;: (-5, 5)}</span>
+<span class="sd">        &gt;&gt;&gt; result = optimise(params, sphere_function, batch_size=8, max_workers=2)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Best parameters: {result.best_parameters}&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        Optimization with target values (multi-objective):</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; def structural_simulator(params):</span>
+<span class="sd">        ...     # Simulation returning multiple metrics</span>
+<span class="sd">        ...     return {</span>
+<span class="sd">        ...         &#39;weight&#39;: params[&#39;height&#39;] * params[&#39;width&#39;] * params[&#39;length&#39;] * 0.1,</span>
+<span class="sd">        ...         &#39;stress&#39;: 100 / (params[&#39;height&#39;] * params[&#39;width&#39;]),</span>
+<span class="sd">        ...         &#39;deflection&#39;: 50 / (params[&#39;height&#39;]**2)</span>
+<span class="sd">        ...     }</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Define target values</span>
+<span class="sd">        &gt;&gt;&gt; targets = {</span>
+<span class="sd">        ...     &#39;weight&#39;: 10.0,      # Target weight</span>
+<span class="sd">        ...     &#39;stress&#39;: (0, 50),   # Stress must be below 50 (hard constraint range)</span>
+<span class="sd">        ...     &#39;deflection&#39;: 0.5    # Target deflection</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; params = {&#39;height&#39;: (1, 5), &#39;width&#39;: (1, 10), &#39;length&#39;: (10, 50)}</span>
+<span class="sd">        &gt;&gt;&gt; result = optimise(params, structural_simulator, target_dict=targets, </span>
+<span class="sd">        ...                  max_workers=4, num_epochs=50)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">directory_manager</span> <span class="o">=</span> <span class="n">DirectoryManager</span><span class="p">(</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="n">base_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_dir</span><span class="p">,</span>
+        <span class="n">dir_id</span> <span class="o">=</span> <span class="n">dir_id</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">optimiser</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cmaes&#39;</span><span class="p">:</span>
+        <span class="n">optimizer_class</span> <span class="o">=</span> <span class="n">CmaesOptimiser</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported optimizer: </span><span class="si">{</span><span class="n">optimiser</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer_class</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">directory_manager</span><span class="o">=</span><span class="n">directory_manager</span><span class="p">,</span>
+        <span class="n">sigma_threshold</span><span class="o">=</span><span class="n">sigma_threshold</span><span class="p">,</span>
+        <span class="n">rand_seed</span><span class="o">=</span><span class="n">rand_seed</span> <span class="k">if</span> <span class="n">rand_seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dir_id</span><span class="p">,</span>
+        <span class="n">start_epoch</span><span class="o">=</span><span class="n">start_epoch</span><span class="p">,</span>
+        <span class="n">target_dict</span><span class="o">=</span><span class="n">target_dict</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="n">max_workers</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">max_workers</span><span class="p">),</span>
+        <span class="n">cores_per_worker</span><span class="o">=</span><span class="n">hpc_cores_per_worker</span><span class="p">,</span>
+        <span class="n">memory_gb_per_worker</span><span class="o">=</span><span class="n">hpc_memory_gb_per_worker</span><span class="p">,</span>
+        <span class="n">wall_time</span> <span class="o">=</span> <span class="n">hpc_wall_time</span><span class="p">,</span>
+        <span class="n">qos</span><span class="o">=</span><span class="n">hpc_qos</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">directory_manager</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">params</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="s1">&#39;cleanup&#39;</span><span class="p">):</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span> <span class="c1"># closes process workers</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">evopt 2024 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">evopt.optimiser</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Roberto Hart-Villamil.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
