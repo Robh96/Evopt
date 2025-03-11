@@ -95,7 +95,7 @@ class CLoss:
             return {k: self._convert_to_native(v) for k, v in value.items()}
         return value
 
-def calc_loss(target_dict: dict, observed_dict: dict, method="mse", verbose: bool = True, hard_to_soft_weight: float = 0.8):
+def calc_loss(target_dict: dict, observed_dict: dict, method="mse", verbose: bool = True, hard_to_soft_weight: float = 0.9):
     loss_function = CLoss(target_dict=target_dict, method=method, verbose=verbose, hard_to_soft_weight=hard_to_soft_weight)
     loss_function.calc_loss(observed_dict)
     return loss_function
