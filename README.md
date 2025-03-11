@@ -46,6 +46,10 @@
 *   **Robustness**: CMA-ES is a powerful optimization algorithm that can handle non-convex and noisy problems.
 *   **Organization**: Automatic directory management and logging for easy tracking and analysis.
 
+## Documentation
+
+Complete documentation is available at [evopt.readthedocs.io](https://evopt.readthedocs.io/en/latest/index.html).
+
 ## Installation
 
 You can install the package using `pip`:
@@ -266,7 +270,7 @@ evopt.Plotting.plot_epochs(evolve_dir_path=evolve_dir)
 `Evopt` also supports hassle free plotting of 1-D, 2-D, 3-D, and even 4-D results data using the same method: `evopt.Plotting.plot_vars()`. Simply specify the `Evolve_i` file directory and the columns of the results.csv file you want to plot. By default the figures will save to `Evolve_i\figures`.
 
 
-### 1-D example (simple xy plot):
+### 2-D example (simple xy plot):
 
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="error")
@@ -309,7 +313,7 @@ evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="target2"
 </div>
 <br>
 
-### 4-D example (interactive html surface plot)
+### 4-D example (interactive html surface plot with color)
 ```python
 evopt.Plotting.plot_vars(evolve_dir_path=evolve_dir, x="x1", y="x2", z="error", cval="epoch")
 ```
