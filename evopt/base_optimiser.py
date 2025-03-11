@@ -403,11 +403,7 @@ class BaseOptimiser(ABC):
 					store_result(result, i)
 				except Exception as e:
 					print(f"Solution {args[0]} failed with error: {e}")
-					sol_id = args[0]
-					param_names = args[2]
-					params = args[1]
-					param_dict = dict(zip(param_names, params))
-					store_result((sol_id, None, None, param_dict), i) # placeholder values
+					return
 		else:
 			# Submit tasks and automatically replace crashed workers
 			futures = {executor.submit(self._evaluate_solution_worker, args): i
@@ -423,15 +419,7 @@ class BaseOptimiser(ABC):
 				except Exception as e:
 					# Log the error but continue processing
 					print(f"Solution {solution_args[idx][0]} failed: {e}")
-					
-					# Create a placeholder result
-					sol_id = solution_args[idx][0]
-					param_names = solution_args[idx][2]
-					params = solution_args[idx][1]
-					param_dict = dict(zip(param_names, params))
-					
-					# Store placeholder result
-					store_result((sol_id, None, None, param_dict), idx)
+					return
 
 		# Build observed_dict from result_dicts
 		observed_dict = {}
