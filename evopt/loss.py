@@ -1,7 +1,7 @@
 import numpy as np
 
 class CLoss:
-    def __init__(self, target_dict: dict, method="mse", verbose: bool = True, hard_to_soft_weight: float = 0.9):
+    def __init__(self, target_dict: dict, method="mae", verbose: bool = True, hard_to_soft_weight: float = 0.9):
         """Initializes the Loss object with target values."""
         self.target_dict = target_dict
         # choose between normalised mse or normalised mae

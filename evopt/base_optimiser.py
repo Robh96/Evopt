@@ -464,8 +464,8 @@ class BaseOptimiser(ABC):
 		
 		# Process target observations if available
 		if self.target_dict:
-			mean_observed = {k: np.mean(v) for k, v in observed_dict.items()}
-			sigma_observed = {k: np.std(v) for k, v in observed_dict.items()}
+			mean_observed = {k: np.mean(observed_dict[k]) for k in self.target_dict}
+			sigma_observed = {k: np.std(observed_dict[k]) for k in self.target_dict}
 			
 			# Update history and write to CSV
 			self._update_history_and_log(

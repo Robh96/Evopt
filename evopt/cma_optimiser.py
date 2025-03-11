@@ -1,7 +1,10 @@
 import cma
 import numpy as np
 import warnings
+from dataclasses import dataclass
+from typing import Dict, List, Any, Optional
 from .base_optimiser import BaseOptimiser
+
 
 class CmaesOptimiser(BaseOptimiser):
 	"""
@@ -74,7 +77,60 @@ class CmaesOptimiser(BaseOptimiser):
 		
 		if self.verbose:
 			if self.n_epochs is not None and self.current_epoch >= self.n_epochs:
+				termination_reason = "Maximum epochs reached"
 				print(f"Terminating after reaching maximum epochs ({self.n_epochs}).")
 			else:
+				termination_reason = "Termination criteria met"
 				print(f"Terminating after meeting termination criteria at epoch {self.current_epoch}.")
-		return {p:v[-1] for p, v in self.mean_params.items()}
+		
+		# Create results object
+		results = OptimizationResults(
+			best_parameters={p: float(v[-1]) for p, v in self._mean_params_history.items()},
+			final_error=float(self._mean_error_history[-1]),
+			mean_error_history=[float(x) for x in self._mean_error_history],
+			sigma_error_history=[float(x) for x in self._sigma_error_history],
+			mean_params_history={p: [float(x) for x in v] for p, v in self._mean_params_history.items()},
+			sigma_params_history={p: [float(x) for x in v] for p, v in self._sigma_params_history.items()},
+			norm_sigmas_history={p: [float(x) for x in v] for p, v in self._norm_sigmas_history.items()},
+			mean_target_history={k: [float(x) for x in v] for k, v in self._mean_target_history.items()} 
+							if hasattr(self, '_mean_target_history') and self._mean_target_history is not None 
+							else None,
+			sigma_target_history={k: [float(x) for x in v] for k, v in self._sigma_target_history.items()} 
+								if hasattr(self, '_sigma_target_history') and self._sigma_target_history is not None 
+								else None,
+			epochs_completed=int(self.current_epoch),
+			terminated_reason=termination_reason,
+			cmaes_sigma=float(self.es.sigma),
+			cmaes_C=self.es.C.copy() if hasattr(self.es, 'C') else None
+		)
+	
+		return results
+	
+
+@dataclass
+class OptimizationResults:
+	"""Container for optimization results"""
+	# Final parameters
+	best_parameters: Dict[str, float]
+	
+	# Final error
+	final_error: float
+	
+	# History data
+	mean_error_history: List[float]
+	sigma_error_history: List[float]
+	mean_params_history: Dict[str, List[float]]
+	sigma_params_history: Dict[str, List[float]]
+	norm_sigmas_history: Dict[str, List[float]]
+	
+	# If targets were provided
+	mean_target_history: Optional[Dict[str, List[float]]] = None
+	sigma_target_history: Optional[Dict[str, List[float]]] = None
+	
+	# Metadata
+	epochs_completed: int = None
+	terminated_reason: str = None
+	
+	# CMAES specific data
+	cmaes_sigma: float = None
+	cmaes_C: Optional[np.ndarray] = None

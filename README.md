@@ -74,7 +74,7 @@ def evaluator(param_dict):
     return error
 
 # Run the optimisation using .optimise method
-optimised_params = evopt.optimise(params, evaluator)
+results = evopt.optimise(params, evaluator)
 ```
 
 Here is the corresponding output:
@@ -108,7 +108,7 @@ Terminating after meeting termination criteria at epoch 22.
 ```
 
 ```python
-print(optimised_params)
+print(results.best_parameters)
 ```
 ```terminal
 {param1: -0.391, param2: 0.192}
@@ -142,7 +142,7 @@ params = {
     "x2": (-5, 5),
 }
 
-optimised_params = evopt.optimise(params, example_eval, target_dict=target_dict)
+results = evopt.optimise(params, example_eval, target_dict=target_dict)
 ```
 
 and corresponding output:
@@ -369,7 +369,7 @@ params = {
 my_dir = r"path/to/my/dir"
 
 # Run optimisation
-params = optimise(
+results = optimise(
     params = params,
     evaluator = my_function,
     base_dir = my_dir,
