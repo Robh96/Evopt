@@ -1,5 +1,5 @@
 import pytest
-from evopt import optimise
+from evopt import optimize
 import os
 import shutil
 
@@ -16,8 +16,8 @@ def setup_test_environment():
     yield test_dir  # Provide the directory to the test
     shutil.rmtree(test_dir)  # Clean up after the test
 
-def test_optimise_cmaes(setup_test_environment):
-    """Test the optimise function with CMA-ES."""
+def test_optimize_cmaes(setup_test_environment):
+    """Test the optimize function with CMA-ES."""
     params = {
         'param1': (0, 1),
         'param2': (0, 1),
@@ -27,12 +27,12 @@ def test_optimise_cmaes(setup_test_environment):
     base_dir = setup_test_environment
     dir_id = 0  # Ensure consistent directory naming for testing
 
-    optimise(
+    optimize(
         params=params,
         evaluator=mock_evaluator,
         n_epochs=n_epochs,
         batch_size=batch_size,
-        optimiser='cmaes',
+        optimizer='cmaes',
         base_dir=base_dir,
         dir_id=dir_id,
         verbose=False  # Suppress verbose output during testing
@@ -47,8 +47,8 @@ def test_optimise_cmaes(setup_test_environment):
     assert os.path.exists(os.path.join(evolve_dir, "checkpoints"))
     assert os.path.exists(os.path.join(evolve_dir, "logs"))
 
-def test_optimise_unsupported_optimiser(setup_test_environment):
-    """Test that an exception is raised for an unsupported optimiser."""
+def test_optimize_unsupported_optimizer(setup_test_environment):
+    """Test that an exception is raised for an unsupported optimizer."""
     params = {
         'param1': (0, 1),
         'param2': (0, 1),
@@ -59,12 +59,12 @@ def test_optimise_unsupported_optimiser(setup_test_environment):
     dir_id = 0
 
     with pytest.raises(ValueError, match="Unsupported optimizer: invalid"):
-        optimise(
+        optimize(
             params=params,
             evaluator=mock_evaluator,
             n_epochs=n_epochs,
             batch_size=batch_size,
-            optimiser='invalid',
+            optimizer='invalid',
             base_dir=base_dir,
             dir_id=dir_id
         )
