@@ -394,6 +394,15 @@ class ProcessPoolManager:
             ...     futures = [executor.submit(func, i) for i in range(10)]
         """
         
+        if os.environ.get("EVOPT_WORKER", "0") == "1":
+            if self.verbose:
+                print("Detected nested worker process - batch processing should be avoided")
+            raise RuntimeError(
+                "Attempted to create a process pool from within a worker process. "
+                "This suggests a design issue in the code - worker processes should "
+                "only evaluate single solutions and not start their own batches."
+            )
+
         if self._executor is not None:
             return self._executor
         
@@ -415,10 +424,18 @@ class ProcessPoolManager:
             except ImportError:
                 print("Warning: SLURM environment detected but SLURM executor not available.")
                 print("Falling back to local processing pool.")
+        
+        def worker_init():
+            """Initialize worker processes as EVOPT_WORKER."""
+
+            # set env var for worker processes
+            os.environ["EVOPT_WORKER"] = "1"
+
         if self.env == ExecutionEnvironment.LOCAL:
             self._executor = concurrent.futures.ProcessPoolExecutor(
                 max_workers=self.max_workers,
-                mp_context=mp.get_context("spawn")
+                mp_context=mp.get_context("spawn"),
+                initializer=worker_init
             )
             return self._executor
         return None  # No executor means fall back to serial processing

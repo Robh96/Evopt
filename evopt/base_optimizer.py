@@ -32,6 +32,7 @@ import numpy as np
 import cloudpickle
 from abc import ABC, abstractmethod
 import os
+import traceback
 import concurrent.futures
 import multiprocessing as mp
 from .directory_manager import DirectoryManager
@@ -548,8 +549,8 @@ class BaseOptimizer(ABC):
         try:
             evaluator_func = cloudpickle.loads(pickled_evaluator)
         except Exception as e:
-            if verbose:
-                print(f"Error unpickling evaluator for solution {sol_id}: {e}")
+            print(f"Error unpickling evaluator for solution {sol_id}: {e}")
+            print(f"Traceback:\n{traceback.format_exc()}")
 
         # Convert parameters to dictionary
         param_dict = dict(zip(param_names, params))
@@ -572,8 +573,9 @@ class BaseOptimizer(ABC):
 
         except Exception as e:
             error = None
-            if verbose:
-                print(f"Error evaluating solution {sol_id}: {e}")
+            print(f"Error evaluating solution {sol_id}: {e}")
+            print(f"Traceback:\n{traceback.format_exc()}")
+            return sol_id, error, result_dict, param_dict
 
         # Clean up empty directory
         if os.path.exists(solution_folder) and len(os.listdir(solution_folder)) == 0:
@@ -581,7 +583,6 @@ class BaseOptimizer(ABC):
                 os.rmdir(solution_folder)
             except:
                 pass  # Ignore errors during cleanup
-        print("5")
         return sol_id, error, result_dict, param_dict
 
     def process_batch(self, solutions: list) -> list:
@@ -633,7 +634,6 @@ class BaseOptimizer(ABC):
         
         def store_result(result, sol_idx):
             sol_id, error, result_dict, param_dict = result
-
             with self._file_lock:
                 self._write_result_to_csv(sol_id, error, param_dict, result_dict=result_dict)
             
@@ -644,10 +644,6 @@ class BaseOptimizer(ABC):
             
             if self.verbose:
                 self.print_solution(sol_id, rescaled_solutions[sol_id], error)
-        
-            # Store result in its original position for deterministic order
-            if sol_idx is not None:
-                all_results[sol_idx] = result
 
         # Use serial processing if max_workers is 1
         executor = self.process_manager.initialize() if self.max_workers > 1 else None
@@ -660,24 +656,32 @@ class BaseOptimizer(ABC):
                     store_result(result, i)
                 except Exception as e:
                     print(f"Solution {args[0]} failed with error: {e}")
+                    print(f"Traceback:\n{traceback.format_exc()}")
                     return
         else:
             # Submit tasks and automatically replace crashed workers
-            futures = {executor.submit(self._evaluate_solution_worker, args): i
-                    for i, args in enumerate(solution_args)}
-            
-            # Process results as they complete
-            for future in concurrent.futures.as_completed(futures):
-                idx = futures[future]
-                try:
-                    # No timeout - let tasks run as long as needed
-                    result = future.result()  
-                    store_result(result, idx)
-                except Exception as e:
-                    # Log the error but continue processing
-                    print(f"Solution {solution_args[idx][0]} failed: {e}")
-                    return
-
+            try:
+                futures = {executor.submit(self._evaluate_solution_worker, args): i
+                        for i, args in enumerate(solution_args)}
+                
+                # Process results as they complete
+                for future in concurrent.futures.as_completed(futures):
+                    idx = futures[future]
+                    try:
+                        # No timeout - let tasks run as long as needed
+                        result = future.result()  
+                        store_result(result, idx)
+                    except Exception as e:
+                        # Log the error but continue processing
+                        print(f"Solution {solution_args[idx][0]} failed: {e}")
+                        print(f"Traceback:\n{traceback.format_exc()}")
+                        return
+            except Exception as e:
+                print(f"ProcessPoolExecutor error: {e}")
+                print(f"Traceback:\n{traceback.format_exc()}")
+                return None
+            finally:
+                self.process_manager.cleanup()
         # Build observed_dict from result_dicts
         observed_dict = {}
         for result_dict in temp_result_dicts:
@@ -685,9 +689,11 @@ class BaseOptimizer(ABC):
                 extend_dict(observed_dict, result_dict)	
 
         # remove epoch folder dir if empty
-        if len(os.listdir(os.path.dirname(solution_folder))) == 0:
-            os.rmdir(os.path.dirname(solution_folder))
-
+        try:
+            if len(os.listdir(os.path.dirname(solution_folder))) == 0:
+                os.rmdir(os.path.dirname(solution_folder))
+        except Exception:
+            pass
         # Calculate statistics and update history
         return self._process_batch_results(errors, rescaled_solutions, observed_dict)
     
