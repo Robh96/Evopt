@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to evopt: User Friendly Black-Box Numerical Optimization
+evopt: user friendly black-box numerical optimization
 ================================================================
 
 .. image:: https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png

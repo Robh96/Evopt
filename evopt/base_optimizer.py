@@ -1,6 +1,6 @@
-"""Evolutionary optimization base implementation.
+"""black-box optimization base implementation.
 
-This module provides an abstract base class for implementing evolutionary optimization
+This module provides an abstract base class for implementing black-box optimization
 algorithms. It handles common functionality such as parameter handling, parallel evaluation
 of solutions, logging, and statistics calculation.
 
