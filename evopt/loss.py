@@ -70,7 +70,7 @@ class CLoss:
             target_dict: dict,
             method="mae",
             verbose: bool = False,
-            hard_to_soft_weight: float = 0.9
+            hard_to_soft_weight: float = 0.95
     ):
         """Initialize the Loss object with target values and settings.
         
@@ -287,7 +287,7 @@ def calc_loss(
         target_dict: dict,
         observed_dict: dict,
         method: str = "mse",
-        hard_to_soft_weight: float = 0.9,
+        hard_to_soft_weight: float = 0.95,
         verbose: bool = False
     ) -> CLoss:
     """Convenience function to calculate loss for multi-objective optimization.

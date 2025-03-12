@@ -562,7 +562,7 @@ class BaseOptimizer(ABC):
             # Process target dictionary if provided
             if target_dict and isinstance(error, dict):
                 from .loss import calc_loss  # Import here to avoid circular imports
-                loss = calc_loss(target_dict, error, hard_to_soft_weight=0.9, method="mae")
+                loss = calc_loss(target_dict, error, hard_to_soft_weight=0.95, method="mae")
                 result_dict = loss.observed_dict
                 error = loss.combined_loss
 
