@@ -142,11 +142,6 @@ class BaseOptimizer(ABC):
         self.init_params = self.get_init_params
         self.max_workers = max_workers
         self._file_lock = mp.Lock()  # For CSV file access synchronization
-        
-        self.process_manager = ProcessPoolManager(
-            max_workers=max_workers, 
-            cores_per_worker=cores_per_worker
-        )
 
         self._mean_error_history = []
         self._sigma_error_history = []
@@ -156,6 +151,11 @@ class BaseOptimizer(ABC):
         self._mean_target_history = {target: [] for target in self.target_dict} if self.target_dict else None
         self._sigma_target_history = {target: [] for target in self.target_dict} if self.target_dict else None
         
+        self.process_manager = ProcessPoolManager(
+            max_workers=max_workers, 
+            cores_per_worker=cores_per_worker
+        )
+        self.executor = None if max_workers <= 1 else self.process_manager.initialize()
 
     @property
     def get_init_sigmas(self) -> np.ndarray:
@@ -644,51 +644,97 @@ class BaseOptimizer(ABC):
             
             if self.verbose:
                 self.print_solution(sol_id, rescaled_solutions[sol_id], error)
-
-        # Use serial processing if max_workers is 1
-        executor = self.process_manager.initialize() if self.max_workers > 1 else None
         
-        if executor is None:
+        if self.executor is None:
             # Serial processing
             for i, args in enumerate(solution_args):
                 try:
                     result = self._evaluate_solution_worker(args)
                     store_result(result, i)
+
                 except Exception as e:
                     print(f"Solution {args[0]} failed with error: {e}")
                     print(f"Traceback:\n{traceback.format_exc()}")
-                    result = (args[0], None, None, zip(self.parameters.keys(), solutions[args[0]]))
+                    result = (args[0], None, None, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                     store_result(result, i)
                     continue
+
         else:
             # Submit tasks and automatically replace crashed workers
             try:
-                futures = {executor.submit(self._evaluate_solution_worker, args): i
+                futures = {self.executor.submit(self._evaluate_solution_worker, args): i
                         for i, args in enumerate(solution_args)}
-                
+                failed_tasks = []
                 # Process results as they complete
                 for future in concurrent.futures.as_completed(futures):
                     idx = futures[future]
+    
+                    if future.cancelled() or future.exception() is not None:
+                        # This future failed - resubmit the task
+                        failed_tasks.append((idx, solution_args[idx]))
+                        continue  # Skip to next future
+
                     try:
                         # No timeout - let tasks run as long as needed
                         result = future.result()  
                         store_result(result, idx)
+
                     except Exception as e:
                         # Log the error but continue processing
                         print(f"Solution {solution_args[idx][0]} failed: {e}")
                         print(f"Traceback:\n{traceback.format_exc()}")
-                        result = (solution_args[idx][0], None, None, zip(self.parameters.keys(), solutions[solution_args[idx][0]]))
+                        result = (solution_args[idx][0], None, None,
+                                  dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                         store_result(result, idx)
                         continue
+                    
+                if failed_tasks:
+                    print(f"Resubmitting {len(failed_tasks)} failed tasks to process pool")
+                    retry_futures = {}
+                    
+                    # Resubmit failed tasks to the pool
+                    if not hasattr(self.executor, "_broken") or not self.executor._broken:
+                        retry_futures = {
+                            self.executor.submit(self._evaluate_solution_worker, args[idx]): idx
+                            for idx, args in failed_tasks
+                        }
+                        
+                        # Process retried results
+                        for future in concurrent.futures.as_completed(retry_futures):
+                            idx = retry_futures[future]
+                            try:
+                                result = future.result()
+                                store_result(result, idx)
+                            except Exception as e:
+                                print(f"Solution {solution_args[idx][0]} failed on retry: {e}")
+                                result = (solution_args[idx][0], None, None, 
+                                        dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                                store_result(result, idx)
+                    # else:
+                    #     # Pool is broken, process serially
+                    #     for idx, args in failed_tasks:
+                    #         try:
+                    #             result = self._evaluate_solution_worker(args)
+                    #             store_result(result, idx)
+                    #         except Exception as e:
+                    #             print(f"Solution {args[0]} failed on retry: {e}")
+                    #             result = (args[0], None, None, 
+                    #                     dict(zip(self.parameters.keys(), solutions[idx])))
+                    #             store_result(result, idx)
             except Exception as e:
                 print(f"ProcessPoolExecutor error: {e}")
                 print(f"Traceback:\n{traceback.format_exc()}")
+
                 for i, args in enumerate(solution_args):
                     if errors[i] is None:  # If this solution didn't get processed
-                        result = (args[0], None, None, zip(self.parameters.keys(), solutions[args[0]]))
+                        result = (args[0], None, None, zip(self.parameters.keys(), rescaled_solutions[idx]))
                         store_result(result, i)
-            finally:
-                self.process_manager.cleanup()
+
+                if self.executor._broken:  # This is an internal attribute of ProcessPoolExecutor
+                    print("Process pool is broken - reinitializing")
+                    self.process_manager.cleanup()
+                    self.executor = self.process_manager.initialize()
+
         # Build observed_dict from result_dicts
         observed_dict = {}
         for result_dict in temp_result_dicts:
@@ -701,6 +747,7 @@ class BaseOptimizer(ABC):
                 os.rmdir(os.path.dirname(solution_folder))
         except Exception:
             pass
+
         # Calculate statistics and update history
         return self._process_batch_results(errors, rescaled_solutions, observed_dict)
     

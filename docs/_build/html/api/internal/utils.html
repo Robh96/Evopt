@@ -307,6 +307,12 @@ executor for parallel task processing.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">check_workers_health</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/utils.html#ProcessPoolManager.check_workers_health"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check if workers are healthy and replace any dead ones</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/utils.html#ProcessPoolManager.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Clean up resources used by the executor.</p>
 <p>Shuts down the executor if it exists and cancels any pending SLURM jobs.
@@ -608,6 +614,12 @@ different HPC systems before falling back to the system CPU count.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="n">num_cpus</span><span class="si">}</span><span class="s2"> CPUs for computation&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">evopt.utils.</span></span><span class="sig-name descname"><span class="pre">worker_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/utils.html#worker_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Initialize worker processes as EVOPT_WORKER.</p>
 </dd></dl>
 
 <dl class="py function">

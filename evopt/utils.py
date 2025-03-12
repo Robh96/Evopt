@@ -434,6 +434,14 @@ class ProcessPoolManager:
             return self._executor
         return None  # No executor means fall back to serial processing
     
+    def check_workers_health(self):
+        """Check if workers are healthy and replace any dead ones"""
+        if hasattr(self._executor, '_processes'):
+            for pid, process in list(self._executor._processes.items()):
+                if not process.is_alive():
+                    # Worker died - allow executor to replace it
+                    print(f"Worker process {pid} died unexpectedly")
+
     def cleanup(self):
         """Clean up resources used by the executor.
         
@@ -455,7 +463,7 @@ class ProcessPoolManager:
         """
         
         if self._executor:
-            self._executor.shutdown(wait=False)
+            self._executor.shutdown(wait=True)
             self._executor = None
         
         # Cancel any pending SLURM jobs

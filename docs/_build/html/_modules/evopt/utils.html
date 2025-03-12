@@ -539,12 +539,6 @@
             <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: SLURM environment detected but SLURM executor not available.&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Falling back to local processing pool.&quot;</span><span class="p">)</span>
-        
-        <span class="k">def</span><span class="w"> </span><span class="nf">worker_init</span><span class="p">():</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Initialize worker processes as EVOPT_WORKER.&quot;&quot;&quot;</span>
-
-            <span class="c1"># set env var for worker processes</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;EVOPT_WORKER&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">==</span> <span class="n">ExecutionEnvironment</span><span class="o">.</span><span class="n">LOCAL</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">(</span>
@@ -556,6 +550,17 @@
         <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># No executor means fall back to serial processing</span></div>
 
     
+<div class="viewcode-block" id="ProcessPoolManager.check_workers_health">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ProcessPoolManager.check_workers_health">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_workers_health</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if workers are healthy and replace any dead ones&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="p">,</span> <span class="s1">&#39;_processes&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">pid</span><span class="p">,</span> <span class="n">process</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">process</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                    <span class="c1"># Worker died - allow executor to replace it</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker process </span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s2"> died unexpectedly&quot;</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ProcessPoolManager.cleanup">
 <a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.ProcessPoolManager.cleanup">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -579,7 +584,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="c1"># Cancel any pending SLURM jobs</span>
@@ -592,6 +597,15 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure resources are cleaned up when the instance is garbage collected.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="worker_init">
+<a class="viewcode-back" href="../../api/internal/utils.html#evopt.utils.worker_init">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">worker_init</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize worker processes as EVOPT_WORKER.&quot;&quot;&quot;</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;EVOPT_WORKER&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span></div>
 
 
 <div class="viewcode-block" id="convert_to_native">

@@ -231,11 +231,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_init_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_lock</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>  <span class="c1"># For CSV file access synchronization</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span> <span class="o">=</span> <span class="n">ProcessPoolManager</span><span class="p">(</span>
-            <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span> 
-            <span class="n">cores_per_worker</span><span class="o">=</span><span class="n">cores_per_worker</span>
-        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_mean_error_history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_error_history</span> <span class="o">=</span> <span class="p">[]</span>
@@ -245,6 +240,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_mean_target_history</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span><span class="p">}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sigma_target_history</span> <span class="o">=</span> <span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span><span class="p">}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span> <span class="k">else</span> <span class="kc">None</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span> <span class="o">=</span> <span class="n">ProcessPoolManager</span><span class="p">(</span>
+            <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span> 
+            <span class="n">cores_per_worker</span><span class="o">=</span><span class="n">cores_per_worker</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">max_workers</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_init_sigmas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -744,44 +744,97 @@
             
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">print_solution</span><span class="p">(</span><span class="n">sol_id</span><span class="p">,</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">sol_id</span><span class="p">],</span> <span class="n">error</span><span class="p">)</span>
-
-        <span class="c1"># Use serial processing if max_workers is 1</span>
-        <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_workers</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
         
-        <span class="k">if</span> <span class="n">executor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Serial processing</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">solution_args</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution_worker</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
                     <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solution </span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> failed with error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">return</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
+                    <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Submit tasks and automatically replace crashed workers</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution_worker</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span> <span class="n">i</span>
+                <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution_worker</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span> <span class="n">i</span>
                         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">solution_args</span><span class="p">)}</span>
-                
+                <span class="n">failed_tasks</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="c1"># Process results as they complete</span>
                 <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
                     <span class="n">idx</span> <span class="o">=</span> <span class="n">futures</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+    
+                    <span class="k">if</span> <span class="n">future</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span> <span class="ow">or</span> <span class="n">future</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># This future failed - resubmit the task</span>
+                        <span class="n">failed_tasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx</span><span class="p">,</span> <span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+                        <span class="k">continue</span>  <span class="c1"># Skip to next future</span>
+
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># No timeout - let tasks run as long as needed</span>
                         <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  
                         <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="c1"># Log the error but continue processing</span>
                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solution </span><span class="si">{</span><span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="k">return</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
+                        <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    
+                <span class="k">if</span> <span class="n">failed_tasks</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resubmitting </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">failed_tasks</span><span class="p">)</span><span class="si">}</span><span class="s2"> failed tasks to process pool&quot;</span><span class="p">)</span>
+                    <span class="n">retry_futures</span> <span class="o">=</span> <span class="p">{}</span>
+                    
+                    <span class="c1"># Resubmit failed tasks to the pool</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span> <span class="s2">&quot;_broken&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">_broken</span><span class="p">:</span>
+                        <span class="n">retry_futures</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_solution_worker</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span> <span class="n">idx</span>
+                            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">failed_tasks</span>
+                        <span class="p">}</span>
+                        
+                        <span class="c1"># Process retried results</span>
+                        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">as_completed</span><span class="p">(</span><span class="n">retry_futures</span><span class="p">):</span>
+                            <span class="n">idx</span> <span class="o">=</span> <span class="n">retry_futures</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                                <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solution </span><span class="si">{</span><span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> failed on retry: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> 
+                                        <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
+                                <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                    <span class="c1"># else:</span>
+                    <span class="c1">#     # Pool is broken, process serially</span>
+                    <span class="c1">#     for idx, args in failed_tasks:</span>
+                    <span class="c1">#         try:</span>
+                    <span class="c1">#             result = self._evaluate_solution_worker(args)</span>
+                    <span class="c1">#             store_result(result, idx)</span>
+                    <span class="c1">#         except Exception as e:</span>
+                    <span class="c1">#             print(f&quot;Solution {args[0]} failed on retry: {e}&quot;)</span>
+                    <span class="c1">#             result = (args[0], None, None, </span>
+                    <span class="c1">#                     dict(zip(self.parameters.keys(), solutions[idx])))</span>
+                    <span class="c1">#             store_result(result, idx)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ProcessPoolExecutor error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">solution_args</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># If this solution didn&#39;t get processed</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+                        <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">_broken</span><span class="p">:</span>  <span class="c1"># This is an internal attribute of ProcessPoolExecutor</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Process pool is broken - reinitializing&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_manager</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+
         <span class="c1"># Build observed_dict from result_dicts</span>
         <span class="n">observed_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">result_dict</span> <span class="ow">in</span> <span class="n">temp_result_dicts</span><span class="p">:</span>
@@ -794,6 +847,7 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">solution_folder</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
+
         <span class="c1"># Calculate statistics and update history</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_batch_results</span><span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="n">rescaled_solutions</span><span class="p">,</span> <span class="n">observed_dict</span><span class="p">)</span></div>
 
