@@ -209,13 +209,16 @@ class CmaesOptimizer(BaseOptimizer):
             self.dir_manager.save_checkpoint(self.es, self.es.countiter)
             self.current_epoch = self.es.countiter
         
-        if self.verbose:
-            if self.n_epochs is not None and self.current_epoch >= self.n_epochs:
-                termination_reason = "Maximum epochs reached"
+        if self.n_epochs is not None and self.current_epoch >= self.n_epochs:
+            termination_reason = "Maximum epochs reached"
+            if self.verbose:
                 print(f"Terminating after reaching maximum epochs ({self.n_epochs}).")
-            else:
-                termination_reason = "Termination criteria met"
+        else:
+            termination_reason = "Termination criteria met"
+            if self.verbose:
                 print(f"Terminating after meeting termination criteria at epoch {self.current_epoch}.")
+        
+            
         
         # Create and return comprehensive results object
         results = OptimizationResults(

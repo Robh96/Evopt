@@ -657,7 +657,9 @@ class BaseOptimizer(ABC):
                 except Exception as e:
                     print(f"Solution {args[0]} failed with error: {e}")
                     print(f"Traceback:\n{traceback.format_exc()}")
-                    return
+                    result = (args[0], None, None, zip(self.parameters.keys(), solutions[args[0]]))
+                    store_result(result, i)
+                    continue
         else:
             # Submit tasks and automatically replace crashed workers
             try:
@@ -675,11 +677,16 @@ class BaseOptimizer(ABC):
                         # Log the error but continue processing
                         print(f"Solution {solution_args[idx][0]} failed: {e}")
                         print(f"Traceback:\n{traceback.format_exc()}")
-                        return
+                        result = (solution_args[idx][0], None, None, zip(self.parameters.keys(), solutions[solution_args[idx][0]]))
+                        store_result(result, idx)
+                        continue
             except Exception as e:
                 print(f"ProcessPoolExecutor error: {e}")
                 print(f"Traceback:\n{traceback.format_exc()}")
-                return None
+                for i, args in enumerate(solution_args):
+                    if errors[i] is None:  # If this solution didn't get processed
+                        result = (args[0], None, None, zip(self.parameters.keys(), solutions[args[0]]))
+                        store_result(result, i)
             finally:
                 self.process_manager.cleanup()
         # Build observed_dict from result_dicts

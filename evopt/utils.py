@@ -424,12 +424,6 @@ class ProcessPoolManager:
             except ImportError:
                 print("Warning: SLURM environment detected but SLURM executor not available.")
                 print("Falling back to local processing pool.")
-        
-        def worker_init():
-            """Initialize worker processes as EVOPT_WORKER."""
-
-            # set env var for worker processes
-            os.environ["EVOPT_WORKER"] = "1"
 
         if self.env == ExecutionEnvironment.LOCAL:
             self._executor = concurrent.futures.ProcessPoolExecutor(
@@ -473,6 +467,12 @@ class ProcessPoolManager:
     def __del__(self):
         """Ensure resources are cleaned up when the instance is garbage collected."""
         self.cleanup()
+
+
+def worker_init():
+    """Initialize worker processes as EVOPT_WORKER."""
+
+    os.environ["EVOPT_WORKER"] = "1"
 
 def convert_to_native(value):
     """Convert a value to a native Python type for serialization.
