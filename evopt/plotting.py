@@ -202,7 +202,8 @@ class Plotting:
         cmap: str = "viridis",
         point_colour: str = "black",
         alpha: float|int = 1,
-        save_figures: bool = True
+        save_figures: bool = True,
+        title: str = None
     ):
         """Visualize relationships between optimization parameters and results.
         
@@ -237,7 +238,7 @@ class Plotting:
             FileNotFoundError: If the required CSV files are not found.
             ValueError: If invalid parameters are provided or file extension is invalid.
         """
-
+        
         results_csv_path = os.path.join(evolve_dir_path, "results.csv")
         save_dir = save_dir if save_dir else os.path.join(evolve_dir_path, "figures")
         save_ext = save_ext.strip(".") if save_ext else "png"
@@ -253,6 +254,7 @@ class Plotting:
         data = pd.read_csv(results_csv_path)
 
         if z is None and cval is None:
+            title = title if title else f"{x} vs {y}"
             fig, ax = plt.subplots()
             ax.scatter(
                 data[x],
@@ -264,7 +266,7 @@ class Plotting:
             )
             ax.set_xlabel(x)
             ax.set_ylabel(y)
-            ax.set_title(f"{x} vs {y}")
+            ax.set_title(title)
             file_name = f"{x}_vs_{y}.{save_ext}"
             if save_figures:
                 plt.savefig(os.path.join(save_dir, file_name))
@@ -275,6 +277,7 @@ class Plotting:
 
             
         elif cval is not None and z is None:
+            title = title if title else f"Voronoi Plot of {x} vs {y} colored by {cval}"
             # Voronoi plot with cval as color
             fig, ax = plt.subplots()
             ax = Plotting._plot_voronoi(
@@ -287,7 +290,7 @@ class Plotting:
             ) 
             ax.set_xlabel(x)
             ax.set_ylabel(y)
-            ax.set_title(f"Voronoi Plot of {x} vs {y} colored by {cval}")
+            ax.set_title(title)
             file_name = f"{x}_vs_{y}_vs_{cval}_Voronoi.{save_ext}"
             if save_figures:
                 plt.savefig(os.path.join(save_dir, file_name))
@@ -297,6 +300,7 @@ class Plotting:
             return ax
 
         elif z is not None and cval is None:
+            title = title if title else f"{x} vs {y} vs {z}"
             # 3-D surface plot using Plotly
             x_values = data[x].values
             y_values = data[y].values
@@ -316,7 +320,7 @@ class Plotting:
                 )])
 
             fig.update_layout(
-                title=f"{x} vs {y} vs {z}",
+                title=title,
                 scene=dict(
                     xaxis_title=x,
                     yaxis_title=y,
@@ -336,6 +340,7 @@ class Plotting:
 
 
         elif z is not None and cval is not None:
+            title = title if title else f"{x} vs {y} vs {z} vs {cval}"
             # 3-D surface plot with color
             x_values = data[x].values
             y_values = data[y].values
@@ -357,7 +362,7 @@ class Plotting:
                 colorbar=dict(title=cval),  # Add colorbar title
                 )])
             fig.update_layout(
-                title=f"{x} vs {y} vs {z} vs {cval}",
+                title=title,
                 scene=dict(
                     xaxis_title=x,
                     yaxis_title=y,
