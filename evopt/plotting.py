@@ -269,9 +269,10 @@ class Plotting:
             ax.set_title(title)
             file_name = f"{x}_vs_{y}.{save_ext}"
             if save_figures:
-                plt.savefig(os.path.join(save_dir, file_name))
+                fig.savefig(os.path.join(save_dir, file_name))
+            
             if show:
-                plt.show()
+                fig.show()
             plt.close()
             return ax
 
@@ -293,9 +294,10 @@ class Plotting:
             ax.set_title(title)
             file_name = f"{x}_vs_{y}_vs_{cval}_Voronoi.{save_ext}"
             if save_figures:
-                plt.savefig(os.path.join(save_dir, file_name))
+                fig.savefig(os.path.join(save_dir, file_name))
+            
             if show:
-                plt.show()
+                fig.show()
             plt.close()
             return ax
 
