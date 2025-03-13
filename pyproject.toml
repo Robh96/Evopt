@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evopt"
-version = "0.140"
+version = "0.141"
 description = "User Friendly Data-Driven Numerical Optimization"
 authors = [
     {name = "Roberto Hart-Villamil", email = "rob.hartvillamil@gmail.com"}
