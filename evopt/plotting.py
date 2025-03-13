@@ -113,11 +113,20 @@ class Plotting:
 
         epochs_data = pd.read_csv(epochs_csv_path)
         results_data = pd.read_csv(results_csv_path)
+
         mean_cols = [col for col in epochs_data.columns if col.lower().startswith("mean")]
         sigma_cols = [col for col in epochs_data.columns if col.lower().startswith("sigma")]
         norm_sigma_cols = [col for col in epochs_data.columns if col.lower().startswith("norm sigma")]
         epoch_col = [col for col in epochs_data.columns if col.lower().startswith("epoch")][0]
-        results_cols = [col for col in results_data.columns if any(col.lower() in epoch_col.lower().split("mean ") for epoch_col in mean_cols)]
+
+        results_cols = []
+        for mean_col in mean_cols:
+            base_name = mean_col.split("mean ")[-1].strip()
+            for col in results_data.columns:
+                if base_name.lower() in col.lower():
+                    results_cols.append(col)
+                    break
+        #results_cols = [col for col in results_data.columns if any(col.lower() in epoch_col.lower().split("mean ") for epoch_col in mean_cols)]
         results_epoch_col = [col for col in results_data.columns if col.lower().startswith("epoch")][0]
 
         # assign a colour to each column

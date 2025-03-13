@@ -503,7 +503,10 @@ def convert_to_native(value):
     """
 
     if isinstance(value, (np.float64, float)):
-        return round(float(value), 3)
+        if abs(value) > 1:
+            return float(f'{value:.3f}')  # Preserve decimal places for large numbers
+        else:
+            return float(f'{value:.3g}')
     elif isinstance(value, list):
         return [convert_to_native(v) for v in value]
     elif isinstance(value, dict):

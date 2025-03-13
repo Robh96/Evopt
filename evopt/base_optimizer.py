@@ -369,7 +369,8 @@ class BaseOptimizer(ABC):
             'epoch': self.current_epoch,
             'solution': sol,
             'error': error if error is not None else 'None',
-            **(result_dict if result_dict is not None else {}),
+            **({k: result_dict.get(k) for k in self.target_dict if k in result_dict} if result_dict else {}),
+            #**(result_dict if result_dict is not None else {}),
             **param_dict
             }
         write_to_csv(result, self.dir_manager.results_csv, sort_columns=['epoch', 'solution'])
@@ -710,17 +711,7 @@ class BaseOptimizer(ABC):
                                 result = (solution_args[idx][0], None, None, 
                                         dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                                 store_result(result, idx)
-                    # else:
-                    #     # Pool is broken, process serially
-                    #     for idx, args in failed_tasks:
-                    #         try:
-                    #             result = self._evaluate_solution_worker(args)
-                    #             store_result(result, idx)
-                    #         except Exception as e:
-                    #             print(f"Solution {args[0]} failed on retry: {e}")
-                    #             result = (args[0], None, None, 
-                    #                     dict(zip(self.parameters.keys(), solutions[idx])))
-                    #             store_result(result, idx)
+
             except Exception as e:
                 print(f"ProcessPoolExecutor error: {e}")
                 print(f"Traceback:\n{traceback.format_exc()}")
