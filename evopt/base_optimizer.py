@@ -370,7 +370,6 @@ class BaseOptimizer(ABC):
             'solution': sol,
             'error': error if error is not None else 'None',
             **({k: result_dict.get(k) for k in self.target_dict if k in result_dict} if result_dict else {}),
-            #**(result_dict if result_dict is not None else {}),
             **param_dict
             }
         write_to_csv(result, self.dir_manager.results_csv, sort_columns=['epoch', 'solution'])
