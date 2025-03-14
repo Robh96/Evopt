@@ -368,7 +368,7 @@ class BaseOptimizer(ABC):
         result = {
             'epoch': self.current_epoch,
             'solution': sol,
-            'error': error if error is not None else 'None',
+            'error': error if error is not None else None,
             **({k: result_dict.get(k) for k in self.target_dict if k in result_dict} if result_dict else {}),
             **param_dict
         }
