@@ -672,84 +672,82 @@ class BaseOptimizer(ABC):
 
         else:
             # Submit tasks and automatically replace crashed workers
+            failed_tasks = []
             try:
                 futures = {self.executor.submit(self._evaluate_solution_worker, args): args[0]
                         for args in solution_args}
-                failed_tasks = []
-
-                for future in concurrent.futures.as_completed(futures):
-                    idx = futures[future]
-    
-                    if future.cancelled() or future.exception() is not None:
-                        failed_tasks.append((idx, solution_args[idx]))
-
-                    else:
-                        try:
-                            result = future.result()  
-                            store_result(result, idx)
-
-                        except Exception as e:
-                            print(f"Solution {solution_args[idx][0]} failed: {e}")
-                            print(f"Traceback:\n{traceback.format_exc()}")
-                            result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                            result = (solution_args[idx][0], None, result_dict,
-                                    dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                            store_result(result, idx)
-                    
-                if failed_tasks:
-                    print(f"Resubmitting {len(failed_tasks)} failed tasks to process pool")
-                    retry_futures = {}
-                    
-                    if not hasattr(self.executor, "_broken") or not self.executor._broken:
-                        retry_futures = {
-                            self.executor.submit(self._evaluate_solution_worker, args[idx]): idx
-                            for idx, args in failed_tasks
-                        }
-                        
-                        for future in concurrent.futures.as_completed(retry_futures):
-                            idx = retry_futures[future]
-
-                            try:
-                                result = future.result()
-                                store_result(result, idx)
-
-                            except Exception as e:
-                                print(f"Solution {solution_args[idx][0]} failed on retry: {e}")
-                                result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                                result = (solution_args[idx][0], None, result_dict, 
-                                        dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                                store_result(result, idx)
-
             except Exception as e:
-                print(f"ProcessPoolExecutor error: {e}")
                 print(f"Traceback:\n{traceback.format_exc()}")
-
-                for idx, args in enumerate(solution_args):
-                    if errors[idx] is None:  # If this solution didn't get processed
-                        result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                        result = (args[0], None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                        store_result(result, idx)
-
-                if self.executor._broken:  # This is an internal attribute of ProcessPoolExecutor
+                if self.executor._broken:
                     print("Process pool is broken - reinitializing")
                     self.process_manager.cleanup()
                     self.executor = self.process_manager.initialize()
-                
+                    return self.process_batch(solutions)
 
-        # Build observed_dict from result_dicts
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    idx = futures[future]
+                    result = future.result()  
+                    store_result(result, idx)
+
+                except Exception as e:
+                    print(f"Solution {solution_args[idx][0]} failed: {e}")
+                    print(f"Traceback:\n{traceback.format_exc()}")
+
+                    if future.cancelled() or future.exception() is not None:
+                        failed_tasks.append((idx, solution_args[idx]))
+                        continue
+                    else:
+                        result_dict = {k: None for k in self.target_dict} if self.target_dict else None
+                        result = (solution_args[idx][0], None, result_dict, 
+                                dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                        store_result(result, idx)
+                        continue
+            
+            if failed_tasks:
+                try:
+                    print(f"Resubmitting {len(failed_tasks)} failed tasks to process pool")
+                    retry_futures = {
+                        self.executor.submit(self._evaluate_solution_worker, args[idx]): idx
+                        for idx, args in failed_tasks
+                    }
+
+                    for future in concurrent.futures.as_completed(retry_futures):
+                        try:
+                            idx = retry_futures[future]
+                            result = future.result()
+                            store_result(result, idx)
+
+                        except Exception as e:
+                            print(f"Solution {solution_args[idx][0]} failed on retry: {e}")
+                            result_dict = {k: None for k in self.target_dict} if self.target_dict else None
+                            result = (solution_args[idx][0], None, result_dict, 
+                                    dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                            store_result(result, idx)
+
+                except Exception as e:
+                    print(f"Traceback:\n{traceback.format_exc()}")
+                    if self.executor._broken:
+                        print("Process pool is broken - reinitializing")
+                        self.process_manager.cleanup()
+                        self.executor = self.process_manager.initialize()
+
+                    for idx, args in failed_tasks:
+                        result_dict = {k: None for k in self.target_dict} if self.target_dict else None
+                        result = (args[0], None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                        store_result(result, idx)
+                        
         observed_dict = {}
         for result_dict in temp_result_dicts:
             if result_dict:
                 extend_dict(observed_dict, result_dict)	
 
-        # remove epoch folder dir if empty
         try:
             if len(os.listdir(os.path.dirname(solution_folder))) == 0:
                 os.rmdir(os.path.dirname(solution_folder))
         except Exception:
             pass
 
-        # Calculate statistics and update history
         return self._process_batch_results(errors, rescaled_solutions, observed_dict)
     
 
