@@ -245,18 +245,30 @@ class CLoss:
                 loss = self.calculate_error([target_val] * len(observed_val), observed_val)
                 
                 constraint_met = self.constraint_satisfied(key, observed_val)
-                if not constraint_met:
+                if not constraint_met and not np.isnan(loss):
                     hard_losses.append(loss) if is_hard else soft_losses.append(loss)
 
-                if self.verbose:
-                    print(f"{key}: {np.nanmean(observed_val):.2f} | loss: {loss:.2e} | Hard: {is_hard} | Constraint met: {constraint_met}")
             else:
                 raise KeyError(f"Observed data missing for key: {key}")
-                
+        
+        hard_losses = [x for x in hard_losses if not np.isnan(x)]
+        soft_losses = [x for x in soft_losses if not np.isnan(x)]                
+        
         hard_loss = np.nanmean(hard_losses) if hard_losses else 0.0
         soft_loss = np.nanmean(soft_losses) if soft_losses else 0.0
+
         self.combined_loss = self.w * hard_loss + (1 - self.w) * soft_loss if hard_losses else (1 - self.w) * soft_loss # more stable condition
-        self.observed_dict = {key: np.nanmean(observed_dict[key]) for key in observed_dict}
+        
+        for key, values in observed_dict.items():
+            if all(np.isnan(v) for v in values if v is not None):
+                self.observed_dict[key] = None
+            else:
+                self.observed_dict[key] = np.nanmean(values)
+        
+        for key, value in observed_dict.items():
+            if value is None:
+                self.combined_loss = None
+                break
 
     def _convert_to_native(self, value) -> list[float]:
         """Convert various input types to lists of native Python floats.

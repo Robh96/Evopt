@@ -22,6 +22,7 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 from scipy.interpolate import griddata
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import re
 import os
 
 class Plotting:
@@ -253,12 +254,33 @@ class Plotting:
         # Read the csv file
         data = pd.read_csv(results_csv_path)
 
+        def safe_eval(expression, data):
+            try:
+                return data.eval(expression)
+            except (ValueError, SyntaxError, NameError, TypeError) as e:
+                print(f"Error evaluating expression '{expression}': {e}")
+                return None
+
+        x_values = safe_eval(x, data)
+        y_values = safe_eval(y, data)
+        z_values = safe_eval(z, data) if z else None
+        c_values = safe_eval(cval, data) if cval else None
+
+        if x_values is None or y_values is None:
+            raise ValueError("Invalid x or y expression.")
+        
+        # Sanitize x, y, cval for filename
+        x_sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', x)
+        y_sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', y)
+        z_sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', z) if z else None
+        cval_sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', cval) if cval else None
+
         if z is None and cval is None:
             title = title if title else f"{x} vs {y}"
             fig, ax = plt.subplots()
             ax.scatter(
-                data[x],
-                data[y],
+                x_values,
+                y_values,
                 marker="o",
                 c=point_colour,
                 s=8,
@@ -267,12 +289,12 @@ class Plotting:
             ax.set_xlabel(x)
             ax.set_ylabel(y)
             ax.set_title(title)
-            file_name = f"{x}_vs_{y}.{save_ext}"
+            file_name = f"{x_sanitized}_vs_{y_sanitized}.{save_ext}"
             if save_figures:
-                fig.savefig(os.path.join(save_dir, file_name))
+                plt.savefig(os.path.join(save_dir, file_name))
             
             if show:
-                fig.show()
+                plt.show()
             plt.close()
             return ax
 
@@ -281,8 +303,11 @@ class Plotting:
             title = title if title else f"Voronoi Plot of {x} vs {y} colored by {cval}"
             # Voronoi plot with cval as color
             fig, ax = plt.subplots()
+            # Create a temporary DataFrame for the Voronoi plot
+            temp_data = pd.DataFrame({'x': x_values, 'y': y_values, 'cval': c_values})
+            
             ax = Plotting._plot_voronoi(
-                data, x, y, cval,
+                temp_data, 'x', 'y', 'cval',
                 cmap=cmap,
                 ax=ax,
                 clip_infinite=True,
@@ -292,21 +317,18 @@ class Plotting:
             ax.set_xlabel(x)
             ax.set_ylabel(y)
             ax.set_title(title)
-            file_name = f"{x}_vs_{y}_vs_{cval}_Voronoi.{save_ext}"
+            file_name = f"{x_sanitized}_vs_{y_sanitized}_vs_{cval_sanitized}_Voronoi.{save_ext}"
             if save_figures:
-                fig.savefig(os.path.join(save_dir, file_name))
+                plt.savefig(os.path.join(save_dir, file_name))
             
             if show:
-                fig.show()
+                plt.show()
             plt.close()
             return ax
 
         elif z is not None and cval is None:
             title = title if title else f"{x} vs {y} vs {z}"
             # 3-D surface plot using Plotly
-            x_values = data[x].values
-            y_values = data[y].values
-            z_values = data[z].values
 
             xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 100),
                                  np.linspace(y_values.min(), y_values.max(), 100))
@@ -332,7 +354,7 @@ class Plotting:
                 margin=dict(l=20, r=20, b=20, t=50)  # Adjust margins
             )
             # Save and show the plot
-            file_name = f"{x}_vs_{y}_vs_{z}_surface.html"
+            file_name = f"{x_sanitized}_vs_{y_sanitized}_vs_{z_sanitized}_surface.html"
             if save_figures:
                 fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
 
@@ -342,12 +364,8 @@ class Plotting:
 
 
         elif z is not None and cval is not None:
-            title = title if title else f"{x} vs {y} vs {z} vs {cval}"
             # 3-D surface plot with color
-            x_values = data[x].values
-            y_values = data[y].values
-            z_values = data[z].values
-            c_values = data[cval].values  # Color values
+            title = title if title else f"{x} vs {y} vs {z} vs {cval}"
 
             xi, yi = np.meshgrid(np.linspace(x_values.min(), x_values.max(), 100),
                                  np.linspace(y_values.min(), y_values.max(), 100))
@@ -375,7 +393,7 @@ class Plotting:
             )
 
             # Save and show the plot
-            file_name = f"{x}_vs_{y}_vs_{z}_vs_{cval}_surface.html"
+            file_name = f"{x_sanitized}_vs_{y_sanitized}_vs_{z_sanitized}_vs_{cval_sanitized}_surface.html"
             if save_figures:
                 fig.write_html(os.path.join(save_dir, file_name))  # Save as HTML
             if show:
