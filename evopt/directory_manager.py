@@ -205,9 +205,10 @@ class DirectoryManager:
         
         Constructs the complete file path for saving or loading a checkpoint
         for the specified epoch.
+        Checkpoint number corresponds to the latest complete epoch.
         
         Args:
-            epoch: The epoch number.
+            epoch: The latest complete epoch number.
             
         Returns:
             str: The full filepath for the checkpoint file.

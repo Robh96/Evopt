@@ -206,7 +206,7 @@ class CmaesOptimizer(BaseOptimizer):
             errors = self.process_batch(solutions)
             self.es.tell(solutions, errors)
             self.es.disp()
-            self.dir_manager.save_checkpoint(self.es, self.es.countiter)
+            self.dir_manager.save_checkpoint(self.es, self.es.countiter - 1)
             self.current_epoch = self.es.countiter
         
         if self.n_epochs is not None and self.current_epoch >= self.n_epochs:
