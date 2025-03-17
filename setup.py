@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.141',
+    version='0.14.2',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
@@ -12,6 +12,7 @@ setup(
         'scipy>=1.15.0',
         'plotly>=5.24.1',
         'matplotlib>=3.10.0',
+        'pysr>=1.5.2',
     ],
     include_package_data=True,
     author='Roberto Hart-Villamil',

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evopt"
-version = "0.141"
+version = "0.14.2"
 description = "User Friendly Data-Driven Numerical Optimization"
 authors = [
     {name = "Roberto Hart-Villamil", email = "rob.hartvillamil@gmail.com"}
@@ -27,6 +27,7 @@ dependencies = [
     "scipy>=1.15.0",
     "plotly>=5.24.1",
     "matplotlib>=3.10.0",
+    "pysr>=1.5.2
 
 ]
 
