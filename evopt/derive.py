@@ -1,5 +1,6 @@
 from pysr import PySRRegressor
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
 
 class Derive:
@@ -25,10 +26,20 @@ class Derive:
         self.population_size = population_size
         # self.additional_operators = additional_operators
         self.results_csv_path = os.path.join(self.evolve_dir_path, "results.csv")
+        self.y_pred = None
+        self.best_equation = None
         
         # # create dictionary of additional operators
         # if self.additional_operators:
         #     self.additional_operators = {k: lambda x: eval(v) for k, v in self.additional_operators.items()}
+        if not os.path.exists(self.results_csv_path):
+            raise FileNotFoundError(f"File not found: {self.results_csv_path}")
+        os.makedirs(self.save_dir, exist_ok=True)
+
+        data = pd.read_csv(self.results_csv_path)
+        self.data = data.dropna()
+        self.y_target = self.data[self.target_variable]
+        self.X_parameters = self.data[self.parameters]
 
     def _get_id(self) -> str:
         files = [f for f in os.listdir(self.save_dir) if f.startswith("equations_")]
@@ -39,17 +50,21 @@ class Derive:
             return "equations_0"
         return f"equations_{next((i for i in range(max(existing_ids) + 2) if i not in existing_ids), 0)}"
 
-    def run_pysr(self):
-        if not os.path.exists(self.results_csv_path):
-            raise FileNotFoundError(f"File not found: {self.results_csv_path}")
-        os.makedirs(self.save_dir, exist_ok=True)
+    def fit(self):
 
-        data = pd.read_csv(self.results_csv_path)
-        
-        # remove any rows with NaN values
-        data = data.dropna()
-        y_target = data[self.target_variable]
-        X_parameters = data[self.parameters]
+        constraints = {
+            "^": (-1, 1)
+            }
+        nested_constraints = {
+            "sin": {"cos": 0},
+            "cos": {"sin": 0},
+            "exp": {"log": 0},
+            "log": {"exp": 0},
+            "sin": {"sin": 0},
+            "cos": {"cos": 0},
+            "exp": {"exp": 0},
+            "log": {"log": 0}
+        }
         self.model = PySRRegressor(
             binary_operators=self.binary_operators,
             unary_operators=self.unary_operators,
@@ -59,31 +74,65 @@ class Derive:
             population_size=self.population_size,
             # extra_sympy_mappings=self.additional_operators,
             output_directory=self.save_dir,
-            run_id=self._get_id()
+            run_id=self._get_id(),
+            constraints=constraints,
+            nested_constraints=nested_constraints
             )
-        self.model.fit(X=X_parameters, y=y_target)
-        return self.model
+        self.model.fit(X=self.X_parameters, y=self.y_target)
+        self.best_equation = self.model.sympy()
     
-def derive(
-        evolve_dir_path:str,
-        target_variable:str,
-        parameters:list[str],
-        save_dir:str=None,
-        binary_operators:str=None,
-        unary_operators:str=None,
-        n_iterations:int=100,
-        population_size:int=32,
-        #additional_operators:dict=None
-    ):
-    model = Derive(
-        evolve_dir_path=evolve_dir_path,
-        target_variable=target_variable,
-        parameters=parameters,
-        save_dir=save_dir,
-        binary_operators=binary_operators,
-        unary_operators=unary_operators,
-        n_iterations=n_iterations,
-        population_size=population_size,
-        #additional_operators=additional_operators
-    )
-    return model.run_pysr()
+    def predict(self, index:int=None):
+        # if index is None, the best_equation is selected for predictions.
+        if self.best_equation is None:
+            self.fit()
+        y_pred = self.model.predict(self.X_parameters, index=index)
+        self.y_pred = pd.DataFrame(y_pred, columns=[self.best_equation])
+
+    def parity_plot(
+            self,
+            point_colour:str="black",
+            alpha:float=0.5,
+            title:str=None,
+            save_figures:bool=True,
+            show:bool=True,
+            save_ext:str=".png",
+            save_dir:str=None
+            ):
+        """
+        Plot the parity plot of the target variable and the predicted variable.
+        """
+        save_dir = save_dir if save_dir else os.path.join(self.evolve_dir_path, "figures")
+        save_ext = save_ext.strip(".") if save_ext else "png"
+        os.makedirs(save_dir, exist_ok=True)
+        if save_ext not in ["png", "jpg", "jpeg", "pdf", "svg"]:
+            raise ValueError("Invalid save_ext. Must be one of 'png', 'jpg', 'jpeg', 'pdf', or 'svg'.")
+        
+        if self.y_pred is None:
+            self.predict()
+        title = title if title else f"parity plot of {self.target_variable}"
+        fig, ax = plt.subplots()
+        ax.scatter(
+            self.y_target,
+            self.y_pred,
+            marker="o",
+            c=point_colour,
+            s=8,
+            alpha=alpha
+        )
+        ax.set_xlabel(self.target_variable)
+        ax.set_ylabel(self.best_equation)
+        ax.set_title(title)
+
+        min_val = min(self.y_target.min(), self.y_pred.min())
+        max_val = max(self.y_target.max(), self.y_pred.max())
+        ax.set_xlim(min_val, max_val)
+        ax.set_ylim(min_val, max_val)
+        file_name = f"{self.target_variable} parity_plot.{save_ext}"
+
+        if save_figures:
+            plt.savefig(os.path.join(save_dir, file_name))
+        
+        if show:
+            plt.show()
+        plt.close()
+        return ax
