@@ -372,13 +372,6 @@ class BaseOptimizer(ABC):
             **({k: result_dict.get(k) for k in self.target_dict if k in result_dict} if result_dict else {}),
             **param_dict
         }
-
-        # if result_dict:
-        #     result.update(
-                
-        #     )
-        
-        # result.update(param_dict)
         
             
         write_to_csv(result, self.dir_manager.results_csv, sort_columns=['epoch', 'solution'])
@@ -671,8 +664,6 @@ class BaseOptimizer(ABC):
                     continue
 
         else:
-            # Submit tasks and automatically replace crashed workers
-            failed_tasks = []
             try:
                 futures = {self.executor.submit(self._evaluate_solution_worker, args): args[0]
                         for args in solution_args}
@@ -693,49 +684,11 @@ class BaseOptimizer(ABC):
                 except Exception as e:
                     print(f"Solution {solution_args[idx][0]} failed: {e}")
                     print(f"Traceback:\n{traceback.format_exc()}")
-
-                    if future.cancelled() or future.exception() is not None:
-                        failed_tasks.append((idx, solution_args[idx]))
-                        continue
-                    else:
-                        result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                        result = (solution_args[idx][0], None, result_dict, 
-                                dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                        store_result(result, idx)
-                        continue
-            
-            if failed_tasks:
-                try:
-                    print(f"Resubmitting {len(failed_tasks)} failed tasks to process pool")
-                    retry_futures = {
-                        self.executor.submit(self._evaluate_solution_worker, args[idx]): idx
-                        for idx, args in failed_tasks
-                    }
-
-                    for future in concurrent.futures.as_completed(retry_futures):
-                        try:
-                            idx = retry_futures[future]
-                            result = future.result()
-                            store_result(result, idx)
-
-                        except Exception as e:
-                            print(f"Solution {solution_args[idx][0]} failed on retry: {e}")
-                            result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                            result = (solution_args[idx][0], None, result_dict, 
-                                    dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                            store_result(result, idx)
-
-                except Exception as e:
-                    print(f"Traceback:\n{traceback.format_exc()}")
-                    if self.executor._broken:
-                        print("Process pool is broken - reinitializing")
-                        self.process_manager.cleanup()
-                        self.executor = self.process_manager.initialize()
-
-                    for idx, args in failed_tasks:
-                        result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                        result = (args[0], None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
-                        store_result(result, idx)
+                    result_dict = {k: None for k in self.target_dict} if self.target_dict else None
+                    result = (solution_args[idx][0], None, result_dict, 
+                            dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                    store_result(result, idx)
+                    continue
                         
         observed_dict = {}
         for result_dict in temp_result_dicts:
@@ -794,8 +747,14 @@ class BaseOptimizer(ABC):
         
         # Process target observations if available
         if self.target_dict:
-            mean_observed = {k: np.mean(observed_dict[k]) for k in self.target_dict}
-            sigma_observed = {k: np.std(observed_dict[k]) for k in self.target_dict}
+            mean_observed = {
+                k: np.mean([v for v in observed_dict.get(k) if v is not None]) 
+                for k in self.target_dict
+            }
+            sigma_observed = {
+                k: np.std([v for v in observed_dict.get(k) if v is not None]) 
+                for k in self.target_dict
+            }
             
             # Update history and write to CSV
             self._update_history_and_log(

@@ -512,7 +512,7 @@ def convert_to_native(value):
     elif isinstance(value, dict):
         return {k: convert_to_native(v) for k, v in value.items()}
     elif value is None:
-        return 'None'
+        return None
     return value
 
 def format_array(arr, precision=3):
