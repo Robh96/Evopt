@@ -27,7 +27,7 @@ dependencies = [
     "scipy>=1.15.0",
     "plotly>=5.24.1",
     "matplotlib>=3.10.0",
-    "pysr>=1.5.2
+    "pysr>=1.5.2"
 
 ]
 
