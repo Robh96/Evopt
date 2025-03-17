@@ -36,8 +36,8 @@ class Derive:
         
         # Find the smallest missing ID
         if not existing_ids:
-            return "0"
-        return f"{next((i for i in range(max(existing_ids) + 2) if i not in existing_ids), 0)}"
+            return "equations_0"
+        return f"equations_{next((i for i in range(max(existing_ids) + 2) if i not in existing_ids), 0)}"
 
     def run_pysr(self):
         if not os.path.exists(self.results_csv_path):
