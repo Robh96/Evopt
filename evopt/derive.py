@@ -121,22 +121,27 @@ class Derive:
         spaced_label = re.sub(r"([()])", r" \1 ", formatted_label)
         wrapped_label = "\n".join(textwrap.wrap(spaced_label, width=40))
 
+        min_val = np.min([self.y_target.to_numpy().min(), self.y_pred.to_numpy().min()])
+        max_val = np.max([self.y_target.to_numpy().max(), self.y_pred.to_numpy().max()])
+
+        parity_line = np.linspace(min_val, max_val, 100)
+
         title = title if title else f"parity plot of {self.target_variable}"
         fig, ax = plt.subplots()
+        ax.plot(parity_line, parity_line, linestyle="--", color="red", label="parity line")
         ax.scatter(
             self.y_target,
             self.y_pred,
             marker="o",
             c=point_colour,
             s=8,
-            alpha=alpha
+            alpha=alpha,
         )
         ax.set_xlabel(self.target_variable)
         ax.set_ylabel(wrapped_label)
         ax.set_title(title)
 
-        min_val = np.min([self.y_target.to_numpy().min(), self.y_pred.to_numpy().min()])
-        max_val = np.max([self.y_target.to_numpy().max(), self.y_pred.to_numpy().max()])
+        
 
         ax.set_xlim(min_val, max_val)
         ax.set_ylim(min_val, max_val)
