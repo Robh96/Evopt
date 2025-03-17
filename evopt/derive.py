@@ -1,7 +1,10 @@
 from pysr import PySRRegressor
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import os
+import re
+import textwrap
 
 class Derive:
     def __init__(
@@ -109,6 +112,15 @@ class Derive:
         
         if self.y_pred is None:
             self.predict()
+
+        def format_number(match):
+            num = float(match.group(0))
+            return f"{num:.3g}"
+
+        formatted_label = re.sub(r"[-+]?\d*\.?\d+(?:[Ee][-+]?\d+)?", format_number, str(self.best_equation))
+        spaced_label = re.sub(r"([()])", r" \1 ", formatted_label)
+        wrapped_label = "\n".join(textwrap.wrap(spaced_label, width=40))
+
         title = title if title else f"parity plot of {self.target_variable}"
         fig, ax = plt.subplots()
         ax.scatter(
@@ -120,11 +132,12 @@ class Derive:
             alpha=alpha
         )
         ax.set_xlabel(self.target_variable)
-        ax.set_ylabel(self.best_equation)
+        ax.set_ylabel(wrapped_label)
         ax.set_title(title)
 
-        min_val = min(self.y_target.min(), self.y_pred.min())
-        max_val = max(self.y_target.max(), self.y_pred.max())
+        min_val = np.min([self.y_target.to_numpy().min(), self.y_pred.to_numpy().min()])
+        max_val = np.max([self.y_target.to_numpy().max(), self.y_pred.to_numpy().max()])
+
         ax.set_xlim(min_val, max_val)
         ax.set_ylim(min_val, max_val)
         file_name = f"{self.target_variable} parity_plot.{save_ext}"
