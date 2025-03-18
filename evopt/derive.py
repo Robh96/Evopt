@@ -175,15 +175,17 @@ class Derive:
         self.model.fit(X=self.X_parameters, y=self.y_target)
         self.best_equation = self.model.sympy()
     
-    def predict(self, index:int=None):
+    def predict(self, x=None, index:int=None):
         """Generate predictions using the discovered equation.
         
         Args:
+            x (DataFrame, optional): Input data to use for prediction. If None, uses
+                the training data. Defaults to None.
             index (int, optional): Index of the equation to use for prediction.
                 If None, uses the best equation. Defaults to None.
         
         Returns:
-            None: Updates self.y_pred attribute with prediction results.
+            DataFrame: Predicted values from the model.
             
         Example:
             >>> model.fit()
@@ -193,8 +195,16 @@ class Derive:
 
         if self.best_equation is None:
             self.fit()
-        y_pred = self.model.predict(self.X_parameters, index=index)
-        self.y_pred = pd.DataFrame(y_pred, columns=[self.best_equation])
+
+        if x is None:
+            x = self.X_parameters
+            y_pred = self.model.predict(x, index=index)
+            self.y_pred = pd.DataFrame(y_pred, columns=[self.best_equation])
+            return self.y_pred
+        else:
+            y_pred = self.model.predict(x, index=index)
+            return pd.DataFrame(y_pred, columns=[self.best_equation])
+
 
     def parity_plot(
             self,
