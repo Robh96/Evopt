@@ -685,8 +685,7 @@ class BaseOptimizer(ABC):
                     print(f"Solution {solution_args[idx][0]} failed: {e}")
                     print(f"Traceback:\n{traceback.format_exc()}")
                     result_dict = {k: None for k in self.target_dict} if self.target_dict else None
-                    result = (solution_args[idx][0], None, result_dict, 
-                            dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
+                    result = (idx, None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                     store_result(result, idx)
                     continue
                         
