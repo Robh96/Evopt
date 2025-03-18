@@ -272,7 +272,7 @@ class Derive:
         parity_line = np.linspace(min_val, max_val, 100)
 
         title = title if title else f"parity plot of {self.target_variable}"
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6, 6))
         ax.plot(parity_line, parity_line, linestyle="--", color="red", label="parity line")
         ax.scatter(
             self.y_target,

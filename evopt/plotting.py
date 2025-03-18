@@ -133,6 +133,7 @@ class Plotting:
         # assign a colour to each column
         colours = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(mean_cols)))
         for mean_col, sigma_col, results_col, colour in zip(mean_cols, sigma_cols, results_cols, colours):
+            plt.figure(figsize=(10, 8))
             plt.plot(
                 epochs_data[epoch_col],
                 epochs_data[mean_col],
@@ -170,6 +171,7 @@ class Plotting:
             plt.close()
     
         # Plot each normalized sigma column with its corresponding color
+        plt.figure(figsize=(10, 8))
         for i, norm_sigma_col in enumerate(norm_sigma_cols):
             color = colours[i]  # Get the color for this line
             plt.plot(
@@ -277,7 +279,7 @@ class Plotting:
 
         if z is None and cval is None:
             title = title if title else f"{x} vs {y}"
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(10, 8))
             ax.scatter(
                 x_values,
                 y_values,
@@ -302,7 +304,7 @@ class Plotting:
         elif cval is not None and z is None:
             title = title if title else f"Voronoi Plot of {x} vs {y} colored by {cval}"
             # Voronoi plot with cval as color
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(10, 8))
             # Create a temporary DataFrame for the Voronoi plot
             temp_data = pd.DataFrame({'x': x_values, 'y': y_values, 'cval': c_values})
             
