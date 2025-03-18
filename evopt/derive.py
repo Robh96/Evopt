@@ -17,6 +17,7 @@ class Derive:
             unary_operators:str=None,
             n_iterations:int=100,
             population_size:int=32,
+            max_size:int=20,
             #additional_operators:dict=None
         ):
         self.evolve_dir_path = evolve_dir_path
@@ -24,17 +25,23 @@ class Derive:
         self.parameters = parameters
         self.save_dir = save_dir if save_dir else os.path.join(self.evolve_dir_path, "equations")
         self.binary_operators = binary_operators if binary_operators else ["+", "-", "*", "/", "^"]
-        self.unary_operators = unary_operators if unary_operators else ["sin", "cos", "exp", "log"]
+        self.unary_operators = unary_operators if unary_operators else ["sin", "exp", "log"]
         self.n_iterations = n_iterations
         self.population_size = population_size
+        self.max_size = max_size
         # self.additional_operators = additional_operators
         self.results_csv_path = os.path.join(self.evolve_dir_path, "results.csv")
         self.y_pred = None
         self.best_equation = None
         
-        # # create dictionary of additional operators
-        # if self.additional_operators:
-        #     self.additional_operators = {k: lambda x: eval(v) for k, v in self.additional_operators.items()}
+        # parse extra operators
+        try:
+            extra_unary_operators = {op.split("(")[0]: op.split("=")[1] for op in self.unary_operators if "=" in op}
+            self.sympymappings = {k: lambda x: eval(v) for k, v in extra_unary_operators.items()}
+        except:
+            self.sympymappings = None
+            print("Error in parsing extra unary operators. Ensure same style as 'inv(x)=1/x'.")
+
         if not os.path.exists(self.results_csv_path):
             raise FileNotFoundError(f"File not found: {self.results_csv_path}")
         os.makedirs(self.save_dir, exist_ok=True)
@@ -56,22 +63,19 @@ class Derive:
     def fit(self):
 
         constraints = {
-            "^": (-1, 1)
+            "pow": (9, 1),
+            "^": (9, 1)
             }
-        nested_constraints = {
-            "sin": {"cos": 0},
-            "cos": {"sin": 0},
+        nested_constraints = {    
             "exp": {"log": 0},
             "log": {"exp": 0},
             "sin": {"sin": 0},
-            "cos": {"cos": 0},
             "exp": {"exp": 0},
             "log": {"log": 0}
         }
         self.model = PySRRegressor(
             binary_operators=self.binary_operators,
             unary_operators=self.unary_operators,
-            parsimony=0.0032,
             turbo=True,
             niterations=self.n_iterations,
             population_size=self.population_size,
@@ -79,7 +83,10 @@ class Derive:
             output_directory=self.save_dir,
             run_id=self._get_id(),
             constraints=constraints,
-            nested_constraints=nested_constraints
+            extra_sympy_mappings=self.sympymappings,
+            nested_constraints=nested_constraints,
+            adaptive_parsimony_scaling=1000,
+            maxsize=self.max_size,
             )
         self.model.fit(X=self.X_parameters, y=self.y_target)
         self.best_equation = self.model.sympy()
@@ -140,15 +147,12 @@ class Derive:
         ax.set_xlabel(self.target_variable)
         ax.set_ylabel(wrapped_label)
         ax.set_title(title)
-
-        
-
         ax.set_xlim(min_val, max_val)
         ax.set_ylim(min_val, max_val)
         file_name = f"{self.target_variable} parity_plot.{save_ext}"
 
         if save_figures:
-            plt.savefig(os.path.join(save_dir, file_name))
+            plt.savefig(os.path.join(save_dir, file_name), bbox_inches="tight")
         
         if show:
             plt.show()
