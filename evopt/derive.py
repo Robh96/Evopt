@@ -59,7 +59,7 @@ class Derive:
             binary_operators (list, optional): Binary operators for symbolic regression.
                 Defaults to ["+", "-", "*", "/", "^"].
             unary_operators (list, optional): Unary operators for symbolic regression.
-                Can include custom operators in format "op(x)=expr". 
+                Can include custom operators in format "inv(x)=1/x". 
                 Defaults to ["sin", "exp", "log"].
             n_iterations (int, optional): Number of iterations. Defaults to 100.
             population_size (int, optional): Population size. Defaults to 32.
@@ -238,7 +238,7 @@ class Derive:
             ...     save_figures=True
             ... )
         """
-        
+
         save_dir = save_dir if save_dir else os.path.join(self.evolve_dir_path, "figures")
         save_ext = save_ext.strip(".") if save_ext else "png"
         os.makedirs(save_dir, exist_ok=True)
