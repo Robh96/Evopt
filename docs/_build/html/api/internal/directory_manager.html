@@ -294,10 +294,11 @@ the corresponding epoch folder.</p>
 <span class="sig-name descname"><span class="pre">get_checkpoint_filepath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/evopt/directory_manager.html#DirectoryManager.get_checkpoint_filepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Get the filepath for a checkpoint file for a specific epoch.</p>
 <p>Constructs the complete file path for saving or loading a checkpoint
-for the specified epoch.</p>
+for the specified epoch.
+Checkpoint number corresponds to the latest complete epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>epoch</strong> – The epoch number.</p>
+<dd class="field-odd"><p><strong>epoch</strong> – The latest complete epoch number.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The full filepath for the checkpoint file.</p>

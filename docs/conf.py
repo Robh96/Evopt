@@ -30,7 +30,8 @@ except ImportError:
     'cma',
     'cloudpickle',
     'scipy',
-    'plotly'
+    'plotly',
+    'pysr',
 ]
 
 # -- General configuration ---------------------------------------------------

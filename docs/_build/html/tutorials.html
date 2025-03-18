@@ -76,6 +76,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#machine-learning-hyperparameter-optimization">Machine Learning Hyperparameter Optimization</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#symbolic-regression">Symbolic Regression</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#equation-discovery-with-pysr">Equation Discovery with PySR</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -83,6 +87,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/public/derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
 <ul>
@@ -531,6 +536,47 @@ to interact with your simulation software or external tools as needed.</p>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best accuracy: </span><span class="si">{</span><span class="o">-</span><span class="n">results</span><span class="o">.</span><span class="n">final_error</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="symbolic-regression">
+<h2>Symbolic Regression<a class="headerlink" href="#symbolic-regression" title="Link to this heading"></a></h2>
+<section id="equation-discovery-with-pysr">
+<h3>Equation Discovery with PySR<a class="headerlink" href="#equation-discovery-with-pysr" title="Link to this heading"></a></h3>
+<p>Learn how to discover mathematical equations from data using symbolic regression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># Initialize the Derive class with existing data</span>
+<span class="c1"># Assumes results.csv exists in the specified directory with columns x1, x2, x3, and y</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">Derive</span><span class="p">(</span>
+    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="s2">&quot;./simulation_results/evolve_5&quot;</span><span class="p">,</span>
+    <span class="n">target_variable</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">],</span>
+    <span class="n">unary_operators</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sin&quot;</span><span class="p">,</span> <span class="s2">&quot;cos&quot;</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">],</span>  <span class="c1"># Include trigonometric functions</span>
+    <span class="n">n_iterations</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>                        <span class="c1"># Number of iterations</span>
+    <span class="n">population_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">max_size</span><span class="o">=</span><span class="mi">20</span>                            <span class="c1"># Maximum equation complexity</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit the model to discover equations</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># Print the best equation found</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Discovered equation: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">best_equation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Make predictions using the discovered equation</span>
+<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+
+<span class="c1"># Create a parity plot to visualize the fit</span>
+<span class="n">model</span><span class="o">.</span><span class="n">parity_plot</span><span class="p">(</span>
+    <span class="n">point_colour</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Actual vs. Predicted Values&quot;</span><span class="p">,</span>
+    <span class="n">save_figures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>

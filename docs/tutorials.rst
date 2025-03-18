@@ -464,3 +464,47 @@ Optimize hyperparameters for a machine learning model:
             print(f"{param}: {int(value)}")
     
     print(f"Best accuracy: {-results.final_error:.4f}")
+
+
+Symbolic Regression
+-------------------
+
+Equation Discovery with PySR
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Learn how to discover mathematical equations from data using symbolic regression:
+
+.. code-block:: python
+
+    import evopt
+    import matplotlib.pyplot as plt
+    
+    # Initialize the Derive class with existing data
+    # Assumes results.csv exists in the specified directory with columns x1, x2, x3, and y
+    model = evopt.Derive(
+        evolve_dir_path="./simulation_results/evolve_5",
+        target_variable="y",
+        parameters=["x1", "x2", "x3"],
+        unary_operators=["sin", "cos", "exp"],  # Include trigonometric functions
+        n_iterations=40,                        # Number of iterations
+        population_size=32,
+        max_size=20                            # Maximum equation complexity
+    )
+    
+    # Fit the model to discover equations
+    model.fit()
+    
+    # Print the best equation found
+    print(f"Discovered equation: {model.best_equation}")
+    
+    # Make predictions using the discovered equation
+    model.predict()
+    
+    # Create a parity plot to visualize the fit
+    model.parity_plot(
+        point_colour="blue",
+        alpha=0.6,
+        title="Actual vs. Predicted Values",
+        save_figures=True,
+        show=True
+    )

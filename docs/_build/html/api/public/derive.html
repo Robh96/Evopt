@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Symbolic Regression (evopt.derive) &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Base optimizer (evopt.base_optimizer)" href="../internal/base_optimizer.html" />
+    <link rel="prev" title="Plotting (evopt.plotting)" href="plotting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#evopt.derive.Derive"><code class="docutils literal notranslate"><span class="pre">Derive</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.evolve_dir_path"><code class="docutils literal notranslate"><span class="pre">Derive.evolve_dir_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.target_variable"><code class="docutils literal notranslate"><span class="pre">Derive.target_variable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.parameters"><code class="docutils literal notranslate"><span class="pre">Derive.parameters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.save_dir"><code class="docutils literal notranslate"><span class="pre">Derive.save_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.binary_operators"><code class="docutils literal notranslate"><span class="pre">Derive.binary_operators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.unary_operators"><code class="docutils literal notranslate"><span class="pre">Derive.unary_operators</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.n_iterations"><code class="docutils literal notranslate"><span class="pre">Derive.n_iterations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.population_size"><code class="docutils literal notranslate"><span class="pre">Derive.population_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.max_size"><code class="docutils literal notranslate"><span class="pre">Derive.max_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.results_csv_path"><code class="docutils literal notranslate"><span class="pre">Derive.results_csv_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.y_pred"><code class="docutils literal notranslate"><span class="pre">Derive.y_pred</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.best_equation"><code class="docutils literal notranslate"><span class="pre">Derive.best_equation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.sympymappings"><code class="docutils literal notranslate"><span class="pre">Derive.sympymappings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.__init__"><code class="docutils literal notranslate"><span class="pre">Derive.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.fit"><code class="docutils literal notranslate"><span class="pre">Derive.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.predict"><code class="docutils literal notranslate"><span class="pre">Derive.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#evopt.derive.Derive.parity_plot"><code class="docutils literal notranslate"><span class="pre">Derive.parity_plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../internal/base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/loss.html">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api/public/derive.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="symbolic-regression-evopt-derive">
+<h1>Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)<a class="headerlink" href="#symbolic-regression-evopt-derive" title="Link to this heading"></a></h1>
+<p>The derive module provides symbolic regression capabilities for equation discovery from the results data.
+Built on top of the Miles Cranmer’s <cite>PySR</cite> engine for symbolic regression.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="evopt.derive.Derive">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">evopt.derive.</span></span><span class="sig-name descname"><span class="pre">Derive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_operators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unary_operators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/derive.html#Derive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.derive.Derive" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Symbolic regression model for equation discovery from data.</p>
+<p>This class provides methods to discover mathematical equations that
+describe the relationship between input parameters and a target variable
+using symbolic regression with the PySR library.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.evolve_dir_path">
+<span class="sig-name descname"><span class="pre">evolve_dir_path</span></span><a class="headerlink" href="#evopt.derive.Derive.evolve_dir_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the directory containing results data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.target_variable">
+<span class="sig-name descname"><span class="pre">target_variable</span></span><a class="headerlink" href="#evopt.derive.Derive.target_variable" title="Link to this definition"></a></dt>
+<dd><p>The variable to be predicted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#evopt.derive.Derive.parameters" title="Link to this definition"></a></dt>
+<dd><p>Input parameters to use for prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.save_dir">
+<span class="sig-name descname"><span class="pre">save_dir</span></span><a class="headerlink" href="#evopt.derive.Derive.save_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory to save equations and output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.binary_operators">
+<span class="sig-name descname"><span class="pre">binary_operators</span></span><a class="headerlink" href="#evopt.derive.Derive.binary_operators" title="Link to this definition"></a></dt>
+<dd><p>Binary operators for symbolic regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.unary_operators">
+<span class="sig-name descname"><span class="pre">unary_operators</span></span><a class="headerlink" href="#evopt.derive.Derive.unary_operators" title="Link to this definition"></a></dt>
+<dd><p>Unary operators for symbolic regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.n_iterations">
+<span class="sig-name descname"><span class="pre">n_iterations</span></span><a class="headerlink" href="#evopt.derive.Derive.n_iterations" title="Link to this definition"></a></dt>
+<dd><p>Number of iterations for regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.population_size">
+<span class="sig-name descname"><span class="pre">population_size</span></span><a class="headerlink" href="#evopt.derive.Derive.population_size" title="Link to this definition"></a></dt>
+<dd><p>Population size for genetic algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.max_size">
+<span class="sig-name descname"><span class="pre">max_size</span></span><a class="headerlink" href="#evopt.derive.Derive.max_size" title="Link to this definition"></a></dt>
+<dd><p>Maximum size of generated equations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.results_csv_path">
+<span class="sig-name descname"><span class="pre">results_csv_path</span></span><a class="headerlink" href="#evopt.derive.Derive.results_csv_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the results CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.y_pred">
+<span class="sig-name descname"><span class="pre">y_pred</span></span><a class="headerlink" href="#evopt.derive.Derive.y_pred" title="Link to this definition"></a></dt>
+<dd><p>Predicted values from the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.best_equation">
+<span class="sig-name descname"><span class="pre">best_equation</span></span><a class="headerlink" href="#evopt.derive.Derive.best_equation" title="Link to this definition"></a></dt>
+<dd><p>Best equation found by symbolic regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="evopt.derive.Derive.sympymappings">
+<span class="sig-name descname"><span class="pre">sympymappings</span></span><a class="headerlink" href="#evopt.derive.Derive.sympymappings" title="Link to this definition"></a></dt>
+<dd><p>Custom operator mappings for SymPy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="model-configuration">
+<h3>Model Configuration<a class="headerlink" href="#model-configuration" title="Link to this heading"></a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.derive.Derive.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">evolve_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_operators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unary_operators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/derive.html#Derive.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.derive.Derive.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the Derive class for symbolic regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evolve_dir_path</strong> (<em>str</em>) – Path to directory containing the results.csv file.</p></li>
+<li><p><strong>target_variable</strong> (<em>str</em>) – Target variable to predict.</p></li>
+<li><p><strong>parameters</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of parameter names to use as predictors.</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory to save equations. If None, uses
+‘equations’ subdirectory in evolve_dir_path. Defaults to None.</p></li>
+<li><p><strong>binary_operators</strong> (<em>list</em><em>, </em><em>optional</em>) – Binary operators for symbolic regression.
+Defaults to [“+”, “-”, “*”, “/”, “^”].</p></li>
+<li><p><strong>unary_operators</strong> (<em>list</em><em>, </em><em>optional</em>) – Unary operators for symbolic regression.
+Can include custom operators in format “inv(x)=1/x”.
+Defaults to [“sin”, “exp”, “log”].</p></li>
+<li><p><strong>n_iterations</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of iterations. Defaults to 100.</p></li>
+<li><p><strong>population_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Population size. Defaults to 32.</p></li>
+<li><p><strong>max_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum size of equations. Defaults to 20.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>FileNotFoundError</strong> – If results.csv file doesn’t exist in evolve_dir_path.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">derive_model</span> <span class="o">=</span> <span class="n">Derive</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">evolve_dir_path</span><span class="o">=</span><span class="s2">&quot;path/to/data&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">target_variable</span><span class="o">=</span><span class="s2">&quot;density&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="regression-prediction">
+<h3>Regression &amp; Prediction<a class="headerlink" href="#regression-prediction" title="Link to this heading"></a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.derive.Derive.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/derive.html#Derive.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.derive.Derive.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit symbolic regression model to discover equations.</p>
+<p>This method configures and runs the PySR symbolic regression algorithm
+to discover mathematical relationships between parameters and target variable.
+It sets constraints on operations and stores the best equation found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Updates self.model and self.best_equation attributes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Derive</span><span class="p">(</span><span class="n">evolve_dir_path</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">target_variable</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">best_equation</span><span class="p">)</span>
+<span class="go">x1 + 2.5*x2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.derive.Derive.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/derive.html#Derive.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.derive.Derive.predict" title="Link to this definition"></a></dt>
+<dd><p>Generate predictions using the discovered equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – Input data to use for prediction. If None, uses
+the training data. Defaults to None.</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>) – Index of the equation to use for prediction.
+If None, uses the best equation. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predicted values from the model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">y_pred</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="visualization">
+<h3>Visualization<a class="headerlink" href="#visualization" title="Link to this heading"></a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="evopt.derive.Derive.parity_plot">
+<span class="sig-name descname"><span class="pre">parity_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_colour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.png'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/derive.html#Derive.parity_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.derive.Derive.parity_plot" title="Link to this definition"></a></dt>
+<dd><p>Plot the parity plot of the target variable and the predicted variable.</p>
+<p>This function creates a parity plot comparing actual values with predictions
+from the symbolic regression model, showing how well the discovered equation
+fits the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_colour</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of scatter points. Defaults to “black”.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Transparency of points. Defaults to 0.5.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Plot title. If None, uses default title. Defaults to None.</p></li>
+<li><p><strong>save_figures</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to save figure to disk. Defaults to True.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to display the figure. Defaults to True.</p></li>
+<li><p><strong>save_ext</strong> (<em>str</em><em>, </em><em>optional</em>) – File extension for saved figure. Defaults to “.png”.</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory to save figures. If None, uses
+‘figures’ subdirectory in evolve_dir_path. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The axis object containing the plot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib.axes.Axes</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If save_ext is not one of ‘png’, ‘jpg’, ‘jpeg’, ‘pdf’, or ‘svg’.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">parity_plot</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">point_colour</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Model Performance&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">save_figures</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="plotting.html" class="btn btn-neutral float-left" title="Plotting (evopt.plotting)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../internal/base_optimizer.html" class="btn btn-neutral float-right" title="Base optimizer (evopt.base_optimizer)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

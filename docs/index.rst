@@ -86,6 +86,7 @@ Documentation
    
    api/public/optimizer
    api/public/plotting
+   api/public/derive
 
 .. toctree::
    :maxdepth: 2
