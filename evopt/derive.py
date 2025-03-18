@@ -1,3 +1,9 @@
+"""Symbolic regression utilities for equation discovery from data.
+
+This module provides the Derive class for performing symbolic regression using PySR.
+It enables finding mathematical expressions that best fit a given dataset.
+"""
+
 from pysr import PySRRegressor
 import pandas as pd
 import numpy as np
@@ -7,6 +13,28 @@ import re
 import textwrap
 
 class Derive:
+    """Symbolic regression model for equation discovery from data.
+    
+    This class provides methods to discover mathematical equations that
+    describe the relationship between input parameters and a target variable
+    using symbolic regression with the PySR library.
+    
+    Attributes:
+        evolve_dir_path (str): Path to the directory containing results data.
+        target_variable (str): The variable to be predicted.
+        parameters (list[str]): Input parameters to use for prediction.
+        save_dir (str): Directory to save equations and output.
+        binary_operators (list): Binary operators for symbolic regression.
+        unary_operators (list): Unary operators for symbolic regression.
+        n_iterations (int): Number of iterations for regression.
+        population_size (int): Population size for genetic algorithm.
+        max_size (int): Maximum size of generated equations.
+        results_csv_path (str): Path to the results CSV file.
+        y_pred (DataFrame): Predicted values from the model.
+        best_equation (sympy.Expr): Best equation found by symbolic regression.
+        sympymappings (dict): Custom operator mappings for SymPy.
+    """
+
     def __init__(
             self,
             evolve_dir_path:str,
@@ -20,6 +48,34 @@ class Derive:
             max_size:int=20,
             #additional_operators:dict=None
         ):
+        """Initialize the Derive class for symbolic regression.
+        
+        Args:
+            evolve_dir_path (str): Path to directory containing the results.csv file.
+            target_variable (str): Target variable to predict.
+            parameters (list[str]): List of parameter names to use as predictors.
+            save_dir (str, optional): Directory to save equations. If None, uses
+                'equations' subdirectory in evolve_dir_path. Defaults to None.
+            binary_operators (list, optional): Binary operators for symbolic regression.
+                Defaults to ["+", "-", "*", "/", "^"].
+            unary_operators (list, optional): Unary operators for symbolic regression.
+                Can include custom operators in format "op(x)=expr". 
+                Defaults to ["sin", "exp", "log"].
+            n_iterations (int, optional): Number of iterations. Defaults to 100.
+            population_size (int, optional): Population size. Defaults to 32.
+            max_size (int, optional): Maximum size of equations. Defaults to 20.
+        
+        Raises:
+            FileNotFoundError: If results.csv file doesn't exist in evolve_dir_path.
+            
+        Example:
+            >>> derive_model = Derive(
+            ...     evolve_dir_path="path/to/data", 
+            ...     target_variable="density",
+            ...     parameters=["temperature", "pressure"]
+            ... )
+        """
+
         self.evolve_dir_path = evolve_dir_path
         self.target_variable = target_variable
         self.parameters = parameters
@@ -52,6 +108,19 @@ class Derive:
         self.X_parameters = self.data[self.parameters]
 
     def _get_id(self) -> str:
+        """Generate a unique ID for the current regression run.
+        
+        This method finds the smallest missing ID number from existing equation files
+        to ensure unique identification of each symbolic regression run.
+        
+        Returns:
+            str: A unique ID string in the format "equations_X" where X is a number.
+            
+        Example:
+            >>> model._get_id()
+            'equations_3'
+        """
+
         files = [f for f in os.listdir(self.save_dir) if f.startswith("equations_")]
         existing_ids = sorted([int(f.split("_")[-1]) for f in files if f.split("_")[-1].isdigit()])
         
@@ -61,6 +130,21 @@ class Derive:
         return f"equations_{next((i for i in range(max(existing_ids) + 2) if i not in existing_ids), 0)}"
 
     def fit(self):
+        """Fit symbolic regression model to discover equations.
+        
+        This method configures and runs the PySR symbolic regression algorithm
+        to discover mathematical relationships between parameters and target variable.
+        It sets constraints on operations and stores the best equation found.
+        
+        Returns:
+            None: Updates self.model and self.best_equation attributes.
+            
+        Example:
+            >>> model = Derive(evolve_dir_path="data", target_variable="y", parameters=["x1", "x2"])
+            >>> model.fit()
+            >>> print(model.best_equation)
+            x1 + 2.5*x2
+        """
 
         constraints = {
             "pow": (9, 1),
@@ -92,7 +176,21 @@ class Derive:
         self.best_equation = self.model.sympy()
     
     def predict(self, index:int=None):
-        # if index is None, the best_equation is selected for predictions.
+        """Generate predictions using the discovered equation.
+        
+        Args:
+            index (int, optional): Index of the equation to use for prediction.
+                If None, uses the best equation. Defaults to None.
+        
+        Returns:
+            None: Updates self.y_pred attribute with prediction results.
+            
+        Example:
+            >>> model.fit()
+            >>> model.predict()
+            >>> print(model.y_pred.head())
+        """
+
         if self.best_equation is None:
             self.fit()
         y_pred = self.model.predict(self.X_parameters, index=index)
@@ -108,9 +206,39 @@ class Derive:
             save_ext:str=".png",
             save_dir:str=None
             ):
+        """Plot the parity plot of the target variable and the predicted variable.
+        
+        This function creates a parity plot comparing actual values with predictions
+        from the symbolic regression model, showing how well the discovered equation
+        fits the data.
+        
+        Args:
+            point_colour (str, optional): Color of scatter points. Defaults to "black".
+            alpha (float, optional): Transparency of points. Defaults to 0.5.
+            title (str, optional): Plot title. If None, uses default title. Defaults to None.
+            save_figures (bool, optional): Whether to save figure to disk. Defaults to True.
+            show (bool, optional): Whether to display the figure. Defaults to True.
+            save_ext (str, optional): File extension for saved figure. Defaults to ".png".
+            save_dir (str, optional): Directory to save figures. If None, uses
+                'figures' subdirectory in evolve_dir_path. Defaults to None.
+                
+        Returns:
+            matplotlib.axes.Axes: The axis object containing the plot.
+            
+        Raises:
+            ValueError: If save_ext is not one of 'png', 'jpg', 'jpeg', 'pdf', or 'svg'.
+            
+        Example:
+            >>> model.fit()
+            >>> model.predict()
+            >>> model.parity_plot(
+            ...     point_colour="blue", 
+            ...     alpha=0.7, 
+            ...     title="Model Performance",
+            ...     save_figures=True
+            ... )
         """
-        Plot the parity plot of the target variable and the predicted variable.
-        """
+        
         save_dir = save_dir if save_dir else os.path.join(self.evolve_dir_path, "figures")
         save_ext = save_ext.strip(".") if save_ext else "png"
         os.makedirs(save_dir, exist_ok=True)
