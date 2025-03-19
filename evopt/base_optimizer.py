@@ -564,7 +564,7 @@ class BaseOptimizer(ABC):
             # Process target dictionary if provided
             if target_dict and isinstance(error, dict):
                 from .loss import calc_loss  # Import here to avoid circular imports
-                loss = calc_loss(target_dict, error, hard_to_soft_weight=0.95, method="mae")
+                loss = calc_loss(target_dict, error, hard_to_soft_weight=0.9, method="mae")
                 result_dict = loss.observed_dict
                 error = loss.combined_loss
 
@@ -575,8 +575,8 @@ class BaseOptimizer(ABC):
 
         except Exception as e:
             error = None
-            print(f"Error evaluating solution {sol_id}: {e}")
-            print(f"Traceback:\n{traceback.format_exc()}")
+            #print(f"Error evaluating solution {sol_id}: {e}")
+            #print(f"Traceback:\n{traceback.format_exc()}")
             return sol_id, error, result_dict, param_dict
 
         # Clean up empty directory
@@ -656,8 +656,8 @@ class BaseOptimizer(ABC):
                     store_result(result, idx)
 
                 except Exception as e:
-                    print(f"Solution {idx} failed with error: {e}")
-                    print(f"Traceback:\n{traceback.format_exc()}")
+                    #print(f"Solution {idx} failed with error: {e}")
+                    #print(f"Traceback:\n{traceback.format_exc()}")
                     result_dict = {k: None for k in self.target_dict} if self.target_dict else None
                     result = (idx, None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                     store_result(result, idx)
@@ -682,8 +682,8 @@ class BaseOptimizer(ABC):
                     store_result(result, idx)
 
                 except Exception as e:
-                    print(f"Solution {solution_args[idx][0]} failed: {e}")
-                    print(f"Traceback:\n{traceback.format_exc()}")
+                    #print(f"Solution {solution_args[idx][0]} failed: {e}")
+                    #print(f"Traceback:\n{traceback.format_exc()}")
                     result_dict = {k: None for k in self.target_dict} if self.target_dict else None
                     result = (idx, None, result_dict, dict(zip(self.parameters.keys(), rescaled_solutions[idx])))
                     store_result(result, idx)
