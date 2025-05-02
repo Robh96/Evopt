@@ -24,6 +24,7 @@ The standard directory structure created is::
 
 import os
 import pickle
+import pandas as pd
 from .utils import Logger
 
 class DirectoryManager:
@@ -78,6 +79,7 @@ class DirectoryManager:
         self.base_dir = base_dir
         self.dir_id = self.get_dir_id(dir_id)
         self.evolve_dir = os.path.join(self.base_dir, f"evolve_{self.dir_id}")
+        self.samples_dir = os.path.join(self.evolve_dir, f"samples")
         self.epochs_csv = os.path.join(self.evolve_dir, "epochs.csv")
         self.results_csv = os.path.join(self.evolve_dir, "results.csv")
         self.epochs_dir = os.path.join(self.evolve_dir, "epochs")
@@ -151,6 +153,7 @@ class DirectoryManager:
         os.makedirs(self.evolve_dir, exist_ok=True)
         os.makedirs(self.epochs_dir, exist_ok=True)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
+        os.makedirs(self.samples_dir, exist_ok=True)
 
     def create_epoch_folder(self, epoch: int) -> str:
         """Create a folder for a specific optimization epoch.
@@ -199,6 +202,29 @@ class DirectoryManager:
         solution_folder = os.path.join(epoch_folder, f"solution{solution:0>4}")
         os.makedirs(solution_folder, exist_ok=True)
         return solution_folder
+    
+
+    def create_sample_folder(self, sample: int) -> str:
+        """
+        Create a folder to store data for a specific sample within an sample study.
+        The created folder is nested within the corresponding evolve folder.
+        
+        Args:
+            sample: The sample number within the exploratory study.
+            
+        Returns:
+            str: The path to the created solution folder.
+            
+        Example:
+            >>> dm = DirectoryManager("./results")
+            >>> sample_path = dm.create_sample_folder(7)
+            >>> print(f"sample directory: {sample_path}")
+            # Output: sample directory: ./results/evolve_0/samples/sample0007
+        """
+        # Create a folder for a specific solution within an epoch folder
+        sample_folder = os.path.join(self.samples_dir, f"sample{sample:0>4}")
+        os.makedirs(sample_folder, exist_ok=True)
+        return sample_folder
     
     def get_checkpoint_filepath(self, epoch: int) -> str:
         """Get the filepath for a checkpoint file for a specific epoch.
@@ -298,3 +324,24 @@ class DirectoryManager:
             if self.logger:
                 print(f"Warning: Checkpoint file {filepath} is corrupted and cannot be loaded.")
             return None
+        
+    def load_sample_history(self):
+        """Load the sample history from the results CSV file."""
+        completed_samples = set()
+        if os.path.exists(self.results_csv):
+            try:
+                df = pd.read_csv(self.results_csv)
+                if 'sample' in df.columns:
+                    completed_samples = set(df['sample'].unique())
+                    print(f"Loaded {len(completed_samples)} completed samples from {self.results_csv}.")
+                else:
+                    print(f"Warning: 'sample' column not found in {self.results_csv}.")
+            
+            except pd.errors.EmptyDataError:
+                print(f"Results file {self.results_csv} is empty. Starting fresh.")
+            
+            except Exception as e:
+                print(f"Error loading results file {self.results_csv}: {e}. Starting fresh.")
+        return completed_samples
+        
+        
