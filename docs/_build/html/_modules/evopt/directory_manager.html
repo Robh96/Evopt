@@ -49,6 +49,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
 <ul>
@@ -111,6 +112,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span>
 
 <div class="viewcode-block" id="DirectoryManager">
@@ -167,6 +169,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">base_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dir_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dir_id</span><span class="p">(</span><span class="n">dir_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;evolve_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;samples&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="s2">&quot;epochs.csv&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="s2">&quot;results.csv&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="s2">&quot;epochs&quot;</span><span class="p">)</span>
@@ -244,7 +247,8 @@
         <span class="c1"># Create the main directory structure</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evolve_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DirectoryManager.create_epoch_folder">
@@ -299,6 +303,32 @@
         <span class="n">solution_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">epoch_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;solution</span><span class="si">{</span><span class="n">solution</span><span class="si">:</span><span class="s2">0&gt;4</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">solution_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">solution_folder</span></div>
+
+    
+
+<div class="viewcode-block" id="DirectoryManager.create_sample_folder">
+<a class="viewcode-back" href="../../api/internal/directory_manager.html#evopt.directory_manager.DirectoryManager.create_sample_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_sample_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a folder to store data for a specific sample within an sample study.</span>
+<span class="sd">        The created folder is nested within the corresponding evolve folder.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            sample: The sample number within the exploratory study.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The path to the created solution folder.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; dm = DirectoryManager(&quot;./results&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; sample_path = dm.create_sample_folder(7)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;sample directory: {sample_path}&quot;)</span>
+<span class="sd">            # Output: sample directory: ./results/evolve_0/samples/sample0007</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create a folder for a specific solution within an epoch folder</span>
+        <span class="n">sample_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;sample</span><span class="si">{</span><span class="n">sample</span><span class="si">:</span><span class="s2">0&gt;4</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">sample_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample_folder</span></div>
 
     
 <div class="viewcode-block" id="DirectoryManager.get_checkpoint_filepath">
@@ -407,8 +437,32 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Checkpoint file </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2"> is corrupted and cannot be loaded.&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span></div>
+
+        
+<div class="viewcode-block" id="DirectoryManager.load_sample_history">
+<a class="viewcode-back" href="../../api/internal/directory_manager.html#evopt.directory_manager.DirectoryManager.load_sample_history">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_sample_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the sample history from the results CSV file.&quot;&quot;&quot;</span>
+        <span class="n">completed_samples</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;sample&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">completed_samples</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">completed_samples</span><span class="p">)</span><span class="si">}</span><span class="s2"> completed samples from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: &#39;sample&#39; column not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            
+            <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">EmptyDataError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results file </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="si">}</span><span class="s2"> is empty. Starting fresh.&quot;</span><span class="p">)</span>
+            
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading results file </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_csv</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Starting fresh.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">completed_samples</span></div>
 </div>
 
+        
+        
 </pre></div>
 
            </div>

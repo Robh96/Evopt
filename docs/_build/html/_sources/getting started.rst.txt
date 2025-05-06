@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-This guide will help you get started with ``evopt``, a user-friendly black-box optimization library.
+This guide will help you get started with ``evopt``, a user-friendly black-box exploration and optimization library.
 
 Installation
 ------------
@@ -34,6 +34,49 @@ With multi-objective optimization, you can specify:
 
 * **Hard Constraints**: Requirements that must be satisfied (e.g., stress below safety limit)
 * **Soft Objectives**: Goals to optimize toward (e.g., minimize weight)
+
+Parameter Space Sampling
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before performing an optimization, you may want to explore your parameter space to:
+
+* Understand the landscape of your problem
+* Identify promising regions for optimization
+* Test your evaluator function on diverse inputs
+* Gather training data for surrogate models
+
+``evopt`` provides efficient sampling using Sobol sequences, which create well-distributed points throughout your parameter space.
+
+.. code-block:: python
+
+   import evopt
+   
+   # Define your parameter space
+   params = {
+       'x': (-5, 5),
+       'y': (-5, 5)
+   }
+   
+   # Define your evaluation function
+   def my_evaluator(param_dict):
+       x = param_dict['x']
+       y = param_dict['y']
+       return x**2 + y**2
+   
+   # Generate and evaluate 32 Sobol samples
+   results = evopt.sample(
+       params=params,
+       evaluator=my_evaluator,
+       n_samples=32,
+       verbose=True
+   )
+
+Unlike optimization, sampling:
+ 
+* Doesn't attempt to converge toward better solutions
+* Provides consistent coverage of the entire parameter space
+* Can be used independently or as a precursor to optimization
+* More effective when chaining with symbolic regression or surrogate modeling
 
 Your First Optimization
 -----------------------

@@ -49,6 +49,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/public/derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
 <ul>
@@ -662,7 +663,7 @@
             <span class="c1"># Process target dictionary if provided</span>
             <span class="k">if</span> <span class="n">target_dict</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="kn">from</span><span class="w"> </span><span class="nn">.loss</span><span class="w"> </span><span class="kn">import</span> <span class="n">calc_loss</span>  <span class="c1"># Import here to avoid circular imports</span>
-                <span class="n">loss</span> <span class="o">=</span> <span class="n">calc_loss</span><span class="p">(</span><span class="n">target_dict</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">hard_to_soft_weight</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mae&quot;</span><span class="p">)</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">calc_loss</span><span class="p">(</span><span class="n">target_dict</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">hard_to_soft_weight</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mae&quot;</span><span class="p">)</span>
                 <span class="n">result_dict</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">observed_dict</span>
                 <span class="n">error</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">combined_loss</span>
 
@@ -673,8 +674,8 @@
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">error</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error evaluating solution </span><span class="si">{</span><span class="n">sol_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1">#print(f&quot;Error evaluating solution {sol_id}: {e}&quot;)</span>
+            <span class="c1">#print(f&quot;Traceback:\n{traceback.format_exc()}&quot;)</span>
             <span class="k">return</span> <span class="n">sol_id</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">param_dict</span>
 
         <span class="c1"># Clean up empty directory</span>
@@ -756,8 +757,8 @@
                     <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
 
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solution </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> failed with error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1">#print(f&quot;Solution {idx} failed with error: {e}&quot;)</span>
+                    <span class="c1">#print(f&quot;Traceback:\n{traceback.format_exc()}&quot;)</span>
                     <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span><span class="p">}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span> <span class="k">else</span> <span class="kc">None</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
                     <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
@@ -782,8 +783,8 @@
                     <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
 
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solution </span><span class="si">{</span><span class="n">solution_args</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Traceback:</span><span class="se">\n</span><span class="si">{</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1">#print(f&quot;Solution {solution_args[idx][0]} failed: {e}&quot;)</span>
+                    <span class="c1">#print(f&quot;Traceback:\n{traceback.format_exc()}&quot;)</span>
                     <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span><span class="p">}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dict</span> <span class="k">else</span> <span class="kc">None</span>
                     <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">result_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">rescaled_solutions</span><span class="p">[</span><span class="n">idx</span><span class="p">])))</span>
                     <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>

@@ -52,6 +52,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../public/derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
 <ul class="current">
@@ -261,6 +262,31 @@ of the optimization process.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">create_sample_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/evopt/directory_manager.html#DirectoryManager.create_sample_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Create a folder to store data for a specific sample within an sample study.
+The created folder is nested within the corresponding evolve folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sample</strong> – The sample number within the exploratory study.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path to the created solution folder.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">DirectoryManager</span><span class="p">(</span><span class="s2">&quot;./results&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sample_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">create_sample_folder</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sample directory: </span><span class="si">{</span><span class="n">sample_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go"># Output: sample directory: ./results/evolve_0/samples/sample0007</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">create_solution_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/evopt/directory_manager.html#DirectoryManager.create_solution_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Create a folder for a specific solution within an epoch.</p>
 <p>Creates a directory to store data for a single solution evaluation
@@ -396,6 +422,12 @@ If None, the latest checkpoint will be loaded. Default is None.</p>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No checkpoint found&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load_sample_history</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/evopt/directory_manager.html#DirectoryManager.load_sample_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load the sample history from the results CSV file.</p>
 </dd></dl>
 
 <dl class="py method">

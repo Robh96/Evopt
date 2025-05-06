@@ -84,9 +84,11 @@ Documentation
    :maxdepth: 2
    :caption: Public API:
    
+   api/public/sampler
    api/public/optimizer
-   api/public/plotting
    api/public/derive
+   api/public/plotting
+   
 
 .. toctree::
    :maxdepth: 2

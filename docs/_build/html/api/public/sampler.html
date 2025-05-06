@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sampling (evopt.sampler) &mdash; evopt 2024 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6fefd858"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Optimization (evopt.optimizer)" href="optimizer.html" />
+    <link rel="prev" title="Tutorials" href="../../tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            evopt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting%20started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Sampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.sampler</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#evopt.sampler.sample"><code class="docutils literal notranslate"><span class="pre">sample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../internal/base_optimizer.html">Base optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.base_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/cma_optimizer.html">CMAES optimizer (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.cma_optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/directory_manager.html">Directory Manager (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.directory_manager</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/loss.html">Loss functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.loss</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/slurm_executor.html">Slurm HPC executor (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.slurm_executor</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../internal/utils.html">Helpers (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.utils</span></code>)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">evopt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Sampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.sampler</span></code>)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api/public/sampler.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sampling-evopt-sampler">
+<h1>Sampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.sampler</span></code>)<a class="headerlink" href="#sampling-evopt-sampler" title="Link to this heading"></a></h1>
+<p>The sampler module provides functionality for exploring parameter spaces using Sobol sequences,
+which generate well-distributed points throughout the parameter space. This is useful for
+understanding the landscape of your problem before optimization or for gathering training
+data for surrogate models.</p>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="evopt.sampler.sample">
+<span class="sig-prename descclassname"><span class="pre">evopt.sampler.</span></span><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores_per_worker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/evopt/sampler.html#sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evopt.sampler.sample" title="Link to this definition"></a></dt>
+<dd><p>Sample Sobol sequences and evaluate them using the provided evaluator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>dict</em>) – Parameter space definition as a dictionary where keys are parameter names
+and values are tuples of (min_value, max_value) bounds.</p></li>
+<li><p><strong>evaluator</strong> (<em>callable</em>) – Function that evaluates a parameter set and returns either:
+- A single float value representing the error/fitness (lower is better)
+- A dictionary of observed values to be compared with target_dict</p></li>
+<li><p><strong>n_samples</strong> (<em>int</em>) – Number of Sobol samples to generate. Default is 32.</p></li>
+<li><p><strong>rand_seed</strong> (<em>int</em>) – Random seed for reproducibility. Default is None.</p></li>
+<li><p><strong>target_dict</strong> (<em>dict</em>) – Dictionary of target values for comparison. Default is None.</p></li>
+<li><p><strong>max_workers</strong> (<em>int</em>) – Maximum number of worker processes. Default is 1.</p></li>
+<li><p><strong>cores_per_worker</strong> (<em>int</em>) – Number of CPU cores per worker process. Default is 1.</p></li>
+<li><p><strong>base_dir</strong> (<em>str</em>) – Base directory for storing optimization results. If None, uses current directory.</p></li>
+<li><p><strong>dir_id</strong> (<em>str</em>) – Directory ID for organizing results. Default is None.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to print detailed information during sampling and evaluation. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list containing the results for each sample. Each element is</dt><dd><p>a tuple: (sample_idx, error, result_dict, param_dict).
+Returns None for samples that failed evaluation.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If sample generation fails or produces incorrect number of samples.</p>
+</dd>
+</dl>
+<section id="core-functionality">
+<h3>Core Functionality<a class="headerlink" href="#core-functionality" title="Link to this heading"></a></h3>
+<p>This function enables efficient parameter space exploration. It supports:</p>
+<ul class="simple">
+<li><p>Parameter space definition with min/max bounds</p></li>
+<li><p>Sobol sequence generation for quasi-random sampling</p></li>
+<li><p>Parallel evaluation of samples</p></li>
+<li><p>Multi-objective evaluation with target dictionaries</p></li>
+<li><p>CSV output for analysis</p></li>
+<li><p>Directory organization similar to the optimization module</p></li>
+</ul>
+</section>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Quasi-Random Sampling</strong>: Uses Sobol sequences to ensure better coverage of the parameter space than purely random sampling</p></li>
+<li><p><strong>Parallelization</strong>: Supports multi-core and multi-node evaluation of samples</p></li>
+<li><p><strong>Consistent Storage</strong>: Results are stored in a structured directory format compatible with plotting tools</p></li>
+<li><p><strong>Target Support</strong>: Works with the same target dictionary format as the optimizer module</p></li>
+<li><p><strong>Resumability</strong>: Can resume from interrupted sampling runs by tracking completed samples</p></li>
+</ul>
+</section>
+<section id="usage-examples">
+<h3>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h3>
+<p>Basic sampling of a parameter space:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)},</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">my_function</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">64</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Parallel sampling with targets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params_dict</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">my_evaluator</span><span class="p">,</span>
+    <span class="n">target_dict</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">cores_per_worker</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="optimizer.html" class="btn btn-neutral float-right" title="Optimization (evopt.optimizer)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Roberto Hart-Villamil.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

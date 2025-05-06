@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorials" href="tutorials.html" />
-    <link rel="prev" title="Welcome to evopt: User Friendly Black-Box Numerical Optimization" href="index.html" /> 
+    <link rel="prev" title="evopt: user friendly black-box numerical optimization" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,6 +49,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#basic-concepts">Basic Concepts</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#types-of-optimization">Types of Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameter-space-sampling">Parameter Space Sampling</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#your-first-optimization">Your First Optimization</a></li>
@@ -63,7 +64,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Public API:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="api/public/sampler.html">Sampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.sampler</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public/optimizer.html">Optimization (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.optimizer</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/public/derive.html">Symbolic Regression (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.derive</span></code>)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/public/plotting.html">Plotting (<code class="xref py py-mod docutils literal notranslate"><span class="pre">evopt.plotting</span></code>)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Internal API:</span></p>
@@ -102,7 +105,7 @@
              
   <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
-<p>This guide will help you get started with <code class="docutils literal notranslate"><span class="pre">evopt</span></code>, a user-friendly black-box optimization library.</p>
+<p>This guide will help you get started with <code class="docutils literal notranslate"><span class="pre">evopt</span></code>, a user-friendly black-box exploration and optimization library.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>You can install <code class="docutils literal notranslate"><span class="pre">evopt</span></code> using pip:</p>
@@ -130,6 +133,47 @@
 <ul class="simple">
 <li><p><strong>Hard Constraints</strong>: Requirements that must be satisfied (e.g., stress below safety limit)</p></li>
 <li><p><strong>Soft Objectives</strong>: Goals to optimize toward (e.g., minimize weight)</p></li>
+</ul>
+</section>
+<section id="parameter-space-sampling">
+<h3>Parameter Space Sampling<a class="headerlink" href="#parameter-space-sampling" title="Link to this heading"></a></h3>
+<p>Before performing an optimization, you may want to explore your parameter space to:</p>
+<ul class="simple">
+<li><p>Understand the landscape of your problem</p></li>
+<li><p>Identify promising regions for optimization</p></li>
+<li><p>Test your evaluator function on diverse inputs</p></li>
+<li><p>Gather training data for surrogate models</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">evopt</span></code> provides efficient sampling using Sobol sequences, which create well-distributed points throughout your parameter space.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">evopt</span>
+
+<span class="c1"># Define your parameter space</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># Define your evaluation function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_evaluator</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Generate and evaluate 32 Sobol samples</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evopt</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">my_evaluator</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Unlike optimization, sampling:</p>
+<ul class="simple">
+<li><p>Doesn’t attempt to converge toward better solutions</p></li>
+<li><p>Provides consistent coverage of the entire parameter space</p></li>
+<li><p>Can be used independently or as a precursor to optimization</p></li>
+<li><p>More effective when chaining with symbolic regression or surrogate modeling</p></li>
 </ul>
 </section>
 </section>
@@ -265,7 +309,7 @@ Terminating after meeting termination criteria at epoch 15.
 <li><p>Use checkpointing for long-running optimizations</p></li>
 <li><p>Scale up to high-performance computing environments</p></li>
 </ul>
-<p>See the <span class="xref std std-ref">tutorials</span> section for more detailed examples.</p>
+<p>See the <a class="reference internal" href="tutorials.html#tutorials"><span class="std std-ref">Tutorials</span></a> section for more detailed examples.</p>
 </section>
 </section>
 
@@ -273,7 +317,7 @@ Terminating after meeting termination criteria at epoch 15.
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to evopt: User Friendly Black-Box Numerical Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="evopt: user friendly black-box numerical optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
