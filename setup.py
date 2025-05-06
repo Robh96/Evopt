@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='evopt',
-    version='0.14.3',
+    version='0.15.0',
     packages=find_packages(),
     install_requires=[
         'numpy>=2.2.1',
@@ -17,7 +17,7 @@ setup(
     include_package_data=True,
     author='Roberto Hart-Villamil',
     author_email='rob.hartvillamil@gmail.com',
-    description='User Friendly Black-Box Numerical Optimization Package in Python.',
+    description='User Friendly Black-Box Numerical Optimization and Exploration Package in Python.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/Robh96/Evopt',
