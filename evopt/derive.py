@@ -103,9 +103,14 @@ class Derive:
         os.makedirs(self.save_dir, exist_ok=True)
 
         data = pd.read_csv(self.results_csv_path)
-        self.data = data.dropna()
+        check_cols = [self.target_variable] + self.parameters
+        self.data = data.dropna(subset=check_cols)
         self.y_target = self.data[self.target_variable]
         self.X_parameters = self.data[self.parameters]
+        
+        # raise error if y_target or X_parameters dataframes are empty
+        if self.y_target.empty or self.X_parameters.empty:
+            raise ValueError("y_target or X_parameters dataframes are empty. Check the input data.")
 
     def _get_id(self) -> str:
         """Generate a unique ID for the current regression run.

@@ -6,7 +6,7 @@ import concurrent.futures
 import os
 import traceback
 from .directory_manager import DirectoryManager
-from .utils import ProcessPoolManager, working_directory, extend_dict, write_to_csv, format_array
+from .utils import ProcessPoolManager, working_directory, write_to_csv, format_array
 
 class SobolSampler():
     def __init__(
@@ -20,7 +20,7 @@ class SobolSampler():
             cores_per_worker: int = 1,
             base_dir: str = None,
             dir_id: str = None,
-            verbose: bool = False,
+            verbose: bool = True,
             directory_manager: DirectoryManager = None,
             **kwargs
             ):
