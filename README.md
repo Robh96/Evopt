@@ -1,6 +1,6 @@
 # evopt
-### User Friendly Black-Box Numerical Optimization
-`evopt` is a package for efficient parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives. It also includes PySR's symbolic regression engine to understand relationships between variables in the results.
+### User Friendly Black-Box Numerical Optimization, Exploration, and Equation Discovery
+`evopt` is a package for efficient parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm, exploration using Sobol sequence sampling, and symbolic regression using PySR. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimization of the two parameter Ackley function." width="800">
@@ -16,21 +16,14 @@ Complete documentation is available at [evopt.readthedocs.io](https://evopt.read
 ## Scope
 
 *   **Focus**: `evopt` provides a CMA-ES-based optimization routine that is easy to set up and use.
-*   **Parameter Optimization**: The package is designed for problems where you need to find the optimal values for a set of parameters.
-*   **Function-Value-Free Optimization**: It is designed to work without needing derivative information.
+*   **Black-box Parameter Optimization**: The package is designed for problems where you need to find the optimal values for a set of parameters, without being able to parameterise the evaluator function.
+*   **Efficient exploration and equation discovery**: You can efficiently sample the parameter space using Sobol sequences, and apply symbolic regression to the results to discover the underlying black-box equations.
 *   **Directory Management**: The package includes robust directory management to organise results, checkpoints, and logs.
 *   **Logging**: It provides logging capabilities to track the optimization process.
 *   **Checkpointing**: It supports saving and loading checkpoints to resume interrupted optimization runs.
 *   **CSV Output**: It writes results and epoch data to CSV files for easy analysis.
 *   **Easy results plotting**: Simple pain-free methods to plot the results.
 *   **High Performance Computing**: It can leverage HPC resources for increased performance.
-
-## Key Advantages
-
-*   **Ease of Use**: Simple API for defining parameters, evaluator, and optimization settings.
-*   **Derivative-Free**: Works well for problems where derivatives are unavailable or difficult to compute.
-*   **Robustness**: CMA-ES is a powerful optimization algorithm that can handle non-convex and noisy problems.
-*   **Organization**: Automatic directory management and logging for easy tracking and analysis.
 
 ## Installation
 
@@ -156,6 +149,61 @@ Epoch 11 | Normalised Sigma parameters: [0.015, 0.081]
 Terminating after meeting termination criteria at epoch 12.
 ```
 Note that verbosity can be controlled with verbose: bool option in evopt.optimize().
+
+## Parameter Space Sampling
+
+In addition to optimization, `evopt` provides functionality for efficient parameter space exploration using Sobol sequences. This is useful for generating diverse sets of parameter values and understanding the response surface of your system before optimization.
+
+```python
+import evopt
+
+# Define your parameters and evaluator function
+params = {
+    'x1': (-5, 5),
+    'x2': (-5, 5)
+}
+
+def evaluator(param_dict):
+    x1 = param_dict['x1']
+    x2 = param_dict['x2']
+    result = (1 - x1) ** 2 + 100*(x2 - x1 ** 2) ** 2
+    return result
+
+# Sample 32 points using Sobol sampling
+results = evopt.sample(
+    params=params,
+    evaluator=evaluator,
+    n_samples=32,
+    verbose=True
+)
+```
+
+Sample output:
+```terminal
+Running evaluations in serial mode.
+Sample 0 | (1/32) | Params: [-2.500, -2.500] | Error: None
+Sample 1 | (2/32) | Params: [2.500, 2.500] | Error: None
+Sample 2 | (3/32) | Params: [-1.250, -1.250] | Error: None
+Sample 3 | (4/32) | Params: [3.750, 3.750] | Error: None
+...
+```
+
+The sampling function organizes results in a directory structure similar to the optimization function, with CSV files containing all sample data for further analysis.
+
+### Keywords for `sample()` Function
+
+The `evopt.sample()` function takes several keyword arguments to control the sampling process:
+
+* `params (dict)`: A dictionary defining the parameters to sample. Keys are parameter names, and values are tuples of `(min, max)` bounds.
+* `evaluator (Callable)`: A callable that evaluates the parameters and returns an error value or result dictionary.
+* `n_samples (int, optional)`: The number of Sobol samples to generate. Defaults to `32`.
+* `rand_seed (int, optional)`: Random seed for reproducible results. Defaults to `None`.
+* `target_dict (dict, optional)`: Dictionary of target values for comparison. Defaults to `None`.
+* `max_workers (int, optional)`: Maximum number of worker processes for parallel evaluation. Defaults to `1`.
+* `cores_per_worker (int, optional)`: Number of CPU cores per worker process. Defaults to `1`.
+* `base_dir (str, optional)`: Base directory for storing results. Defaults to the current working directory.
+* `dir_id (str, optional)`: Directory ID for organizing results. Defaults to `None`.
+* `verbose (bool, optional)`: Whether to print detailed information during sampling. Defaults to `True`.
 
 ## Keywords for `optimize()` Function
 
