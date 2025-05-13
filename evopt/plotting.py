@@ -207,7 +207,11 @@ class Plotting:
         point_colour: str = "black",
         alpha: float|int = 1,
         save_figures: bool = True,
-        title: str = None
+        title: str = None,
+        xlabel: str = None,
+        ylabel: str = None,
+        zlabel: str = None,
+        cval_label: str = None
     ):
         """Visualize relationships between optimization parameters and results.
         
@@ -304,8 +308,14 @@ class Plotting:
                 s=8,
                 alpha=alpha
             )
-            ax.set_xlabel(x)
-            ax.set_ylabel(y)
+            if xlabel:
+                ax.set_xlabel(xlabel)
+            else:
+                ax.set_xlabel(x)
+            if ylabel:
+                ax.set_ylabel(ylabel)
+            else:
+                ax.set_ylabel(y)
             ax.set_title(title)
             file_name = f"{x_sanitized}_vs_{y_sanitized}.{save_ext}"
             if save_figures:
@@ -319,27 +329,7 @@ class Plotting:
             
         elif cval is not None and z is None:
             title = title if title else f"Voronoi Plot of {x} vs {y} colored by {cval}"
-            # Voronoi plot with cval as color
             fig, ax = plt.subplots(figsize=(6, 4))
-
-            
-
-            # original_points_norm_df = pd.DataFrame({
-            #     'x_norm': x_values_norm, 
-            #     'y_norm': y_values_norm, 
-            #     'cval': c_values
-            # })
-            
-            # ax = Plotting._plot_voronoi(
-            #     original_points_df=original_points_norm_df, 
-            #     x_col_norm='x_norm', y_col_norm='y_norm', cval_col='cval',
-            #     x_orig_min=x_orig_min, x_orig_max=x_orig_max,
-            #     y_orig_min=y_orig_min, y_orig_max=y_orig_max,
-            #     cmap=cmap, ax=ax, clip_infinite=True,
-            #     point_colour=point_colour, alpha=alpha
-            # )
-
-            # Create a temporary DataFrame for the Voronoi plot
             temp_data = pd.DataFrame({x: x_values, y: y_values, cval: c_values})
             
             ax = Plotting._plot_voronoi(
@@ -348,11 +338,17 @@ class Plotting:
                 ax=ax,
                 clip_infinite=True,
                 point_colour=point_colour,
-                alpha=alpha
+                alpha=alpha,
+                cval_label=cval_label
             ) 
-
-            ax.set_xlabel(x)
-            ax.set_ylabel(y)
+            if xlabel:
+                ax.set_xlabel(xlabel)
+            else:
+                ax.set_xlabel(x)
+            if ylabel:
+                ax.set_ylabel(ylabel)
+            else:
+                ax.set_ylabel(y)
             ax.set_title(title)
             file_name = f"{x_sanitized}_vs_{y_sanitized}_vs_{cval_sanitized}_Voronoi.{save_ext}"
             if save_figures:
@@ -383,9 +379,9 @@ class Plotting:
             fig.update_layout(
                 title=title,
                 scene=dict(
-                    xaxis_title=x,
-                    yaxis_title=y,
-                    zaxis_title=z,
+                    xaxis_title=x if xlabel is None else xlabel,
+                    yaxis_title=y if ylabel is None else ylabel,
+                    zaxis_title=z if zlabel is None else zlabel,
                     aspectratio=dict(x=1, y=1, z=1),  # Adjust aspect ratio
                 ),
                 margin=dict(l=20, r=20, b=20, t=50)  # Adjust margins
@@ -416,14 +412,14 @@ class Plotting:
                 surfacecolor=ci,
                 opacity=alpha,
                 colorscale=cmap,
-                colorbar=dict(title=cval),  # Add colorbar title
+                colorbar=dict(title=cval if cval_label is None else cval_label),  # Add colorbar title
                 )])
             fig.update_layout(
                 title=title,
                 scene=dict(
-                    xaxis_title=x,
-                    yaxis_title=y,
-                    zaxis_title=z,
+                    xaxis_title=x if xlabel is None else xlabel,
+                    yaxis_title=y if ylabel is None else ylabel,
+                    zaxis_title=z if zlabel is None else zlabel,
                     aspectratio=dict(x=1, y=1, z=1),
                 ),
                 margin=dict(l=20, r=20, b=20, t=50)  # Adjust margins
@@ -440,8 +436,15 @@ class Plotting:
             raise ValueError("Invalid input. x and y must be provided. z and cval are optional.")
     
     @staticmethod
-    def _plot_voronoi(data, x, y, cval, 
-                      cmap="viridis", ax=None, clip_infinite=True, point_colour="black", alpha=0.25):
+    def _plot_voronoi(
+        data, x, y, cval, 
+        cmap="viridis",
+        ax=None,
+        clip_infinite=True,
+        point_colour="black",
+        alpha=0.25,
+        cval_label=None
+        ):
         """Create a Voronoi diagram with regions colored by a specified value.
         Normalization is handled internally. Axis ticks show original data scales.
         """
@@ -572,7 +575,10 @@ class Plotting:
 
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=data[cval].min(), vmax=data[cval].max()))
         cbar = plt.colorbar(sm, ax=ax)
-        cbar.set_label(cval)
+        if cval_label:
+            cbar.set_label(cval_label)
+        else:
+            cbar.set_label(cval)
 
         def x_formatter_func(norm_val, pos):
             return f"{x_orig_min + norm_val * x_range_orig:.2g}" if abs(x_range_orig) > 1e-9 else f"{x_orig_min:.2g}"
