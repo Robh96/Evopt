@@ -204,15 +204,16 @@ class Derive:
         if x is None:
             x = self.X_parameters
             y_pred = self.model.predict(x, index=index)
-            self.y_pred = pd.DataFrame(y_pred, columns=[self.best_equation])
+            self.y_pred = pd.DataFrame(y_pred, columns=[self.model.sympy(index=index)])
             return self.y_pred
         else:
             y_pred = self.model.predict(x, index=index)
-            return pd.DataFrame(y_pred, columns=[self.best_equation])
+            return pd.DataFrame(y_pred, columns=[self.model.sympy(index=index)])
 
 
     def parity_plot(
             self,
+            index:int=None,
             point_colour:str="black",
             alpha:float=0.5,
             title:str=None,
@@ -228,6 +229,8 @@ class Derive:
         fits the data.
         
         Args:
+            index (int, optional): Index of the equation to use for prediction.
+                If None, uses the best equation. Defaults to None.
             point_colour (str, optional): Color of scatter points. Defaults to "black".
             alpha (float, optional): Transparency of points. Defaults to 0.5.
             title (str, optional): Plot title. If None, uses default title. Defaults to None.
@@ -267,7 +270,7 @@ class Derive:
             num = float(match.group(0))
             return f"{num:.3g}"
 
-        formatted_label = re.sub(r"[-+]?\d*\.?\d+(?:[Ee][-+]?\d+)?", format_number, str(self.best_equation))
+        formatted_label = re.sub(r"[-+]?\d*\.?\d+(?:[Ee][-+]?\d+)?", format_number, str(self.model.sympy(index=index)))
         spaced_label = re.sub(r"([()])", r" \1 ", formatted_label)
         wrapped_label = "\n".join(textwrap.wrap(spaced_label, width=40))
 
