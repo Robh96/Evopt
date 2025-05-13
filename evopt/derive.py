@@ -155,13 +155,24 @@ class Derive:
             "pow": (9, 1),
             "^": (9, 1)
             }
-        nested_constraints = {    
-            "exp": {"log": 0},
-            "log": {"exp": 0},
-            "sin": {"sin": 0},
-            "exp": {"exp": 0},
-            "log": {"log": 0}
+        
+        active_unary_operators = [op.split("(")[0] for op in self.unary_operators]
+        potential_nested_constraints = {
+            "exp": {"log": 0, "exp": 0},
+            "log": {"exp": 0, "log": 0},
+            "sin": {"sin": 0}
         }
+
+        nested_constraints = {}
+        for op, constraints_for_op in potential_nested_constraints.items():
+            if op in active_unary_operators:
+                current_op_constraints = {}
+                for nested_op, val in constraints_for_op.items():
+                    if nested_op in active_unary_operators:
+                        current_op_constraints[nested_op] = val
+                if current_op_constraints:
+                     nested_constraints[op] = current_op_constraints
+        
         self.model = PySRRegressor(
             binary_operators=self.binary_operators,
             unary_operators=self.unary_operators,
