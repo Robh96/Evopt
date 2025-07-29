@@ -3,7 +3,7 @@
 `evopt` is a package for efficient parameter optimization using the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm, exploration using Sobol sequence sampling, and symbolic regression using PySR. It provides a user-friendly way to find the best set of parameters for a given problem, especially when the problem is complex, non-linear, and doesn't have easily calculable derivatives.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimization of the two parameter Ackley function." width="800">
+  <img src="https://raw.githubusercontent.com/robh96/evopt/main/images/cover_img.png" alt="Optimization of the two parameter Ackley function." width="600">
   <br>
   <em>Optimization of the two parameter Ackley function.</em>
 </div>
